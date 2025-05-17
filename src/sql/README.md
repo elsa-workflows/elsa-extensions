@@ -1,4 +1,4 @@
-﻿# Sql Integration
+﻿# Sql Extension
 
 <details>
   <summary>📖 Table of Contents</summary>
@@ -51,27 +51,27 @@ This package extends [Elsa Workflows](https://github.com/elsa-workflows/elsa-cor
 
 ## 🛠 Installation
 
-The following NuGet packages are available for this integration:
+The following NuGet packages are available for this extension:
 
 ```bash
-Elsa.Integration.Sql
-Elsa.Integration.Sql.MySql
-Elsa.Integration.Sql.PostgreSql
-Elsa.Integration.Sql.Sqlite
-Elsa.Integration.Sql.SqlServer
+Elsa.Sql
+Elsa.Sql.MySql
+Elsa.Sql.PostgreSql
+Elsa.Sql.Sqlite
+Elsa.Sql.SqlServer
 ```
 
 You can install the clients via NuGet:
 
 ```bash
-dotnet add package Elsa.Integration.Sql.<Client>
+dotnet add package Elsa.Sql.<Client>
 ```
 
 ## ⚙️ Configuration
 
 ### Program.cs
 
-Register the integration in your `Program.cs` startup:
+Register the extension in your `Program.cs` startup:
 
 ```csharp
 using Elsa.Extensions;
@@ -101,7 +101,7 @@ These are used for retrieving the client implementation and for displaying a use
 If no name is provided, the client class name will be given as the default value, i.e. `SqliteClient`.
 
 ### Appsettings.json
-There are no configuration options that can be set in `appsettings.json` for this integration.
+There are no configuration options that can be set in `appsettings.json` for this extension.
 
 ---
 
@@ -111,7 +111,7 @@ Once the implementation is registered with your required clients, the activities
 
 ## 🚀 Activities 
 
-This integration comes with the following activities:
+This extension comes with the following activities:
 
 ### SqlQuery
 
@@ -207,5 +207,5 @@ There is a future development idea would add a “VariableStorageDriver” featu
 ---
 
 ## 🗒️ Notes & Comments
-This integration was developed to add Sql functionality to Elsa Workflows.  
+This extension was developed to add Sql functionality to Elsa Workflows.  
 If you have ideas for improvement, encounter issues, or want to share how you're using it, feel free to open an issue or start a discussion.

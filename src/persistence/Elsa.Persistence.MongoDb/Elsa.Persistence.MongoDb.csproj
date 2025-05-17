@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>
+            Provides MongoDB implementations of various abstractions from various modules.
+        </Description>
+        <PackageTags>elsa extension module persistence mongo</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+	    <PackageReference Include="Elsa.Alterations" />
+	    <PackageReference Include="Elsa.Common" />
+	    <PackageReference Include="Elsa.Http" />
+	    <PackageReference Include="Elsa.Identity" />
+	    <PackageReference Include="Elsa.Labels" />
+	    <PackageReference Include="Elsa.Workflows.Runtime" />
+	    <PackageReference Include="Microsoft.Extensions.Options" />
+		<PackageReference Include="MongoDB.Driver" />
+		<PackageReference Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" />
+		<PackageReference Include="MongoDB.Driver.Extensions" />
+	</ItemGroup>
+
+</Project>

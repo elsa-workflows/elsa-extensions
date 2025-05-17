@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>
+            Provides Entity Framework Core implementations of various abstractions from various modules.
+        </Description>
+        <PackageTags>elsa extension module persistence efcore</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Elsa.Identity" />
+        <PackageReference Include="Elsa.Labels" />
+        <PackageReference Include="Elsa.Workflows.Runtime" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\alterations\Elsa.Alterations\Elsa.Alterations.csproj" />
+        <ProjectReference Include="..\Elsa.Persistence.EFCore.Common\Elsa.Persistence.EFCore.Common.csproj" />
+    </ItemGroup>
+
+</Project>

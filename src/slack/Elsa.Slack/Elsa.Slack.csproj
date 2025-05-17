@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+	    <Description>
+		    Provides integration with Slack.
+	    </Description>
+	    <PackageTags>elsa extension module slack</PackageTags>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Elsa" />
+        <PackageReference Include="SlackNet" />
+    </ItemGroup>
+
+</Project>

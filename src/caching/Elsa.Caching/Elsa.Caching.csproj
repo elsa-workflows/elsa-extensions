@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>
+            Provides caching services and utility functions common to Elsa modules.
+        </Description>
+        <PackageTags>elsa extension module caching</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+		<PackageReference Include="Elsa.Features" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+		<PackageReference Include="Scrutor" />
+    </ItemGroup>
+
+</Project>

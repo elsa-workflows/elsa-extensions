@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>
+            Provides a custom DSL to write workflows with in a syntax similar to JavaScript but with native keywords translating to workflow functionality.
+            For example if/else would translate to the If activity. Very cool, but also very experimental ;)
+        </Description>
+        <PackageTags>elsa extension module scripting dsl antlr4</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+		<PackageReference Include="Antlr4.Runtime.Standard" />
+		<PackageReference Include="Elsa.Workflows.Core" />
+    </ItemGroup>
+
+</Project>

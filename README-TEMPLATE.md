@@ -1,9 +1,9 @@
-﻿# ℹ️ README Template for New Integrations
+﻿# ℹ️ README Template for New Extensions
 
-This template outlines the recommended structure for your integrations README.
-It's designed to showcase all the key features of your integration, provide clear usage instructions and help maintain consistent documentation across all integrations.
+This template outlines the recommended structure for your extensions README.
+It's designed to showcase all the key features of your extension, provide clear usage instructions and help maintain consistent documentation across all extensions.
 
-Example sentences / hints have been provided for each section to get your started but these should be changed to fit the context of your integration.
+Example sentences / hints have been provided for each section to get your started but these should be changed to fit the context of your extension.
 
 Hints are marked with an ℹ️ ( ) ℹ️ and should be removed from your README.
 
@@ -11,19 +11,19 @@ For convenience, you can search and replace the following keywords for quicker b
 
 | Keyword | Description | Example |
 |-----------|--------------|----------|
-| [integration-name] | Name of the integration | YourIntegration |
-| [CompatibleVersion] | Version the integration works with | V3 |
+| [extension-name] | Name of the extension | YourExtension |
+| [CompatibleVersion] | Version the extension works with | V3 |
 
-## 📦 Integration Structure
-Each integration should be organized into its own group folder. Copy this README template file into the root of your integration's directory and rename it to `README.md`. For example:
+## 📦 Extension Structure
+Each extension should be organized into its own group folder. Copy this README template file into the root of your extension's directory and rename it to `README.md`. For example:
 ```
 [group-name]/
   ├── README.md
-  ├── Elsa.Integrations.[integration-name]/
+  ├── Elsa.[extension-name]/
   │   ├── Services/
   │   ├── Activities/
   │   ├── AI/
-  └── Elsa.Integrations.[integration-name].Implementation/
+  └── Elsa.[extension-name].Implementation/
       ├── Services/
       ├── Activities/
       ├── AI/
@@ -34,7 +34,7 @@ Each integration should be organized into its own group folder. Copy this README
 
 ---
 
-# [integration-name] Integration
+# [extension-name] Extension
 
 <details>
   <summary>📖 Table of Contents</summary>
@@ -67,12 +67,12 @@ Each integration should be organized into its own group folder. Copy this README
 
 ## 🧠 Overview
 
-This package extends [Elsa Workflows](https://github.com/elsa-workflows/elsa-core) with support for **[integration-name]**. It introduces custom activities that make it easy to integrate [integration-name] features directly into your workflow logic.
+This package extends [Elsa Workflows](https://github.com/elsa-workflows/elsa-core) with support for **[extension-name]**. It introduces custom activities that make it easy to integrate [extension-name] features directly into your workflow logic.
 
 ## ✨ Key Features
 
 - Activities: `DoSomething`, `DoSomethingElse` and `DoSomethingAlso`
-- Highlight the key features from your integration.
+- Highlight the key features from your extension.
 
 ---
 
@@ -81,37 +81,37 @@ This package extends [Elsa Workflows](https://github.com/elsa-workflows/elsa-cor
 ### 📋 Prerequisites
 
 - Elsa Workflows **[CompatibleVersion]** installed in your project.
-- Access to the [integration-name] system or API (credentials, URL, etc.).
+- Access to the [extension-name] system or API (credentials, URL, etc.).
 
 ## 🛠 Installation
 
-The following NuGet packages are available for this integration:
+The following NuGet packages are available for this extension:
 
 ```bash
-Elsa.Integration.[integration-name]
-Elsa.Integration.[integration-name].Implementation1
-Elsa.Integration.[integration-name].Implementation2
+Elsa.[extension-name]
+Elsa.[extension-name].Implementation1
+Elsa.[extension-name].Implementation2
 ```
 
 You can install the clients via NuGet:
 
 ```bash
-dotnet add package Elsa.Integration.[integration-name].Implementation1
+dotnet add package Elsa.[extension-name].Implementation1
 ```
 
 ## ⚙️ Configuration
 
 ### Program.cs
 
-Register the integration in your application startup:
+Register the extension in your application startup:
 
 ```csharp
 using Elsa.Extensions;
-using Elsa.[integration-name];
+using Elsa.[extension-name];
 
 services.AddElsa(elsa =>
     {
-        elsa.Use[integration-name](options =>
+        elsa.Use[extension-name](options =>
             {
                 options.Property1 = "value1"
                 options.Config = options =>
@@ -126,7 +126,7 @@ services.AddElsa(elsa =>
 Or via `appsettings.json`:
 
 ```json
-"[integration-name]": {
+"[extension-name]": {
     "Property1": "value1",
     "Config": {
         "Property2": "value2"
@@ -138,11 +138,11 @@ Or via `appsettings.json`:
 
 ## 📌 Usage
 
-Once the implementation is registered with your required implementations, the activities will be ready to use, either via code or [Elsa Studio](https://github.com/elsa-workflows/elsa-studio).
+Once the extension is registered with your required implementations, the activities will be ready to use, either via code or [Elsa Studio](https://github.com/elsa-workflows/elsa-studio).
 
 ## 🚀 Activities 
 
-This integration comes with the following activities:
+This extension comes with the following activities:
 
 ### DoSomething
 
@@ -165,7 +165,7 @@ This integration comes with the following activities:
 
 ### Example of your feature
 
-ℹ️ (List some code snippets / picture examples of how to use aspects of your integration to help others learn how to use them.) ℹ️
+ℹ️ (List some code snippets / picture examples of how to use aspects of your extension to help others learn how to use them.) ℹ️
 
 ---
 
@@ -174,7 +174,7 @@ This integration comes with the following activities:
 ℹ️ (Bullet point known limitations, if any. For example:) ℹ️
 
 - Does not support async
-- Requires an active and reachable [integration-name] service endpoint
+- Requires an active and reachable [extension-name] service endpoint
 
 ---
 
@@ -200,11 +200,11 @@ This integration comes with the following activities:
 ℹ️ (Checkbox points for planned features, if any. For example:) ℹ️
 
 - [ ] Add async retry/backoff support
-- [ ] Add integration tests
+- [ ] Add extension tests
 
 ---
 
 ## 🗒️ Notes & Comments
 
-This integration was developed to add [integration-name] functionality to Elsa Workflows.  
+This extension was developed to add [extension-name] functionality to Elsa Workflows.  
 If you have ideas for improvement, encounter issues, or want to share how you're using it, feel free to open an issue or start a discussion!

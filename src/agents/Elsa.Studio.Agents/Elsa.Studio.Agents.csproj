@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <Description>Provides a UI for managing agents.</Description>
+        <PackageTags>elsa extension studio module agent ai llm semantic kernel</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Elsa.Studio.Workflows" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Elsa.Agents.Models\Elsa.Agents.Models.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+</Project>

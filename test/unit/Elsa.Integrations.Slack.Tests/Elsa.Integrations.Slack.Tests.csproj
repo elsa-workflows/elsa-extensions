@@ -1,5 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\src\slack\Elsa.Integrations.Slack\Elsa.Integrations.Slack.csproj" />
-  </ItemGroup>
-</Project>
