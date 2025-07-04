@@ -22,6 +22,15 @@ public partial class Service : StudioComponentBase
     private MudForm _form = null!;
     private ServiceInputModelValidator _validator = null!;
     private ServiceModel _entity = new();
+    private ICollection<string> _serviceProviders = [];
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        var providersApi = await ApiClientProvider.GetApiAsync<IServiceProvidersApi>();
+        var response = await providersApi.ListAsync();
+        _serviceProviders = response.Items;
+    }
 
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
