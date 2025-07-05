@@ -104,4 +104,3 @@ public class EFCoreWorkflowExecutionLogStore(EntityStore<RuntimeElsaDbContext, W
 
     private static IQueryable<WorkflowExecutionLogRecord> Filter(IQueryable<WorkflowExecutionLogRecord> queryable, WorkflowExecutionLogRecordFilter filter) => filter.Apply(queryable);
 }
-}

@@ -1,20 +1,16 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Elsa.Features.Abstractions;
 using Elsa.Features.Services;
 using Elsa.KeyValues.Entities;
 using Elsa.Persistence.MongoDb.Contracts;
+using Elsa.Persistence.MongoDb.HostedServices;
 using Elsa.Persistence.MongoDb.NamingStrategies;
 using Elsa.Persistence.MongoDb.Options;
-using Elsa.Persistence.MongoDb.Serializers;
-using Elsa.Workflows.Memory;
+using Elsa.Workflows.Activities.Flowchart.Models;
 using Elsa.Workflows.Runtime.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace Elsa.Persistence.MongoDb.Features;
