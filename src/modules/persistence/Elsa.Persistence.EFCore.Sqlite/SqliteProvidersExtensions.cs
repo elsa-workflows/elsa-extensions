@@ -68,7 +68,6 @@ public static class SqliteProvidersExtensions
         where TDbContext : ElsaDbContextBase
         where TFeature : PersistenceFeatureBase<TFeature, TDbContext>
     {
-        
         feature.Module.Services.TryAddScopedImplementation<IEntityModelCreatingHandler, SetupForSqlite>();
         feature.DbContextOptionsBuilder = (sp, db) => db.UseElsaSqlite(migrationsAssembly, connectionStringFunc(sp), options, configure: configure);
         return (TFeature)feature;

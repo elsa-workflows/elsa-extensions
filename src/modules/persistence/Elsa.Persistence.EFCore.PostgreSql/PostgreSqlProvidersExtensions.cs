@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using Elsa.Extensions;
+using Elsa.Persistence.EFCore.PostgreSql.Handlers;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 
 // ReSharper disable once CheckNamespace
@@ -50,6 +52,7 @@ public static class PostgreSqlProvidersExtensions
         where TDbContext : ElsaDbContextBase
         where TFeature : PersistenceFeatureBase<TFeature, TDbContext>
     {
+        feature.Module.Services.TryAddScopedImplementation<IEntityModelCreatingHandler, SetupForPostgreSql>();
         feature.DbContextOptionsBuilder = (sp, db) => db.UseElsaPostgreSql(migrationsAssembly, connectionStringFunc(sp), options, configure: configure);
         return (TFeature)feature;
     }

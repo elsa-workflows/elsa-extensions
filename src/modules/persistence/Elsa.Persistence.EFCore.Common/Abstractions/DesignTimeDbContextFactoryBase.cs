@@ -23,11 +23,18 @@ public abstract class DesignTimeDbContextFactoryBase<TDbContext> : IDesignTimeDb
         var parser = new Parser(command);
         var parseResult = parser.Parse(args);
         var connectionString = parseResult.GetValueForOption(connectionStringOption) ?? "Data Source=local";
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var services = new ServiceCollection();
 
+        ConfigureServices(services);
         ConfigureBuilder(builder, connectionString);
 
+        var serviceProvider = services.BuildServiceProvider();
         return (TDbContext)ActivatorUtilities.CreateInstance(serviceProvider, typeof(TDbContext), builder.Options);
+    }
+    
+    protected virtual void ConfigureServices(IServiceCollection services) 
+    {
+        // This method can be overridden to configure additional services if needed.
     }
 
     /// <summary>

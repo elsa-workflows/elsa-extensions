@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <UseProjectReferences>false</UseProjectReferences>
+        <UseProjectReferences>true</UseProjectReferences>
     </PropertyGroup>
     <PropertyGroup>
         <Authors>Elsa Workflows Community</Authors>
