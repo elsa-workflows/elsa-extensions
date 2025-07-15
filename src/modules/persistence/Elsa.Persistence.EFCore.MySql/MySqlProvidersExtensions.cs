@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using Elsa.Extensions;
+using Elsa.Persistence.EFCore.MySql.Handlers;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
 // ReSharper disable once CheckNamespace
@@ -53,6 +55,7 @@ public static class MySqlProvidersExtensions
         where TDbContext : ElsaDbContextBase
         where TFeature : PersistenceFeatureBase<TFeature, TDbContext>
     {
+        feature.Module.Services.TryAddScopedImplementation<IEntityModelCreatingHandler, SetupForMySql>();
         feature.DbContextOptionsBuilder = (sp, db) => db.UseElsaMySql(migrationsAssembly, connectionStringFunc(sp), options, configure: configure);
         return (TFeature)feature;
     }

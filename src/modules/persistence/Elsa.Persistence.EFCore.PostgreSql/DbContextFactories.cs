@@ -6,8 +6,10 @@ using Elsa.Persistence.EFCore.Modules.Labels;
 using Elsa.Persistence.EFCore.Modules.Management;
 using Elsa.Persistence.EFCore.Modules.Runtime;
 using Elsa.Persistence.EFCore.Modules.Tenants;
+using Elsa.Persistence.EFCore.PostgreSql.Handlers;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -33,6 +35,11 @@ public class TenantsDbContextFactories : PostgreSqlDesignTimeDbContextFactory<Te
 
 public class PostgreSqlDesignTimeDbContextFactory<TDbContext> : DesignTimeDbContextFactoryBase<TDbContext> where TDbContext : DbContext
 {
+    protected override void ConfigureServices(IServiceCollection services)
+    {
+        services.AddScoped<IEntityModelCreatingHandler, SetupForPostgreSql>();
+    }
+    
     protected override void ConfigureBuilder(DbContextOptionsBuilder<TDbContext> builder, string connectionString)
     {
         builder.UseElsaPostgreSql(GetType().Assembly, connectionString);

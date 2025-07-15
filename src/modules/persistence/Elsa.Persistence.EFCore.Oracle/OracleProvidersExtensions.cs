@@ -65,7 +65,7 @@ public static class OracleProvidersExtensions
         feature.DbContextOptionsBuilder = (sp, db) => db.UseElsaOracle(migrationsAssembly, connectionStringFunc(sp), options, configure: configure);
         return (TFeature)feature;
     }
-
+    
     public static ElsaDbContextOptions Configure(this ElsaDbContextOptions options)
     {
         var management = new Management();

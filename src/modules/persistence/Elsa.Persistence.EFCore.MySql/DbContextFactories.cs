@@ -6,8 +6,10 @@ using Elsa.Persistence.EFCore.Modules.Labels;
 using Elsa.Persistence.EFCore.Modules.Management;
 using Elsa.Persistence.EFCore.Modules.Runtime;
 using Elsa.Persistence.EFCore.Modules.Tenants;
+using Elsa.Persistence.EFCore.MySql.Handlers;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -33,6 +35,11 @@ public class TenantsDbContextFactories : MySqlDesignTimeDbContextFactory<Tenants
 
 public class MySqlDesignTimeDbContextFactory<TDbContext> : DesignTimeDbContextFactoryBase<TDbContext> where TDbContext : DbContext
 {
+    protected override void ConfigureServices(IServiceCollection services)
+    {
+        services.AddScoped<IEntityModelCreatingHandler, SetupForMySql>();
+    }
+
     protected override void ConfigureBuilder(DbContextOptionsBuilder<TDbContext> builder, string connectionString)
     {
         builder.UseElsaMySql(GetType().Assembly, connectionString, serverVersion: ServerVersion.Parse("9.0.0"));

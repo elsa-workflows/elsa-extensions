@@ -19,7 +19,7 @@ public abstract class ElsaDbContextBase : DbContext, IElsaDbContextSchema
     };
 
     protected IServiceProvider ServiceProvider { get; }
-    private readonly ElsaDbContextOptions? elsaDbContextOptions;
+    private readonly ElsaDbContextOptions? _elsaDbContextOptions;
     public string? TenantId { get; set; }
 
     /// <summary>
@@ -41,10 +41,10 @@ public abstract class ElsaDbContextBase : DbContext, IElsaDbContextSchema
     protected ElsaDbContextBase(DbContextOptions options, IServiceProvider serviceProvider) : base(options)
     {
         ServiceProvider = serviceProvider;
-        elsaDbContextOptions = options.FindExtension<ElsaDbContextOptionsExtension>()?.Options;
+        _elsaDbContextOptions = options.FindExtension<ElsaDbContextOptionsExtension>()?.Options;
 
         // ReSharper disable once VirtualMemberCallInConstructor
-        Schema = !string.IsNullOrWhiteSpace(elsaDbContextOptions?.SchemaName) ? elsaDbContextOptions.SchemaName : ElsaSchema;
+        Schema = !string.IsNullOrWhiteSpace(_elsaDbContextOptions?.SchemaName) ? _elsaDbContextOptions.SchemaName : ElsaSchema;
 
         var tenantAccessor = serviceProvider.GetService<ITenantAccessor>();
         var tenantId = tenantAccessor?.Tenant?.Id;
@@ -66,7 +66,7 @@ public abstract class ElsaDbContextBase : DbContext, IElsaDbContextSchema
         if (!string.IsNullOrWhiteSpace(Schema))
             modelBuilder.HasDefaultSchema(Schema);
 
-        var additionalConfigurations = elsaDbContextOptions?.GetModelConfigurations(this);
+        var additionalConfigurations = _elsaDbContextOptions?.GetModelConfigurations(this);
 
         additionalConfigurations?.Invoke(modelBuilder);
 
