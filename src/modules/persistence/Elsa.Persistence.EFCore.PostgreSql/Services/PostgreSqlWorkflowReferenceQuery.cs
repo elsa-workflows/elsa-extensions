@@ -18,24 +18,11 @@ public class PostgreSqlWorkflowReferenceQuery(IDbContextFactory<ManagementElsaDb
         var tableName = dbContext.Model.FindEntityType(typeof(WorkflowDefinition))!.QuoteSchemaQualifiedTableName();
 
         var sql = $"""
-                       SELECT `DefinitionId`, `TenantId`
-                       FROM {tableName}
-                       WHERE `IsLatest` = 1
-                         AND EXISTS (
-                           SELECT 1
-                           FROM JSON_TABLE(
-                             `StringData`,
-                             '$.activities[*]'
-                             COLUMNS (
-                               workflowDefinitionId VARCHAR(255) PATH '$.workflowDefinitionId',
-                               latestAvailablePublishedVersion JSON PATH '$.latestAvailablePublishedVersion'
-                             )
-                           ) AS act
-                           WHERE act.workflowDefinitionId = @p0
-                             AND act.latestAvailablePublishedVersion IS NOT NULL
-                         );
+                   SELECT "DefinitionId", "TenantId" FROM {tableName} WHERE "IsLatest" = true AND EXISTS (
+                   SELECT 1 FROM jsonb_array_elements("StringData"::jsonb->'activities') AS value
+                   WHERE value->>'workflowDefinitionId' = @p0
+                     AND value->'latestAvailablePublishedVersion' IS NOT NULL)
                    """;
-
 
         return await dbContext.Set<WorkflowDefinition>()
             .FromSqlRaw(sql, workflowDefinitionId)
