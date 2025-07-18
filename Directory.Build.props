@@ -41,9 +41,9 @@
 	</PropertyGroup>
     
 	<PropertyGroup Label="PackageVersions">
-        <ElsaVersion>3.6.0-preview.3143</ElsaVersion>
-		<ElsaStudioVersion>3.6.0-preview.1152</ElsaStudioVersion>
-        <MicrosoftVersion>9.0.6</MicrosoftVersion>
+        <ElsaVersion>3.6.0-preview.3175</ElsaVersion>
+		<ElsaStudioVersion>3.6.0-preview.1156</ElsaStudioVersion>
+        <MicrosoftVersion>9.0.7</MicrosoftVersion>
     </PropertyGroup>
 
     <Import Project=".build\ElsaCore.ProjectReferences.targets" />
