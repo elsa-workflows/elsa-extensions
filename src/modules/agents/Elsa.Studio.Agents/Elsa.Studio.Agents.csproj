@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Description>Provides a UI for managing agents.</Description>
         <PackageTags>elsa extension studio module agent ai llm semantic kernel</PackageTags>
-        <UseProjectReferences>true</UseProjectReferences>
+        <UseProjectReferences>false</UseProjectReferences>
     </PropertyGroup>
 
     <ItemGroup Label="Elsa" Condition="$(UseProjectReferences) == true">
