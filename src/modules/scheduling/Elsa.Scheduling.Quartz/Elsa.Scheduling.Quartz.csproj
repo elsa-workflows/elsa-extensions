@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
-        <ProjectReference Include="..\..\..\..\..\core\src\modules\Elsa.Scheduling\Elsa.Scheduling.csproj"/>
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Scheduling\Elsa.Scheduling.csproj"/>
     </ItemGroup>
 
 </Project>
