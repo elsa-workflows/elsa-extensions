@@ -43,8 +43,4 @@
         <MicrosoftVersion>9.0.7</MicrosoftVersion>
     </PropertyGroup>
 
-    <PropertyGroup>
-        <UseProjectReferences>false</UseProjectReferences>
-    </PropertyGroup>
-
 </Project>
