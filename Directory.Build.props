@@ -43,6 +43,8 @@
         <MicrosoftVersion>9.0.7</MicrosoftVersion>
     </PropertyGroup>
 
-    <Import Project=".build\ElsaCore.ProjectReferences.targets" />
+    <PropertyGroup>
+        <UseProjectReferences>true</UseProjectReferences>
+    </PropertyGroup>
 
 </Project>
