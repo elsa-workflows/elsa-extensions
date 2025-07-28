@@ -22,4 +22,9 @@
         <PackageReference Include="Elsa.Workflows.Runtime" />
     </ItemGroup>
 
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\core\src\modules\Elsa.Identity\Elsa.Identity.csproj" />
+        <ProjectReference Include="..\..\..\..\..\core\src\modules\Elsa.Workflows.Runtime\Elsa.Workflows.Runtime.csproj" />
+    </ItemGroup>
+
 </Project>

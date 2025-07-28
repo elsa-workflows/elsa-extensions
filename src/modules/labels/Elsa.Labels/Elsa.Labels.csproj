@@ -13,8 +13,12 @@
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Api.Common" />
-        <PackageReference Include="Elsa.Workflows.Core" />
         <PackageReference Include="Elsa.Workflows.Management" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+      <ProjectReference Include="..\..\..\..\..\core\src\common\Elsa.Api.Common\Elsa.Api.Common.csproj" />
+      <ProjectReference Include="..\..\..\..\..\core\src\modules\Elsa.Workflows.Management\Elsa.Workflows.Management.csproj" />
     </ItemGroup>
 
 </Project>

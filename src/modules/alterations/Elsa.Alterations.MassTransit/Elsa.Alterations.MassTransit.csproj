@@ -6,10 +6,10 @@
         </Description>
         <PackageTags>elsa extension module alterations masstransit</PackageTags>
     </PropertyGroup>
-
+    
     <ItemGroup>
-        <ProjectReference Include="..\..\servicebus\Elsa.ServiceBus.MassTransit\Elsa.ServiceBus.MassTransit.csproj" />
-        <ProjectReference Include="..\Elsa.Alterations\Elsa.Alterations.csproj" />
+      <ProjectReference Include="..\..\servicebus\Elsa.ServiceBus.MassTransit\Elsa.ServiceBus.MassTransit.csproj" />
+      <ProjectReference Include="..\Elsa.Alterations\Elsa.Alterations.csproj" />
     </ItemGroup>
 
 </Project>

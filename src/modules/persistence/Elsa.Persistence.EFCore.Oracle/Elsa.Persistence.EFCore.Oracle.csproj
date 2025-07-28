@@ -16,9 +16,4 @@
         <ProjectReference Include="..\Elsa.Persistence.EFCore\Elsa.Persistence.EFCore.csproj" />
     </ItemGroup>
 
-    <!--Overridden for vulnerability reasons with dependencies referencing older versions.-->
-    <ItemGroup>
-        <PackageReference Include="System.Formats.Asn1" />
-    </ItemGroup>
-
 </Project>

@@ -7,9 +7,14 @@
 	    <PackageTags>elsa extension module slack</PackageTags>
     </PropertyGroup>
     
-    <ItemGroup>
-        <PackageReference Include="Elsa" />
-        <PackageReference Include="SlackNet" />
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+      <PackageReference Include="Elsa" />
+      <PackageReference Include="SlackNet" />
+    </ItemGroup>
+    
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+      <ProjectReference Include="../../../core/src/Elsa/Elsa.csproj" />
+      <PackageReference Include="SlackNet" />
     </ItemGroup>
 
 </Project>

@@ -22,4 +22,9 @@
         <PackageReference Include="Elsa.Tenants"/>
     </ItemGroup>
 
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\core\src\modules\Elsa.Common\Elsa.Common.csproj"/>
+        <ProjectReference Include="..\..\..\..\..\core\src\modules\Elsa.Tenants\Elsa.Tenants.csproj"/>
+    </ItemGroup>
+
 </Project>

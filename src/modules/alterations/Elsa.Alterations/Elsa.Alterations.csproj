@@ -10,8 +10,4 @@
     <ItemGroup>
         <ProjectReference Include="..\Elsa.Alterations.Core\Elsa.Alterations.Core.csproj" />
     </ItemGroup>
-
-    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
-		<PackageReference Include="Elsa.Api.Common" />
-	</ItemGroup>
 </Project>

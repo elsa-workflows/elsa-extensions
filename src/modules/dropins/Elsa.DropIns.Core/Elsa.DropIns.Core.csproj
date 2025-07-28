@@ -14,5 +14,9 @@
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
 		<PackageReference Include="Elsa.Features" />
 	</ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\core\src\common\Elsa.Features\Elsa.Features.csproj" />
+    </ItemGroup>
 	
 </Project>
