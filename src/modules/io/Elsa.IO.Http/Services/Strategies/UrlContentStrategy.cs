@@ -50,7 +50,7 @@ public class UrlContentStrategy(ILogger<UrlContentStrategy> logger, IHttpClientF
     /// </summary>
     private string ExtractFilenameFromResponse(HttpResponseMessage response, string url)
     {
-        var filename =  string.Empty;// response.GetFilename(); TEMPORARY DISABLED. This feature becomes unstable until next version is deployed.
+        var filename = response.GetFilename();
         if (!string.IsNullOrWhiteSpace(filename))
         {
             return filename;
