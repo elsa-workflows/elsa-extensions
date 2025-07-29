@@ -6,19 +6,19 @@
     </PropertyGroup>
 
     <ItemGroup Label="Elsa" Condition="$(UseProjectReferences) == true">
-        <ProjectReference Include="..\..\..\..\..\elsa-studio\src\modules\Elsa.Studio.Workflows\Elsa.Studio.Workflows.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-studio\src\modules\Elsa.Studio.Workflows\Elsa.Studio.Workflows.csproj"/>
     </ItemGroup>
-    
+
     <ItemGroup Label="Elsa" Condition="$(UseProjectReferences) != true">
-      <PackageReference Include="Elsa.Studio.Workflows" />
+        <PackageReference Include="Elsa.Studio.Workflows"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Elsa.Agents.Models\Elsa.Agents.Models.csproj" />
+        <ProjectReference Include="..\Elsa.Agents.Models\Elsa.Agents.Models.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <SupportedPlatform Include="browser" />
+        <SupportedPlatform Include="browser"/>
     </ItemGroup>
 
 </Project>
