@@ -13,13 +13,15 @@
         <PackageReference Include="Microsoft.Extensions.Options" />
     </ItemGroup>
     
+    <ItemGroup>
+        <ProjectReference Include="..\Elsa.IO\Elsa.IO.csproj" />
+    </ItemGroup>
+    
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Workflows.Management" />
-        <PackageReference Include="Elsa.IO" />
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Management\Elsa.Workflows.Management.csproj" />
-        <ProjectReference Include="..\Elsa.IO\Elsa.IO.csproj" />
     </ItemGroup>
 </Project>

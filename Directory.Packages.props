@@ -18,8 +18,6 @@
     <PackageVersion Include="Elsa.Http" Version="$(ElsaVersion)" />
     <PackageVersion Include="Elsa.Hosting.Management" Version="$(ElsaVersion)" />
     <PackageVersion Include="Elsa.Identity" Version="$(ElsaVersion)" />
-    <PackageVersion Include="Elsa.IO" Version="$(ElsaVersion)" />
-    <PackageVersion Include="Elsa.IO.Compression" Version="$(ElsaVersion)" />
     <PackageVersion Include="Elsa.Labels" Version="$(ElsaVersion)" />
     <PackageVersion Include="Elsa.Persistence.EFCore.MySql" Version="$(ElsaVersion)" />
     <PackageVersion Include="Elsa.Persistence.EFCore.Oracle" Version="$(ElsaVersion)" />

@@ -11,17 +11,18 @@
         <PackageReference Include="Microsoft.Extensions.Http" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     </ItemGroup>
+    
+     <ItemGroup>
+            <ProjectReference Include="..\Elsa.IO\Elsa.IO.csproj" />
+            <ProjectReference Include="..\Elsa.IO.Compression\Elsa.IO.Compression.csproj" />
+     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Workflows.Management" />
-        <PackageReference Include="Elsa.IO" />
-        <PackageReference Include="Elsa.IO.Compression" />
     </ItemGroup>
-
+    
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Management\Elsa.Workflows.Management.csproj" />
-        <ProjectReference Include="..\Elsa.IO\Elsa.IO.csproj" />
-        <ProjectReference Include="..\Elsa.IO.Compression\Elsa.IO.Compression.csproj" />
     </ItemGroup>
 
 </Project>
