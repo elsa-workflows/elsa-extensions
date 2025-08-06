@@ -33,7 +33,7 @@ public class Endpoint(IApiKeyStore store, IIdentityGenerator identityGenerator) 
         if (existingEntity != null)
         {
             AddError("An API key already exists with the specified name");
-            await SendErrorsAsync(cancellation: ct);
+            await Send.ErrorsAsync(cancellation: ct);
             return existingEntity.ToModel();
         }
 

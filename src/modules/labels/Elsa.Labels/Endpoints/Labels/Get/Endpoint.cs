@@ -23,7 +23,7 @@ internal class Get : Endpoint<Request, Response, LabelMapper>
         var label = await _store.FindByIdAsync(request.Id, cancellationToken);
 
         if (label == null)
-            await SendNotFoundAsync(cancellationToken);
+            await Send.NotFoundAsync(cancellationToken);
         else
         {
             var response = Map.FromEntity(label);

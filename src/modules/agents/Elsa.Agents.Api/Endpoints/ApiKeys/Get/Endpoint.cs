@@ -25,7 +25,7 @@ public class Endpoint(IApiKeyStore store) : ElsaEndpoint<Request, ApiKeyModel>
         
         if(entity == null)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return null!;
         }
         

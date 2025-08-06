@@ -24,7 +24,7 @@ public class Endpoint(ISecretManager agentManager, ISecretEncryptor secretEncryp
         
         if(entity == null)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return null!;
         }
 

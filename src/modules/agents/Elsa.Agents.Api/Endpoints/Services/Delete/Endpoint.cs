@@ -24,7 +24,7 @@ public class Endpoint(IServiceStore store) : ElsaEndpoint<Request>
         
         if(entity == null)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return;
         }
         

@@ -38,7 +38,7 @@ public class Get : ElsaEndpointWithoutRequest<Response>
 
         if (plan == null)
         {
-            await SendNotFoundAsync(cancellationToken);
+            await Send.NotFoundAsync(cancellationToken);
             return;
         }
 

@@ -23,7 +23,7 @@ public class Endpoint(IConnectionStore store) : ElsaEndpoint<Request,ConnectionM
 
         if (entity == null) 
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return null!;
         }
 

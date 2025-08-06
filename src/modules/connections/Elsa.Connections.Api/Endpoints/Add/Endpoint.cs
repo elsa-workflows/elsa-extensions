@@ -23,7 +23,7 @@ public class Endpoint(IConnectionStore store, IIdentityGenerator identityGenerat
         if (!isNameUnique)
         {
             AddError("A connection already exists with the specified name");
-            await SendErrorsAsync(cancellation: ct);
+            await Send.ErrorsAsync(cancellation: ct);
             return null!;
         }
 
