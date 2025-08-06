@@ -44,6 +44,6 @@ internal class List : Endpoint<Request, Response>
             Items = currentLabels.ToList()
         };
 
-        await SendOkAsync(response, cancellationToken);
+        await Send.OkAsync(response, cancellationToken);
     }
 }

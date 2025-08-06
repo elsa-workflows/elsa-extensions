@@ -31,7 +31,7 @@ internal class Post(IWebhookSourceProvider webhookSourceProvider, INotificationS
 
         if (matchingSource == null)
         {
-            await SendOkAsync(cancellationToken);
+            await Send.OkAsync(cancellationToken);
             return;
         }
         

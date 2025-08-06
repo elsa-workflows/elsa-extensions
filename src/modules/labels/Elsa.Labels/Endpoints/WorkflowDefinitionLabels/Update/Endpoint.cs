@@ -77,7 +77,7 @@ internal class Update : Endpoint<Request, Response>
         await _workflowDefinitionLabelStore.ReplaceAsync(diff.Removed, diff.Added, cancellationToken);
 
         var response = new Response(selectedLabelIds);
-        await SendOkAsync(response, cancellationToken);
+        await Send.OkAsync(response, cancellationToken);
     }
 
 }

@@ -22,6 +22,6 @@ public class Endpoint(IConnectionStore store) : ElsaEndpoint<Request>
         }
         
         await store.DeleteAsync(entity, ct);
-        await SendOkAsync(ct);
+        await Send.OkAsync(ct);
     }
 }

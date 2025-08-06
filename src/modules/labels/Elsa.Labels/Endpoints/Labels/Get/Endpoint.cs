@@ -27,7 +27,7 @@ internal class Get : Endpoint<Request, Response, LabelMapper>
         else
         {
             var response = Map.FromEntity(label);
-            await SendOkAsync(response, cancellationToken);
+            await Send.OkAsync(response, cancellationToken);
         }
     }
 }

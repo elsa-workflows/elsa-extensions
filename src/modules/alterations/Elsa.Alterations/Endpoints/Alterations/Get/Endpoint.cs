@@ -47,6 +47,6 @@ public class Get : ElsaEndpointWithoutRequest<Response>
 
         // Write response.
         var response = new Response(plan, jobs);
-        await SendOkAsync(response, cancellationToken);
+        await Send.OkAsync(response, cancellationToken);
     }
 }

@@ -24,6 +24,6 @@ public class Endpoint(IConnectionDescriptorRegistry store) : ElsaEndpointWithout
         }
         
         var config = await store.GetConnectionDescriptorAsync(type, ct);
-        await SendOkAsync(config, ct);
+        await Send.OkAsync(config, ct);
     }
 }

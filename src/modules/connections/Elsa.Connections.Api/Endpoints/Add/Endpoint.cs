@@ -36,7 +36,7 @@ public class Endpoint(IConnectionStore store, IIdentityGenerator identityGenerat
             ConnectionConfiguration = model.ConnectionConfiguration,
         };
         await store.AddAsync(newEntity, ct);
-        await SendOkAsync(ct);
+        await Send.OkAsync(ct);
 
         return newEntity.ToModel();
     }
