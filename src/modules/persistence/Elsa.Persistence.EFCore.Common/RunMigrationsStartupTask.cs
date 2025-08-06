@@ -2,7 +2,9 @@
 using Elsa.Common.RecurringTasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
+// ReSharper disable once CheckNamespace
 namespace Elsa.Persistence.EFCore;
 
 /// <summary>
@@ -11,11 +13,16 @@ namespace Elsa.Persistence.EFCore;
 [UsedImplicitly]
 [SingleNodeTask]
 [Order(-100)]
-public class RunMigrationsStartupTask<TDbContext>(IDbContextFactory<TDbContext> dbContextFactory) : IStartupTask where TDbContext : DbContext
+public class RunMigrationsStartupTask<TDbContext>(IDbContextFactory<TDbContext> dbContextFactory, IOptions<MigrationOptions> options) : IStartupTask where TDbContext : DbContext
 {
-    /// <inheritdoc /
+    /// <inheritdoc />
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        options.Value.RunMigrations.TryGetValue(typeof(TDbContext), out bool shouldRunMigrations);
+     
+        if (!shouldRunMigrations)
+            return;
+
         var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
         await dbContext.Database.MigrateAsync(cancellationToken);
     }

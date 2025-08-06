@@ -1,20 +1,14 @@
 using Elsa.Common.Entities;
 using Elsa.Extensions;
 using Elsa.Features.Abstractions;
-using Elsa.Features.Attributes;
 using Elsa.Features.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
+// ReSharper disable once CheckNamespace
 namespace Elsa.Persistence.EFCore;
 
-/// <summary>
-/// Base class for features that require Entity Framework Core.
-/// </summary>
-/// <typeparam name="TDbContext">The type of the database context.</typeparam>
-/// <typeparam name="TFeature">The type of the feature.</typeparam>
-[DependsOn(typeof(CommonPersistenceFeature))]
 public abstract class PersistenceFeatureBase<TFeature, TDbContext>(IModule module) : FeatureBase(module)
     where TDbContext : ElsaDbContextBase
 {
@@ -40,8 +34,7 @@ public abstract class PersistenceFeatureBase<TFeature, TDbContext>(IModule modul
 
     public override void ConfigureHostedServices()
     {
-        if (RunMigrations)
-            ConfigureMigrations();
+        ConfigureMigrations();
     }
 
     /// <inheritdoc />
@@ -62,6 +55,11 @@ public abstract class PersistenceFeatureBase<TFeature, TDbContext>(IModule modul
             Services.AddDbContextFactory<TDbContext>(setup, DbContextFactoryLifetime);
 
         Services.Decorate<IDbContextFactory<TDbContext>, TenantAwareDbContextFactory<TDbContext>>();
+
+        Services.Configure<MigrationOptions>(options =>
+        {
+            options.RunMigrations[typeof(TDbContext)] = RunMigrations;
+        });
     }
 
     protected virtual void ConfigureMigrations()
