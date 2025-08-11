@@ -11,6 +11,8 @@
         <PackageReference Include="Elsa.Features"/>
         <PackageReference Include="Elsa.Identity"/>
         <PackageReference Include="Elsa.JavaScript"/>
+        <PackageReference Include="Elsa.Liquid"/>
+        <PackageReference Include="Elsa.Http"/>
         <PackageReference Include="Elsa.Workflows.Api"/>
         <PackageReference Include="JetBrains.Annotations"/>
     </ItemGroup>

@@ -21,6 +21,7 @@
         <PackageVersion Include="Elsa.EntityFrameworkCore.PostgreSql" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Features" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.JavaScript" Version="$(ElsaVersion)"/>
+        <PackageVersion Include="Elsa.Liquid" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Workflows.Core" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Workflows.Api" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Http" Version="$(ElsaVersion)"/>
