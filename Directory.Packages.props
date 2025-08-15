@@ -4,8 +4,8 @@
         <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     </PropertyGroup>
     <PropertyGroup>
-        <ElsaVersion>3.5.0-preview.3277</ElsaVersion>
-        <ElsaStudioVersion>3.5.0-preview.1182</ElsaStudioVersion>
+        <ElsaVersion>3.5.0</ElsaVersion>
+        <ElsaStudioVersion>3.5.0</ElsaStudioVersion>
         <MicrosoftVersion>9.0.8</MicrosoftVersion>
     </PropertyGroup>
     <ItemGroup Label="Elsa">
