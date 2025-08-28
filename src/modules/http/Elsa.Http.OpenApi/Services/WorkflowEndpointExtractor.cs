@@ -36,15 +36,14 @@ public class WorkflowEndpointExtractor : IWorkflowEndpointExtractor
     {
         var endpoints = new List<EndpointDefinition>();
 
-        var bookmarkName = ActivityTypeNameHelper.GenerateTypeName<HttpEndpoint>();
+        var httpEndpointTypeName = ActivityTypeNameHelper.GenerateTypeName<HttpEndpoint>();
         var triggerFilter = new TriggerFilter
         {
-            Name = bookmarkName
+            Name = httpEndpointTypeName
         };
         var triggers = (await _triggerStore.FindManyAsync(triggerFilter, cancellationToken)).ToList();
 
-        var triggerName = ActivityTypeNameHelper.GenerateTypeName<HttpEndpoint>();
-        var filteredTriggers = triggers.Where(x => x.Name == triggerName && x.Payload != null);
+        var filteredTriggers = triggers.Where(x => x.Name == httpEndpointTypeName && x.Payload != null);
 
         // Group triggers by workflow definition ID to minimize database queries
         var triggersByWorkflow = filteredTriggers.GroupBy(t => t.WorkflowDefinitionId);
