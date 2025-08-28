@@ -1,0 +1,1 @@
+ef-migration-runtime-schema --interface Elsa.Persistence.EFCore.IElsaDbContextSchema --efOptions "migrations add V3_6 -c TestingDbContext -o Migrations"

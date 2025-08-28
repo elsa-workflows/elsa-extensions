@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <Description>
+            Provides a workflow testing framework for Elsa Workflows.
+        </Description>
+        <PackageTags>elsa module testing qa</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Elsa.Testing.Core\Elsa.Testing.Core.csproj" />
+    </ItemGroup>
+
+</Project>

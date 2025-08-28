@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Provides a SQLite Entity Framework Core provider for the persistence layer of the Testing module</Description>
+        <PackageTags>elsa extension module testing persistence efcore entity framework core sqlite</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\persistence\Elsa.Persistence.EFCore.Sqlite\Elsa.Persistence.EFCore.Sqlite.csproj" />
+      <ProjectReference Include="..\Elsa.Testing.Persistence.EFCore\Elsa.Testing.Persistence.EFCore.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Data.Sqlite" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+    </ItemGroup>
+
+</Project>
