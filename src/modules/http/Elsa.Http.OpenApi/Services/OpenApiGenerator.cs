@@ -9,6 +9,13 @@ namespace Elsa.Http.OpenApi.Services;
 /// </summary>
 public class OpenApiGenerator : IOpenApiGenerator
 {
+    private readonly IElsaVersionProvider _versionProvider;
+
+    public OpenApiGenerator(IElsaVersionProvider versionProvider)
+    {
+        _versionProvider = versionProvider;
+    }
+
     /// <summary>
     /// Generates OpenAPI JSON documentation from a list of endpoint definitions.
     /// </summary>
@@ -22,7 +29,7 @@ public class OpenApiGenerator : IOpenApiGenerator
             info = new
             {
                 title = "Elsa Workflow HTTP Endpoints",
-                version = "1.0.0",
+                version = _versionProvider.GetVersion(),
                 description = "HTTP endpoints exposed by Elsa workflows"
             },
             paths = GeneratePaths(endpoints)
@@ -47,10 +54,21 @@ public class OpenApiGenerator : IOpenApiGenerator
             }
 
             var pathItem = (Dictionary<string, object>)paths[endpoint.Path];
+            
+            // Create description with workflow definition ID if available
+            var description = endpoint.WorkflowDefinitionId != null 
+                ? $"Workflow endpoint from '{endpoint.WorkflowDefinitionName}' (ID: {endpoint.WorkflowDefinitionId})"
+                : $"Workflow endpoint for {endpoint.Method.ToUpperInvariant()} {endpoint.Path}";
+            
+            // Use workflow name as tag, fallback to "Workflows"
+            var tags = endpoint.WorkflowDefinitionName != null 
+                ? new[] { endpoint.WorkflowDefinitionName }
+                : new[] { "Workflows" };
+
             pathItem[endpoint.Method.ToLowerInvariant()] = new
             {
                 summary = $"{endpoint.Method.ToUpperInvariant()} {endpoint.Path}",
-                description = $"Workflow endpoint for {endpoint.Method.ToUpperInvariant()} {endpoint.Path}",
+                description = description,
                 responses = new
                 {
                     @default = new
@@ -58,7 +76,7 @@ public class OpenApiGenerator : IOpenApiGenerator
                         description = "Response from workflow execution"
                     }
                 },
-                tags = new[] { "Workflows" }
+                tags = tags
             };
         }
 

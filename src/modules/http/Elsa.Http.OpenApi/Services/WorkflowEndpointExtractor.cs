@@ -13,6 +13,7 @@ using Elsa.Scheduling.Activities;
 using Elsa.Workflows.Management;
 using Elsa.Workflows.Management.Services;
 using Elsa.Workflows.Management.Stores;
+using Elsa.Workflows.Management.Filters;
 using Elsa.Workflows.Models;
 
 namespace Elsa.Http.OpenApi.Services;
@@ -23,10 +24,12 @@ namespace Elsa.Http.OpenApi.Services;
 public class WorkflowEndpointExtractor : IWorkflowEndpointExtractor
 {
     private readonly ITriggerStore _triggerStore;
+    private readonly IWorkflowDefinitionStore _workflowDefinitionStore;
 
-    public WorkflowEndpointExtractor(ITriggerStore triggerStore)
+    public WorkflowEndpointExtractor(ITriggerStore triggerStore, IWorkflowDefinitionStore workflowDefinitionStore)
     {
         _triggerStore = triggerStore;
+        _workflowDefinitionStore = workflowDefinitionStore;
     }
 
     public async Task<List<EndpointDefinition>> ExtractEndpointsAsync(CancellationToken cancellationToken = default)
@@ -43,15 +46,30 @@ public class WorkflowEndpointExtractor : IWorkflowEndpointExtractor
         var triggerName = ActivityTypeNameHelper.GenerateTypeName<HttpEndpoint>();
         var filteredTriggers = triggers.Where(x => x.Name == triggerName && x.Payload != null);
 
-        foreach (var trigger in filteredTriggers)
-        {
-            var payload = trigger.GetPayload<HttpEndpointBookmarkPayload>();
+        // Group triggers by workflow definition ID to minimize database queries
+        var triggersByWorkflow = filteredTriggers.GroupBy(t => t.WorkflowDefinitionId);
 
-            endpoints.Add(new EndpointDefinition
+        foreach (var workflowGroup in triggersByWorkflow)
+        {
+            var workflowDefinitionId = workflowGroup.Key;
+            
+            // Get workflow definition information
+            var filter = new WorkflowDefinitionFilter { DefinitionId = workflowDefinitionId };
+            var workflowDefinition = await _workflowDefinitionStore.FindAsync(filter, cancellationToken);
+            
+            foreach (var trigger in workflowGroup)
             {
-                Path = payload.Path,
-                Method = payload.Method
-            });
+                var payload = trigger.GetPayload<HttpEndpointBookmarkPayload>();
+
+                endpoints.Add(new EndpointDefinition(
+                    Path: payload.Path,
+                    Method: payload.Method,
+                    Summary: null, // Could be enhanced to extract from activity properties
+                    WorkflowDefinitionId: workflowDefinitionId,
+                    WorkflowDefinitionName: workflowDefinition?.Name ?? "Unknown Workflow",
+                    WorkflowVersion: workflowDefinition?.Version
+                ));
+            }
         }
 
         return endpoints;

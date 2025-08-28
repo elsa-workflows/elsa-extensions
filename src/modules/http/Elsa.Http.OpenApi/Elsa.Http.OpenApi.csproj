@@ -30,4 +30,8 @@
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\common\Elsa.Api.Common\Elsa.Api.Common.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="README.md" />
+    </ItemGroup>
+
 </Project>
