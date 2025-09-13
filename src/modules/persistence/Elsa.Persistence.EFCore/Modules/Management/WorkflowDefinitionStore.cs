@@ -1,19 +1,19 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using Elsa.Common.Entities;
 using Elsa.Common.Models;
 using Elsa.Extensions;
+using Elsa.Workflows;
+using Elsa.Workflows.Management;
 using Elsa.Workflows.Management.Entities;
 using Elsa.Workflows.Management.Filters;
 using Elsa.Workflows.Management.Models;
 using Elsa.Workflows.Memory;
 using Elsa.Workflows.Models;
-using Microsoft.EntityFrameworkCore;
-using Open.Linq.AsyncExtensions;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
-using Elsa.Common.Entities;
-using Elsa.Workflows;
-using Elsa.Workflows.Management;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Open.Linq.AsyncExtensions;
 
 namespace Elsa.Persistence.EFCore.Modules.Management;
 
@@ -45,8 +45,8 @@ public class EFCoreWorkflowDefinitionStore(EntityStore<ManagementElsaDbContext, 
     /// <inheritdoc />
     public async Task<Page<WorkflowDefinition>> FindManyAsync<TOrderBy>(WorkflowDefinitionFilter filter, WorkflowDefinitionOrder<TOrderBy> order, PageArgs pageArgs, CancellationToken cancellationToken = default)
     {
-        var count = await store.QueryAsync(queryable => Filter(queryable, filter).OrderBy(order), cancellationToken).LongCount();
-        var results = await store.QueryAsync(queryable => Paginate(Filter(queryable, filter), pageArgs), OnLoadAsync, filter.TenantAgnostic, cancellationToken).ToList();
+        var count = await store.QueryAsync(queryable => Filter(queryable, filter), cancellationToken).LongCount();
+        var results = await store.QueryAsync(queryable => Filter(queryable, filter).OrderBy(order).Paginate(pageArgs), OnLoadAsync, filter.TenantAgnostic, cancellationToken).ToList();
         return new(results, count);
     }
 

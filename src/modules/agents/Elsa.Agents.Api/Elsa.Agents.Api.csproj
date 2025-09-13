@@ -5,7 +5,7 @@
         <PackageTags>elsa extension module agents semantic kernel api llm ai</PackageTags>
     </PropertyGroup>
 
-    <ItemGroup>
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Api.Common" />
     </ItemGroup>
 

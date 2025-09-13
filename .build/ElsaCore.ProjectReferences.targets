@@ -1,5 +1,25 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+    <!-- Elsa.Agents.Activities -->
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true' and '$(MSBuildProjectName)' == 'Elsa.Agents.Activities'">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\core\src\modules\Elsa\Elsa.csproj"/>
+    </ItemGroup>
+
+    <!-- Elsa.Agents.Api -->
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true' and '$(MSBuildProjectName)' == 'Elsa.Agents.Api'">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\core\src\modules\Elsa\Elsa.csproj"/>
+    </ItemGroup>
+    
+    <!-- Elsa.Agents.Core -->
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true' and '$(MSBuildProjectName)' == 'Elsa.Agents.Core'">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\core\src\modules\Elsa.Common\Elsa.Common.csproj"/>
+    </ItemGroup>
+
+    <!-- Elsa.Agents.Persistence -->
+    <ItemGroup Condition="'$(UseProjectReferences)' == 'true' and '$(MSBuildProjectName)' == 'Elsa.Agents.Persistence'">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\core\src\modules\Elsa.Common\Elsa.Common.csproj"/>
+    </ItemGroup>
+    
     <!-- Elsa.Actors.ProtoActor -->
     <ItemGroup Condition="'$(UseProjectReferences)' == 'true' and '$(MSBuildProjectName)' == 'Elsa.Actors.ProtoActor'">
         <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\core\src\common\Elsa.Features\Elsa.Features.csproj"/>

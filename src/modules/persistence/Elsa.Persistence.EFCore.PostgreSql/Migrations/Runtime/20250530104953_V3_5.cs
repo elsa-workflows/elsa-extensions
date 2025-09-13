@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Elsa.Persistence.EFCore.SqlServer.Migrations.Runtime
+namespace Elsa.Persistence.EFCore.PostgreSql.Migrations.Runtime
 {
     /// <inheritdoc />
     public partial class V3_5 : Migration
@@ -22,25 +22,32 @@ namespace Elsa.Persistence.EFCore.SqlServer.Migrations.Runtime
                 name: "Name",
                 schema: _schema.Schema,
                 table: "Triggers",
-                type: "nvarchar(450)",
+                type: "text",
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "nvarchar(450)");
+                oldType: "text");
 
             migrationBuilder.AddColumn<string>(
                 name: "Name",
                 schema: _schema.Schema,
                 table: "Bookmarks",
-                type: "nvarchar(450)",
+                type: "text",
                 nullable: true);
 
             migrationBuilder.AddColumn<int>(
                 name: "AggregateFaultCount",
                 schema: _schema.Schema,
                 table: "ActivityExecutionRecords",
-                type: "int",
+                type: "integer",
                 nullable: false,
                 defaultValue: 0);
+
+            migrationBuilder.AddColumn<string>(
+                name: "SerializedMetadata",
+                schema: _schema.Schema,
+                table: "ActivityExecutionRecords",
+                type: "text",
+                nullable: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_StoredBookmark_Name",
@@ -89,15 +96,20 @@ namespace Elsa.Persistence.EFCore.SqlServer.Migrations.Runtime
                 schema: _schema.Schema,
                 table: "ActivityExecutionRecords");
 
+            migrationBuilder.DropColumn(
+                name: "SerializedMetadata",
+                schema: _schema.Schema,
+                table: "ActivityExecutionRecords");
+
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
                 schema: _schema.Schema,
                 table: "Triggers",
-                type: "nvarchar(450)",
+                type: "text",
                 nullable: false,
                 defaultValue: "",
                 oldClrType: typeof(string),
-                oldType: "nvarchar(450)",
+                oldType: "text",
                 oldNullable: true);
         }
     }

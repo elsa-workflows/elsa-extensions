@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 
 namespace Elsa.Agents;
 
-public class KernelFactory(IPluginDiscoverer pluginDiscoverer, IServiceDiscoverer serviceDiscoverer, ILoggerFactory loggerFactory, IServiceProvider serviceProvider, ILogger<KernelFactory> logger)
+public class KernelFactory(IPluginDiscoverer pluginDiscoverer, IServiceDiscoverer serviceDiscoverer, ILoggerFactory loggerFactory, IServiceProvider serviceProvider, ILogger<KernelFactory> logger) : IKernelFactory
 {
     public Kernel CreateKernel(KernelConfig kernelConfig, string agentName)
     {

@@ -8,18 +8,24 @@ public static class FunctionResultExtensions
     public static async Task<JsonElement> AsJsonElementAsync(this Task<InvokeAgentResult> resultTask)
     {
         var result = await resultTask;
-        return result.FunctionResult.AsJsonElement();
+        return result.ChatMessageContent.AsJsonElement();
     }
-    
-    public static async Task<JsonElement> AsJsonElementAsync(this Task<FunctionResult> resultTask)
+
+    public static JsonElement AsJsonElement(this ChatMessageContent result)
     {
-        var result = await resultTask;
-        return result.AsJsonElement();
-    }
-    
-    public static JsonElement AsJsonElement(this FunctionResult result)
-    {
-        var response = result.GetValue<string>()!;
-        return JsonSerializer.Deserialize<JsonElement>(response);
+        var content = result.Content?.Trim();
+
+        if (string.IsNullOrWhiteSpace(content))
+            throw new InvalidOperationException("The message content is empty.");
+
+        try
+        {
+            return JsonSerializer.Deserialize<JsonElement>(content!);
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException($"Error deserializing the message content as JSON:\n{content}", ex);
+        }
+
     }
 }

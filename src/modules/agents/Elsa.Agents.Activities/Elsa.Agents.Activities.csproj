@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     
     <PropertyGroup>
         <Description>Provides Agent activities</Description>
         <PackageTags>elsa extension module agents semantic kernel llm ai</PackageTags>
     </PropertyGroup>
-    
-    <ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa" />
     </ItemGroup>
     

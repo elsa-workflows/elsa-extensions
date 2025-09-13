@@ -1,7 +1,7 @@
 using Elsa.Common.Models;
+using Elsa.Labels.Contracts;
 using Elsa.Labels.Entities;
 using Elsa.Persistence.EFCore.Extensions;
-using Elsa.Labels.Contracts;
 
 namespace Elsa.Persistence.EFCore.Modules.Labels;
 

@@ -38,7 +38,7 @@ public class EFCoreTriggerStore(EntityStore<RuntimeElsaDbContext, StoredTrigger>
     {
         return await store.QueryAsync(filter.Apply, OnLoadAsync, filter.TenantAgnostic, cancellationToken);
     }
-    
+
     public ValueTask<Page<StoredTrigger>> FindManyAsync(TriggerFilter filter, PageArgs pageArgs, CancellationToken cancellationToken = default)
     {
         return FindManyAsync(filter, pageArgs, new StoredTriggerOrder<string>(x => x.Id, OrderDirection.Ascending), cancellationToken);

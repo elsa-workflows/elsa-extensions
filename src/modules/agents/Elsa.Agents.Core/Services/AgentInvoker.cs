@@ -1,12 +1,14 @@
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 #pragma warning disable SKEXP0010
 #pragma warning disable SKEXP0001
 
 namespace Elsa.Agents;
 
-public class AgentInvoker(KernelFactory kernelFactory, IKernelConfigProvider kernelConfigProvider)
+public class AgentInvoker(IKernelFactory kernelFactory, IKernelConfigProvider kernelConfigProvider)
 {
     public async Task<InvokeAgentResult> InvokeAgentAsync(string agentName, IDictionary<string, object?> input, CancellationToken cancellationToken = default)
     {
@@ -21,9 +23,9 @@ public class AgentInvoker(KernelFactory kernelFactory, IKernelConfigProvider ker
             MaxTokens = executionSettings.MaxTokens,
             PresencePenalty = executionSettings.PresencePenalty,
             FrequencyPenalty = executionSettings.FrequencyPenalty,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
             ResponseFormat = executionSettings.ResponseFormat,
             ChatSystemPrompt = agentConfig.PromptTemplate,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
         
         var promptExecutionSettingsDictionary = new Dictionary<string, PromptExecutionSettings>
@@ -46,10 +48,36 @@ public class AgentInvoker(KernelFactory kernelFactory, IKernelConfigProvider ker
                 AllowDangerouslySetContent = true
             }).ToList()
         };
-        
-        var kernelFunction = kernel.CreateFunctionFromPrompt(promptTemplateConfig);
+
+        var templateFactory = new HandlebarsPromptTemplateFactory();
+
+        var promptConfig = new PromptTemplateConfig
+        {
+            Template = agentConfig.PromptTemplate,
+            TemplateFormat = "handlebars",
+            Name = agentConfig.FunctionName
+        };
+
+        var promptTemplate = templateFactory.Create(promptConfig);
+
         var kernelArguments = new KernelArguments(input);
-        var result = await kernelFunction.InvokeAsync(kernel, kernelArguments, cancellationToken: cancellationToken);
-        return new(agentConfig, result);
+        string renderedPrompt = await promptTemplate.RenderAsync(kernel, kernelArguments);
+
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage(renderedPrompt);
+
+        IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+
+        OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        var response = await chatCompletion.GetChatMessageContentAsync(
+            chatHistory,
+            executionSettings: openAIPromptExecutionSettings,
+            kernel: kernel);
+
+        return new(agentConfig, response);
     }
 }

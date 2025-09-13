@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Elsa.Persistence.EFCore.SqlServer.Migrations.Runtime
 {
     [DbContext(typeof(RuntimeElsaDbContext))]
-    [Migration("20250401201357_V3_5")]
+    [Migration("20250530104711_V3_5")]
     partial class V3_5
     {
         /// <inheritdoc />
@@ -21,7 +21,7 @@ namespace Elsa.Persistence.EFCore.SqlServer.Migrations.Runtime
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Elsa")
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -84,6 +84,9 @@ namespace Elsa.Persistence.EFCore.SqlServer.Migrations.Runtime
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SerializedException")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SerializedMetadata")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SerializedOutputs")

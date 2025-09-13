@@ -1,7 +1,7 @@
 ﻿
-using Microsoft.EntityFrameworkCore.Migrations;
-
 #nullable disable
+
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Elsa.Persistence.EFCore.MySql.Migrations.Management
 {

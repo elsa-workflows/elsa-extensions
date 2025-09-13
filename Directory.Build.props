@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <UseProjectReferences>false</UseProjectReferences>
+        <UseProjectReferences>true</UseProjectReferences>
     </PropertyGroup>
     <PropertyGroup>
         <Authors>Elsa Workflows Community</Authors>
@@ -41,10 +41,12 @@
 	</PropertyGroup>
     
 	<PropertyGroup Label="PackageVersions">
-        <ElsaVersion>3.6.0-preview.3036</ElsaVersion>
+        <ElsaVersion>3.7.0-preview.3055</ElsaVersion>
 		<ElsaStudioVersion>3.6.0-preview.1029</ElsaStudioVersion>
+        <MicrosoftVersion>9.0.6</MicrosoftVersion>
     </PropertyGroup>
 
     <Import Project=".build\ElsaCore.ProjectReferences.targets" />
+    <Import Project=".build\ElsaStudio.ProjectReferences.targets" />
 
 </Project>

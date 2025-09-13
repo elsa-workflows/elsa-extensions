@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Elsa.Persistence.EFCore.Oracle.Migrations.Runtime
+namespace Elsa.Persistence.EFCore.Sqlite.Migrations.Runtime
 {
     /// <inheritdoc />
     public partial class V3_5 : Migration
@@ -22,25 +22,32 @@ namespace Elsa.Persistence.EFCore.Oracle.Migrations.Runtime
                 name: "Name",
                 schema: _schema.Schema,
                 table: "Triggers",
-                type: "NVARCHAR2(450)",
+                type: "TEXT",
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "NVARCHAR2(450)");
+                oldType: "TEXT");
 
             migrationBuilder.AddColumn<string>(
                 name: "Name",
                 schema: _schema.Schema,
                 table: "Bookmarks",
-                type: "NVARCHAR2(450)",
+                type: "TEXT",
                 nullable: true);
 
             migrationBuilder.AddColumn<int>(
                 name: "AggregateFaultCount",
                 schema: _schema.Schema,
                 table: "ActivityExecutionRecords",
-                type: "NUMBER(10)",
+                type: "INTEGER",
                 nullable: false,
                 defaultValue: 0);
+
+            migrationBuilder.AddColumn<string>(
+                name: "SerializedMetadata",
+                schema: _schema.Schema,
+                table: "ActivityExecutionRecords",
+                type: "TEXT",
+                nullable: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_StoredBookmark_Name",
@@ -89,15 +96,20 @@ namespace Elsa.Persistence.EFCore.Oracle.Migrations.Runtime
                 schema: _schema.Schema,
                 table: "ActivityExecutionRecords");
 
+            migrationBuilder.DropColumn(
+                name: "SerializedMetadata",
+                schema: _schema.Schema,
+                table: "ActivityExecutionRecords");
+
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
                 schema: _schema.Schema,
                 table: "Triggers",
-                type: "NVARCHAR2(450)",
+                type: "TEXT",
                 nullable: false,
                 defaultValue: "",
                 oldClrType: typeof(string),
-                oldType: "NVARCHAR2(450)",
+                oldType: "TEXT",
                 oldNullable: true);
         }
     }

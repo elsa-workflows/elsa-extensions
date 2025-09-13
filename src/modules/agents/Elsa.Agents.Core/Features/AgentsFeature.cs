@@ -33,8 +33,10 @@ public class AgentsFeature(IModule module) : FeatureBase(module)
             .AddScoped(_kernelConfigProviderFactory)
             .AddScoped<ConfigurationKernelConfigProvider>()
             .AddPluginProvider<ImageGeneratorPluginProvider>()
+            .AddPluginProvider<DocumentQueryPluginProvider>()
             .AddAgentServiceProvider<OpenAIChatCompletionProvider>()
             .AddAgentServiceProvider<OpenAITextToImageProvider>()
+            .AddAgentServiceProvider<OpenAIEmbeddingGenerator>()
             ;
     }
 }

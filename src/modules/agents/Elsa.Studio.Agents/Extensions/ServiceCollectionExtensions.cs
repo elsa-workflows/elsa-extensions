@@ -1,8 +1,10 @@
 using Elsa.Studio.Agents;
 using Elsa.Studio.Agents.Client;
+using Elsa.Studio.Agents.Services;
 using Elsa.Studio.Agents.UI.Providers;
 using Elsa.Studio.Contracts;
 using Elsa.Studio.Models;
+using Elsa.Studio.Workflows.Contracts;
 using Elsa.Studio.Workflows.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +26,7 @@ public static class ServiceCollectionExtensions
                 .AddRemoteApi<IServicesApi>(backendApiConfig)
                 .AddRemoteApi<IPluginsApi>(backendApiConfig)
                 .AddActivityDisplaySettingsProvider<AgentsActivityDisplaySettingsProvider>()
+                .AddScoped<ICreateWorkflowDialogComponentProvider, AICreateWorkflowDialogComponentProvider>()
             ;
     }
 }

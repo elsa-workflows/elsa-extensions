@@ -4,8 +4,8 @@
         <Description>Provides Agents persistence services</Description>
         <PackageTags>elsa extension module agents semantic kernel persistence llm ai</PackageTags>
     </PropertyGroup>
-    
-    <ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Common" />
     </ItemGroup>
 

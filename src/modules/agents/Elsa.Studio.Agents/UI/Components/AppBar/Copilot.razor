@@ -1,0 +1,175 @@
+@using Elsa.Api.Client.Resources.WorkflowDefinitions.Models
+@using Elsa.Studio.Workflows.Domain.Contracts
+@using Elsa.Studio.Workflows.Domain.Models
+@using Variant = MudBlazor.Variant
+<MudIconButton Icon="@AgentIcons.Copilot" Color="Color.Inherit" OnClick="OnClick" title="Copilot"/>
+
+<MudDrawer @bind-Open="@_open" Anchor="Anchor.End" Elevation="1" Variant="@DrawerVariant.Persistent" ClipMode="DrawerClipMode.Always" Width="500px" Height="100%">
+    <ChildContent>
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">Elsa Copilot</MudText>
+        </MudDrawerHeader>
+        <MudTabs>
+            <MudTabPanel Text="Ask">
+                <Well>
+                    <MudStack>
+                        @foreach (var message in _askMessages)
+                        {
+                            var position = message.User == User ? ChatBubblePosition.End : ChatBubblePosition.Start;
+                            <MudChat ChatPosition="position" Color="Color.Primary" Variant="Variant.Filled">
+                                <MudChatBubble>
+                                    @message.Message
+                                </MudChatBubble>
+                            </MudChat>
+                        }
+                        <MudTextField T="string" @bind-Value="_askPrompt" Label="Ask Copilot a question." Variant="@Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Send" AdornmentColor="Color.Primary" Lines="4" OnAdornmentClick="OnAskPromptSendMessageClick"/>
+                    </MudStack>
+                </Well>
+            </MudTabPanel>
+            <MudTabPanel Text="Edit">
+                <Well>
+                    <MudStack>
+                        @foreach (var message in _editMessages)
+                        {
+                            var position = message.User == User ? ChatBubblePosition.End : ChatBubblePosition.Start;
+                            <MudChat ChatPosition="position" Color="Color.Secondary" Variant="Variant.Filled">
+                                <MudChatBubble>
+                                    @message.Message
+                                </MudChatBubble>
+                            </MudChat>
+                        }
+                        <MudTextField T="string" @bind-Value="_editPrompt" Label="Ask Copilot to edit something." Variant="@Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Send" AdornmentColor="Color.Primary" Lines="4" OnAdornmentClick="OnEditPromptSendMessageClick"/>
+                    </MudStack>
+                </Well>
+            </MudTabPanel>
+            <MudTabPanel Text="Agent">
+                <Well>
+                    <MudStack>
+                        @foreach (var message in _agentMessages)
+                        {
+                            var position = message.User == User ? ChatBubblePosition.End : ChatBubblePosition.Start;
+                            <MudChat ChatPosition="position" Color="Color.Tertiary" Variant="Variant.Filled">
+                                <MudChatBubble>
+                                    @message.Message
+                                </MudChatBubble>
+                            </MudChat>
+                        }
+                        <MudTextField T="string" @bind-Value="_agentPrompt" Label="Ask Copilot to accomplish a task." Variant="@Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Send" AdornmentColor="Color.Primary" Lines="4" OnAdornmentClick="OnAgentPromptSendMessageClick"/>
+                    </MudStack>
+                </Well>
+            </MudTabPanel>
+        </MudTabs>
+
+    </ChildContent>
+</MudDrawer>
+
+@code {
+
+    [Inject] private IWorkflowDefinitionImporter WorkflowDefinitionImporter { get; set; } = null!;
+
+    private record ChatMessage(string Message, string User, Color Color);
+
+    private const string BotUser = "Elsa AI";
+    private const string User = "You";
+
+    private bool _open;
+    private string _askPrompt = "";
+    private string _editPrompt = "";
+    private string _agentPrompt = "";
+
+    private readonly List<ChatMessage> _askMessages = [new("Hi! How can I assist you today?", BotUser, Color.Primary)];
+    private readonly List<ChatMessage> _editMessages = [new("Hi! How can I assist you today?", BotUser, Color.Primary)];
+    private readonly List<ChatMessage> _agentMessages = [new("Hi! How can I assist you today?", BotUser, Color.Primary)];
+
+    private void OnClick()
+    {
+        _open = !_open;
+    }
+
+    private async Task OnAskPromptSendMessageClick()
+    {
+        if (string.IsNullOrWhiteSpace(_askPrompt))
+            return;
+
+        var userMessage = new ChatMessage(_askPrompt, User, Color.Primary);
+        _askMessages.Add(userMessage);
+        _askPrompt = "";
+        StateHasChanged();
+        
+        await Task.Delay(500);
+        
+        var botMessage = new ChatMessage("Looking into it...", BotUser, Color.Primary);
+        _askMessages.Add(botMessage);
+        StateHasChanged();
+        
+        await Task.Delay(1500);
+        
+        var botMessage2 = new ChatMessage("The workflow models a straightforward loan application process, orchestrating both a loan advisor agent and a communicator agent to generate a recommendation. If the recommendation is either positive or negative, the application is automatically accepted or rejected. If the recommendation calls for manual review, a user task is created—likely to notify a human agent to review the application manually. Would you like to know more?", BotUser, Color.Primary);
+        _askMessages.Add(botMessage2);
+        StateHasChanged();
+    }
+    
+    private async Task OnEditPromptSendMessageClick()
+    {
+        if (string.IsNullOrWhiteSpace(_editPrompt))
+            return;
+
+        var userMessage = new ChatMessage(_editPrompt, User, Color.Secondary);
+       
+        _editMessages.Add(userMessage);
+        _editPrompt = "";
+        StateHasChanged();
+       
+        await Task.Delay(1000);
+        
+        var botMessage = new ChatMessage("On it! I’ll let you know as soon as it’s ready.", BotUser, Color.Secondary);
+        _editMessages.Add(botMessage);
+        StateHasChanged();
+        
+        await ImportWorkflowJsonAsync("loan-application-2.json");
+    }
+    
+    private async Task OnAgentPromptSendMessageClick()
+    {
+        if (string.IsNullOrWhiteSpace(_agentPrompt))
+            return;
+
+        var userMessage = new ChatMessage(_agentPrompt, User, Color.Tertiary);
+       
+        _agentMessages.Add(userMessage);
+        _agentPrompt = "";
+        StateHasChanged();
+       
+        await Task.Delay(1000);
+        
+        var botMessage = new ChatMessage("On it! I’ll let you know as soon as it’s ready.", BotUser, Color.Tertiary);
+        _agentMessages.Add(botMessage);
+        StateHasChanged();
+    }
+
+    private async Task ImportWorkflowJsonAsync(string fileName)
+    {
+        var basePath = AppContext.BaseDirectory;
+        var filePath = Path.Combine(basePath, "Assets", fileName);
+        await using var stream = File.OpenRead(filePath);
+        var json = await new StreamReader(stream).ReadToEndAsync();
+        
+        var importOptions = new ImportOptions
+        {
+            ImportedCallback = OnWorkflowDefinitionImported 
+        };
+        
+        await WorkflowDefinitionImporter.ImportJsonAsync(fileName, json, importOptions);
+    }
+
+    private async Task OnWorkflowDefinitionImported(WorkflowDefinition workflowDefinition)
+    {
+        await Task.Delay(2000);
+        await InvokeAsync(() =>
+        {
+            var botMessage2 = new ChatMessage("All set! I’ve updated the workflow by replacing the communicator agents with agents that include the Email skill and removed the Send Email activities. Is there anything else you’d like me to adjust?", BotUser, Color.Secondary);
+            _editMessages.Add(botMessage2);
+            StateHasChanged();
+        });
+    }
+}

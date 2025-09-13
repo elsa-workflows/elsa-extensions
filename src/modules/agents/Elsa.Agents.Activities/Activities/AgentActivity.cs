@@ -47,7 +47,11 @@ public class AgentActivity : CodeActivity
 
         var agentInvoker = context.GetRequiredService<AgentInvoker>();
         var result = await agentInvoker.InvokeAgentAsync(AgentName, functionInput, context.CancellationToken);
-        var json = result.FunctionResult.GetValue<string>();
+        var json = result.ChatMessageContent.Content?.Trim();
+
+        if (string.IsNullOrWhiteSpace(json))
+            throw new InvalidOperationException("The message content is empty or null.");
+
         var outputType = context.ActivityDescriptor.Outputs.Single().Type;
 
         // If the target type is object, we want the JSON to be deserialized into an ExpandoObject for dynamic field access. 

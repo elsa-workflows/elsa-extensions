@@ -20,6 +20,7 @@ public static class AgentConfigExtensions
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
             ResponseFormat = agentConfig.ExecutionSettings.ResponseFormat,
             ChatSystemPrompt = agentConfig.PromptTemplate,
+            ServiceId = "default"
         };
     }
 

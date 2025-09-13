@@ -5,7 +5,7 @@
         <PackageTags>elsa extension studio module agent ai llm semantic kernel</PackageTags>
     </PropertyGroup>
 
-    <ItemGroup>
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
       <PackageReference Include="Elsa.Studio.Workflows" />
     </ItemGroup>
 
@@ -15,6 +15,36 @@
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="Assets\document-review-process.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Assets\hello-world-console.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Assets\hello-world-http.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Assets\content-pipeline.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Assets\content-writer.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Assets\customer-support.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Assets\loan-application-1.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Assets\text-document-oracle.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Assets\loan-application-2.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

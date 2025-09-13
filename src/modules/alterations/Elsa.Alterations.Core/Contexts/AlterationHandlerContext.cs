@@ -102,10 +102,23 @@ public class AlterationContext
     /// <summary>
     /// Marks the alteration as succeeded.
     /// </summary>
+    public void Succeed(Action commitAction)
+    {
+        Succeed();
+        CommitAction = () =>
+        {
+            commitAction();
+            return Task.CompletedTask;
+        };
+    }
+
+    /// <summary>
+    /// Marks the alteration as succeeded.
+    /// </summary>
     public void Succeed(string message)
     {
         HasSucceeded = true;
-        Log($"Alteration {Alteration.GetType().Name} succeeded", message, LogLevel.Information);
+        Log($"Alteration {Alteration.GetType().Name} succeeded", message);
     }
 
     /// <summary>
@@ -115,6 +128,19 @@ public class AlterationContext
     {
         Succeed(message);
         CommitAction = commitAction;
+    }
+    
+    /// <summary>
+    /// Marks the alteration as succeeded.
+    /// </summary>
+    public void Succeed(string message, Action commitAction)
+    {
+        Succeed(message);
+        CommitAction = () =>
+        {
+            commitAction();
+            return Task.CompletedTask;
+        };
     }
 
     /// <summary>

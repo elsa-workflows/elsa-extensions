@@ -3,12 +3,8 @@ using Microsoft.SemanticKernel;
 
 namespace Elsa.Agents;
 
-public record InvokeAgentResult(AgentConfig Function, FunctionResult FunctionResult)
+public record InvokeAgentResult(AgentConfig Function, ChatMessageContent ChatMessageContent)
 {
-    public object? ParseResult()
-    {
-        var targetType = Type.GetType(Function.OutputVariable.Type) ?? typeof(JsonElement);
-        var json = FunctionResult.GetValue<string>();
-        return JsonSerializer.Deserialize(json, targetType);
-    }
+
+
 }
