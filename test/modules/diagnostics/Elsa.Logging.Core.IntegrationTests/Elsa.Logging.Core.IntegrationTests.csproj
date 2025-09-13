@@ -5,16 +5,10 @@
       <ProjectReference Include="..\..\..\..\src\modules\diagnostics\Elsa.Logging\Elsa.Logging.csproj" />
     </ItemGroup>
 
-    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+    <ItemGroup>
         <PackageReference Include="Elsa.Workflows.Core" />
         <PackageReference Include="Elsa.Testing.Shared" />
         <PackageReference Include="Elsa.Testing.Shared.Integration" />
-    </ItemGroup>
-
-    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
-        <ProjectReference Include="..\..\..\..\..\elsa-core\src\common\Elsa.Testing.Shared.Integration\Elsa.Testing.Shared.Integration.csproj" />
-        <ProjectReference Include="..\..\..\..\..\elsa-core\src\common\Elsa.Testing.Shared\Elsa.Testing.Shared.csproj" />
-        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Core\Elsa.Workflows.Core.csproj" />
     </ItemGroup>
     
 </Project>
