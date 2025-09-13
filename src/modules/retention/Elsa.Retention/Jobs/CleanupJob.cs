@@ -40,7 +40,16 @@ public class CleanupJob(
 
             while (true)
             {
-                var page = await workflowInstanceStore.FindManyAsync(filter, pageArgs, cancellationToken);
+                Page<WorkflowInstance> page;
+                try
+                {
+                    page = await workflowInstanceStore.FindManyAsync(filter, pageArgs, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Exception in FindManyAsync during CleanupJob. Policy: {Policy}. Cleanup aborted for this policy.", policy.Name);
+                    break;
+                }
 
                 if (page.Items.Count == 0)
                 {
