@@ -31,9 +31,10 @@
                                    Label="@Localizer["Type"]"
                                    Variant="Variant.Outlined"
                                    HelperText="@Localizer["The type of the service."]">
-                            <MudSelectItem T="string" Value="@("OpenAIChatCompletion")">@Localizer["OpenAIChatCompletion"]</MudSelectItem>
-                            <MudSelectItem T="string" Value="@("OpenAIEmbeddingGenerator")">@Localizer["OpenAIEmbeddingGenerator"]</MudSelectItem>
-                            <MudSelectItem T="string" Value="@("OpenAITextToImage")">@Localizer["OpenAITextToImage"]</MudSelectItem>
+                            @foreach (var provider in _serviceProviders)
+                            {
+                                <MudSelectItem T="string" Value="@provider">@Localizer[provider]</MudSelectItem>
+                            }
                         </MudSelect>
 
                         <MudTextField @bind-Value="_entity.Settings"
