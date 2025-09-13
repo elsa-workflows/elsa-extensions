@@ -27,6 +27,7 @@ public partial class Service : StudioComponentBase
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         var providersApi = await ApiClientProvider.GetApiAsync<IServiceProvidersApi>();
         var response = await providersApi.ListAsync();
         _serviceProviders = response.Items;
