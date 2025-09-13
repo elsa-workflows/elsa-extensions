@@ -29,6 +29,7 @@
         <PackageVersion Include="Elsa.Resilience" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Tenants" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Tenants.AspNetCore" Version="$(ElsaVersion)"/>
+        <PackageVersion Include="Elsa.Testing.Shared" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Testing.Shared.Component" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Testing.Shared.Integration" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Scheduling" Version="$(ElsaVersion)"/>
