@@ -40,7 +40,7 @@ public class OpenTelemetryTracingActivityExecutionMiddleware(ActivityMiddlewareD
         span.SetTag("activity.tenant.id", context.WorkflowExecutionContext.Workflow.Identity.TenantId);
 
         var activityKind = context.ActivityDescriptor.Kind;
-        if (activityKind == Elsa.Workflows.ActivityKind.Job || (activityKind == Workflows.ActivityKind.Task && activity.GetRunAsynchronously()))
+        if (activityKind == Elsa.Workflows.ActivityKind.Job || (activityKind == Workflows.ActivityKind.Task && activity.GetRunAsynchronously() == true))
             span.SetTag("span.type", "job");
 
         span.AddEvent(new("executing"));
