@@ -277,6 +277,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "diagnostics", "diagnostics"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.OpenTelemetry", "src\modules\diagnostics\Elsa.OpenTelemetry\Elsa.OpenTelemetry.csproj", "{28D04FA3-4DCC-4137-8ED4-9F6F1A815909}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ai", "ai", "{E0C1E9D1-ECAF-4C86-B623-E3C748E82BCF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Integrations.AnthropicClaude", "src\modules\ai\Elsa.Integrations.AnthropicClaude\Elsa.Integrations.AnthropicClaude.csproj", "{A83B6B99-58AA-4DB2-801A-514361789759}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ai", "ai", "{5F052B47-53DB-43B8-852D-D52DC967DE7B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Integrations.AnthropicClaude.Tests", "test\modules\ai\Elsa.Integrations.AnthropicClaude.Tests\Elsa.Integrations.AnthropicClaude.Tests.csproj", "{793F0184-6F08-4D9A-8EC2-16A5560AD9B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -631,6 +639,14 @@ Global
 		{28D04FA3-4DCC-4137-8ED4-9F6F1A815909}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28D04FA3-4DCC-4137-8ED4-9F6F1A815909}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28D04FA3-4DCC-4137-8ED4-9F6F1A815909}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A83B6B99-58AA-4DB2-801A-514361789759}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A83B6B99-58AA-4DB2-801A-514361789759}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A83B6B99-58AA-4DB2-801A-514361789759}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A83B6B99-58AA-4DB2-801A-514361789759}.Release|Any CPU.Build.0 = Release|Any CPU
+		{793F0184-6F08-4D9A-8EC2-16A5560AD9B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{793F0184-6F08-4D9A-8EC2-16A5560AD9B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{793F0184-6F08-4D9A-8EC2-16A5560AD9B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{793F0184-6F08-4D9A-8EC2-16A5560AD9B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -755,6 +771,10 @@ Global
 		{8D0EC628-350F-47FC-8B36-DD98B4B7CC93} = {30CF0330-4B09-4784-B499-46BED303810B}
 		{28D04FA3-4DCC-4137-8ED4-9F6F1A815909} = {8D0EC628-350F-47FC-8B36-DD98B4B7CC93}
 		{04265302-AF6B-4627-807C-DE9E1699D7C9} = {30CF0330-4B09-4784-B499-46BED303810B}
+		{E0C1E9D1-ECAF-4C86-B623-E3C748E82BCF} = {30CF0330-4B09-4784-B499-46BED303810B}
+		{A83B6B99-58AA-4DB2-801A-514361789759} = {E0C1E9D1-ECAF-4C86-B623-E3C748E82BCF}
+		{5F052B47-53DB-43B8-852D-D52DC967DE7B} = {3DDE6F89-531C-47F8-9CD7-7A4E6984FA48}
+		{793F0184-6F08-4D9A-8EC2-16A5560AD9B7} = {5F052B47-53DB-43B8-852D-D52DC967DE7B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11A771DA-B728-445E-8A88-AE1C84C3B3A6}
