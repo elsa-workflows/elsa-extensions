@@ -1,9 +1,11 @@
 using System.Text.Encodings.Web;
+using Elsa.Agents;
 using Elsa.Extensions;
 using Elsa.Features.Services;
 using Elsa.Workflows.Api;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
+using static Elsa.TestServer.Web.DatabaseConfiguration;
 
 // ReSharper disable RedundantAssignment
 var builder = WebApplication.CreateBuilder(args);
@@ -42,7 +44,17 @@ services
             {
                 http.ConfigureHttpOptions = options => configuration.GetSection("Http").Bind(options);
                 http.UseCache();
-            });
+            })
+            .UseAgentActivities()
+            .UseAgentPersistence(persistence =>
+            {
+                persistence.UseEntityFrameworkCore(ef =>
+                {
+                    ConfigureEntityFrameworkCoreForAgents(ef, configuration);
+                });
+            })
+            .UseAgentsApi()
+            ;
 
         Elsa.TestServer.Web.Program.ConfigureForTest?.Invoke(elsa);
     });
