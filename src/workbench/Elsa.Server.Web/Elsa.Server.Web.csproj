@@ -13,6 +13,13 @@
 		<PackageReference Include="Elsa.Expressions.Liquid" />
 		<PackageReference Include="Elsa.Expressions.Python" />
 		<PackageReference Include="Elsa.Http" />
+        <PackageReference Include="Elsa.Persistence.EFCore.Common" />
+        <PackageReference Include="Elsa.Persistence.EFCore.MySql" />
+        <PackageReference Include="Elsa.Persistence.EFCore.Oracle" />
+        <PackageReference Include="Elsa.Persistence.EFCore.PostgreSql" />
+        <PackageReference Include="Elsa.Persistence.EFCore.Sqlite" />
+        <PackageReference Include="Elsa.Persistence.EFCore.SqlServer" />
+        <PackageReference Include="Elsa.Persistence.EFCore" />
         <PackageReference Include="Elsa.Tenants" />
         <PackageReference Include="Elsa.Tenants.AspNetCore" />
 		<PackageReference Include="Elsa.Workflows.Api" />
@@ -51,13 +58,6 @@
 	  <ProjectReference Include="..\..\modules\http\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper.Migrations\Elsa.Persistence.Dapper.Migrations.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper\Elsa.Persistence.Dapper.csproj" />
-	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore.Common\Elsa.Persistence.EFCore.Common.csproj" />
-	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore.MySql\Elsa.Persistence.EFCore.MySql.csproj" />
-	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore.Oracle\Elsa.Persistence.EFCore.Oracle.csproj" />
-	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore.PostgreSql\Elsa.Persistence.EFCore.PostgreSql.csproj" />
-	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore.Sqlite\Elsa.Persistence.EFCore.Sqlite.csproj" />
-	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore.SqlServer\Elsa.Persistence.EFCore.SqlServer.csproj" />
-	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore\Elsa.Persistence.EFCore.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.MongoDb\Elsa.Persistence.MongoDb.csproj" />
 	  <ProjectReference Include="..\..\modules\retention\Elsa.Retention\Elsa.Retention.csproj" />
 	  <ProjectReference Include="..\..\modules\runtimes\Elsa.Workflows.Runtime.ProtoActor\Elsa.Workflows.Runtime.ProtoActor.csproj" />
