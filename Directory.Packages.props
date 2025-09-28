@@ -5,6 +5,7 @@
     </PropertyGroup>
     <ItemGroup Label="Elsa">
         <PackageVersion Include="Elsa" Version="$(ElsaVersion)"/>
+        <PackageVersion Include="Elsa.Alterations" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Api.Common" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Common" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Caching" Version="$(ElsaVersion)"/>
