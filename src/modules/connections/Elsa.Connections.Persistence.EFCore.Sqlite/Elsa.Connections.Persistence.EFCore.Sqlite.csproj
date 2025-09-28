@@ -12,8 +12,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\persistence\Elsa.Persistence.EFCore.Sqlite\Elsa.Persistence.EFCore.Sqlite.csproj" />
 		<ProjectReference Include="..\Elsa.Connections.Persistence.EFCore\Elsa.Connections.Persistence.EFCore.csproj" />
 	</ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Persistence.EFCore.Sqlite\Elsa.Persistence.EFCore.Sqlite.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="Elsa.Persistence.EFCore.Sqlite" />
+    </ItemGroup>
 
 </Project>
