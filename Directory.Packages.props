@@ -155,8 +155,8 @@
         <PackageVersion Include="Proto.Persistence.SqlServer" Version="1.7.0"/>
         <PackageVersion Include="Proto.Remote" Version="1.7.0"/>
         <PackageVersion Include="pythonnet" Version="3.1.0-preview2024-09-06"/>
-        <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.14.0"/>
-        <PackageVersion Include="Quartz.Serialization.Json" Version="3.14.0"/>
+        <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.15.0"/>
+        <PackageVersion Include="Quartz.Serialization.Json" Version="3.15.0"/>
         <PackageVersion Include="Refit" Version="8.0.0"/>
         <PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0"/>
         <PackageVersion Include="Serilog" Version="4.3.0"/>
