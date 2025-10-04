@@ -4,7 +4,7 @@ using Quartz;
 
 namespace Elsa.Scheduling.Quartz.Services;
 
-internal class JobKeyProvider(ITenantAccessor tenantAccessor) : IJobKeyProvider
+public class JobKeyProvider(ITenantAccessor tenantAccessor) : IJobKeyProvider
 {
     public JobKey GetJobKey<TJob>() where TJob : IJob
     {
