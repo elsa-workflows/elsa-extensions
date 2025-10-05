@@ -118,7 +118,7 @@ public class SqlEvaluator() : ISqlEvaluator
 
         // TODO: Remove deprecated keys in a future major release and re-order these.
         // Handle custom keys
-        return key switch
+        var switchResult = key switch
         {
             "Workflow.Definition.Id" => executionContext.Workflow.Identity.DefinitionId,    // Deprecated, use {{Workflow.Identity.DefinitionId}} instead.
             "Workflow.Definition.Version.Id" => executionContext.Workflow.Identity.Id,      // Deprecated, use {{Workflow.Identity.Id}} instead.
@@ -126,8 +126,10 @@ public class SqlEvaluator() : ISqlEvaluator
             "Workflow.Instance.Id" => activityContext.WorkflowExecutionContext.Id,          // Deprecated, use {{Activity.WorkflowExecutionContext.Id}} instead.
             "Correlation.Id" => activityContext.WorkflowExecutionContext.CorrelationId,     // Deprecated, use {{Activity.WorkflowExecutionContext.CorrelationId}} instead.
             "LastResult" => expressionContext.GetLastResult(),
-            //_ => throw new NullReferenceException($"No matching property found for {{{{{key}}}}}.")
+            _ => null //throw new NullReferenceException($"No matching property found for {{{{{key}}}}}.")
         };
+        if (switchResult is not null)
+            return switchResult;
 
         if (key.StartsWith("Workflow."))
         {
