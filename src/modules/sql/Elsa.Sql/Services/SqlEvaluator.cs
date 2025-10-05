@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using System.Collections;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using Elsa.Expressions.Models;
 using Elsa.Extensions;
 using Elsa.Sql.Contracts;
@@ -75,20 +78,181 @@ public class SqlEvaluator() : ISqlEvaluator
 
     private object? ResolveValue(string key)
     {
+        if (key.StartsWith("Input."))
+        {
+            var (rootKey, nestedPath) = GetRootAndPath(key, "Input.");
+            executionContext.Input.TryGetValue(rootKey, out var root);
+            return ResolveNestedValue(root, nestedPath);
+        }
+        if (key.StartsWith("Output."))
+        {
+            var (rootKey, nestedPath) = GetRootAndPath(key, "Output.");
+            executionContext.Output.TryGetValue(rootKey, out var root);
+            return ResolveNestedValue(root, nestedPath);
+        }
+        if (key.StartsWith("Variable."))
+        {
+            var (rootKey, nestedPath) = GetRootAndPath(key, "Variable.");
+            var root = expressionContext.GetVariableInScope(rootKey);
+            return ResolveNestedValue(root, nestedPath);
+        }
+        // Deprecated, use {{Variable.<VariableName>}} instead.
+        if (key.StartsWith("Variables."))
+        {
+            var (rootKey, nestedPath) = GetRootAndPath(key, "Variables.");
+            var root = expressionContext.GetVariableInScope(rootKey);
+            return ResolveNestedValue(root, nestedPath);
+        }
+        if (key.StartsWith("Activity."))
+        {
+            var (rootKey, nestedPath) = GetRootAndPath(key, "Activity.");
+            var root = activityContext;
+            return ResolveNestedValue(root, nestedPath);
+        }
+        if (key.StartsWith("Execution."))
+        {
+            var (rootKey, nestedPath) = GetRootAndPath(key, "Execution.");
+            var root = executionContext;
+            return ResolveNestedValue(root, nestedPath);
+        }
+
+        // TODO: Remove deprecated keys in a future major release and re-order these.
+        // Handle custom keys
         return key switch
         {
-            "Workflow.Definition.Id" => executionContext.Workflow.Identity.DefinitionId,
-            "Workflow.Definition.Version.Id" => executionContext.Workflow.Identity.Id,
-            "Workflow.Definition.Version" => executionContext.Workflow.Identity.Version,
-            "Workflow.Instance.Id" => activityContext.WorkflowExecutionContext.Id,
-            "Correlation.Id" => activityContext.WorkflowExecutionContext.CorrelationId,
+            "Workflow.Definition.Id" => executionContext.Workflow.Identity.DefinitionId,    // Deprecated, use {{Workflow.Identity.DefinitionId}} instead.
+            "Workflow.Definition.Version.Id" => executionContext.Workflow.Identity.Id,      // Deprecated, use {{Workflow.Identity.Id}} instead.
+            "Workflow.Definition.Version" => executionContext.Workflow.Identity.Version,    // Deprecated, use {{Workflow.Identity.Version}} instead.
+            "Workflow.Instance.Id" => activityContext.WorkflowExecutionContext.Id,          // Deprecated, use {{Activity.WorkflowExecutionContext.Id}} instead.
+            "Correlation.Id" => activityContext.WorkflowExecutionContext.CorrelationId,     // Deprecated, use {{Activity.WorkflowExecutionContext.CorrelationId}} instead.
             "LastResult" => expressionContext.GetLastResult(),
-            var i when i.StartsWith("Input.") => executionContext.Input.TryGetValue(i.Substring(6), out var v) ? v : null,
-            var o when o.StartsWith("Output.") => executionContext.Output.TryGetValue(o.Substring(7), out var v) ? v : null,
-            var v when v.StartsWith("Variable.") => expressionContext.GetVariableInScope(v.Substring(9)) ?? null,
-            // OBSOLETE: This is deprecated and will be removed in a future version. Use 'Variable.' instead.
-            var v when v.StartsWith("Variables.") => expressionContext.GetVariableInScope(v.Substring(10)) ?? null,
-            _ => throw new NullReferenceException($"No matching property found for {{{{{key}}}}}.")
+            //_ => throw new NullReferenceException($"No matching property found for {{{{{key}}}}}.")
         };
+
+        if (key.StartsWith("Workflow."))
+        {
+            var (rootKey, nestedPath) = GetRootAndPath(key, "Workflow.");
+            var root = executionContext.Workflow;
+            return ResolveNestedValue(root, nestedPath);
+        }
+
+        throw new NullReferenceException($"No matching property found for {{{{{key}}}}}.");
+    }
+
+    /// <summary>
+    /// Extracts the root key and the nested path from the specified key, based on the given prefix.
+    /// </summary>
+    /// <param name="key">The full key from which the root key and nested path are derived. Must start with the specified <paramref
+    /// name="prefix"/>.</param>
+    /// <param name="prefix">The prefix to remove from the beginning of <paramref name="key"/> to determine the root key and nested path.</param>
+    /// <returns>A tuple containing the root key and the nested path: <list type="bullet"> <item><description><c>rootKey</c>: The
+    /// portion of the key before the first '.' or '[' after the prefix.</description></item>
+    /// <item><description><c>nestedPath</c>: The remaining portion of the key after the root key. Returns an empty
+    /// string if no '.' or '[' is found.</description></item> </list></returns>
+    private (string rootKey, string nestedPath) GetRootAndPath(string key, string prefix)
+    {
+        var path = key.Substring(prefix.Length);
+
+        // Find the first '.' or '[' to split rootKey and nestedPath
+        var dotIndex = path.IndexOf('.');
+        var bracketIndex = path.IndexOf('[');
+
+        int splitIndex;
+        if (dotIndex == -1 && bracketIndex == -1)
+            return (path, "");
+        if (dotIndex == -1)
+            splitIndex = bracketIndex;
+        else if (bracketIndex == -1)
+            splitIndex = dotIndex;
+        else
+            splitIndex = Math.Min(dotIndex, bracketIndex);
+
+        return (path.Substring(0, splitIndex), path.Substring(splitIndex));
+    }
+
+    /// <summary>
+    /// Resolves nested property/array paths from an object.
+    /// Supports POCOs, ExpandoObject, IDictionary, arrays, lists, and JSON objects.
+    /// </summary>
+    private object? ResolveNestedValue(object? root, string path)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(path))
+            return root;
+
+        // Split path into segments, handling array indices
+        var segments = Regex.Matches(path, @"([^.[]+)|\[(\d+)\]")
+            .Select(m => m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value)
+            .ToList();
+
+        object? current = root;
+        foreach (var segment in segments)
+        {
+            if (current == null) throw new NullReferenceException($"No matching property found for {{{{{segment}}}}}.");
+
+            if (int.TryParse(segment, out int idx))
+            {
+                if (current is Array arr)
+                {
+                    if (idx < 0 || idx >= arr.Length) throw new IndexOutOfRangeException($"Index {idx} out of range.");
+                    current = arr.GetValue(idx);
+                }
+                else if (current is IList list)
+                {
+                    if (idx < 0 || idx >= list.Count) throw new IndexOutOfRangeException($"Index {idx} out of range.");
+                    current = list[idx];
+                }
+                else if (current is JsonElement jsonElem && jsonElem.ValueKind == JsonValueKind.Array)
+                {
+                    if (idx < 0 || idx >= jsonElem.GetArrayLength()) throw new IndexOutOfRangeException($"Index {idx} out of range.");
+                    current = jsonElem[idx];
+                }
+                else
+                {
+                    throw new NullReferenceException($"No matching array or list found for index [{idx}].");
+                }
+            }
+            else
+            {
+                if (current is IDictionary<string, object> dict)
+                {
+                    if (!dict.ContainsKey(segment)) throw new KeyNotFoundException($"Key '{segment}' not found.");
+                    current = dict[segment];
+                }
+                else if (current is JsonElement jsonElem)
+                {
+                    if (jsonElem.ValueKind == JsonValueKind.Object)
+                    {
+                        if (!jsonElem.TryGetProperty(segment, out var prop)) throw new KeyNotFoundException($"Property '{segment}' not found.");
+                        current = prop;
+                    }
+                    else
+                    {
+                        throw new NullReferenceException($"No matching property found for {{{{{segment}}}}}.");
+                    }
+                }
+                else
+                {
+                    var propInfo = current.GetType().GetProperty(segment);
+                    if (propInfo == null) throw new NullReferenceException($"Property '{segment}' not found on type '{current.GetType().Name}'.");
+                    current = propInfo.GetValue(current);
+                }
+            }
+        }
+
+        // Unwrap JsonElement, if needed
+        if (current is JsonElement elem)
+        {
+            switch (elem.ValueKind)
+            {
+                case JsonValueKind.String: return elem.GetString();
+                case JsonValueKind.Number: return elem.GetDouble();
+                case JsonValueKind.True: return true;
+                case JsonValueKind.False: return false;
+                case JsonValueKind.Object:
+                case JsonValueKind.Array: return elem;
+                case JsonValueKind.Null: return null;
+            }
+        }
+        return current;
     }
 }
