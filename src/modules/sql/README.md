@@ -162,23 +162,17 @@ SELECT * FROM [Users] WHERE [Name] = @p1 AND [Age] > @p2;
 ```
 
 
-### Supported Expressions
+### Expressions
+
+You can use Liquid-like expressions to access Input, Output and Variable values in your query.
 
 ```liquid
-{{LastResult}} 
 {{Input.<InputName>}}
 {{Output.<OutputName>}}
 {{Variable.<VariableName>}}
-{{Variables.<VariableName>}}
-{{Workflow.Definition.Id}}
-{{Workflow.Definition.Version.Id}}
-{{Workflow.Definition.Version}}
-{{Workflow.Instance.Id}}
-{{Correlation.Id}}
 ```
 
-### Enhanced expressions (3.6.0 and later)
-Expressions can now also resolve nested properties in:
+Expressions can also access objects with nested properties. The following objects are supported:
 - POCOs
 - ExpandoObject
 - IDictionary
@@ -186,23 +180,29 @@ Expressions can now also resolve nested properties in:
 - Lists
 - JSON objects
 
-There is also added support for accessing properties in:
+```liquid
+{{Input.MyObjectArr[0]}}
+{{Variable.MyObject.User.Id}}
+{{Variable.MyObject.Users[3].Name}}
+{{Activity.MyObject.Users[2].Age}}
+```
+
+There is also added support for accessing workflow related properties:
 - `ActivityContext`, aliased as `Activity`
 - `ExecutionContext`, aliased as `Execution`
 - `ExecutionContext.Workflow`, aliased as `Workflow`
 
-To access these properties, you can use the following syntax:
-
 ```liquid
-{{Variable.MyObject.User.Id}}
-{{Variable.MyObject.Users[3].Name}}
-{{Activity.MyObject.Users[2].Age}}
+{{LastResult}} 
 {{Workflow.Identity.DefinitionId}}
 {{Activity.WorkflowExecutionContext.Id}}
 ```
 
-With these new improvements the following expression keys will be deprecated and removed in a future release.
-To continue using these properties, please update your expressions as follows:
+### Breaking Expression Changes in 3.6.0
+
+As the evaluator can now use workflow properties directly, the previous hard coded expression keys have been be removed.
+To access the previous key values you will need to update your expressions.
+
 ```liquid
 {{Variables.<VariableName>}}        -->     {{Variable.<VariableName>}}
 {{Workflow.Definition.Id}}          -->     {{Workflow.Identity.DefinitionId}}

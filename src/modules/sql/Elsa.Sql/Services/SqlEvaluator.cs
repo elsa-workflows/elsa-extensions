@@ -78,67 +78,49 @@ public class SqlEvaluator() : ISqlEvaluator
 
     private object? ResolveValue(string key)
     {
-        if (key.StartsWith("Input."))
+        switch (key)
         {
-            var (rootKey, nestedPath) = GetRootAndPath(key, "Input.");
-            executionContext.Input.TryGetValue(rootKey, out var root);
-            return ResolveNestedValue(root, nestedPath);
+            case var k when k.StartsWith("Input."):
+                {
+                    var (rootKey, nestedPath) = GetRootAndPath(k, "Input.");
+                    executionContext.Input.TryGetValue(rootKey, out var root);
+                    return ResolveNestedValue(root, nestedPath);
+                }
+            case var k when k.StartsWith("Output."):
+                {
+                    var (rootKey, nestedPath) = GetRootAndPath(k, "Output.");
+                    executionContext.Output.TryGetValue(rootKey, out var root);
+                    return ResolveNestedValue(root, nestedPath);
+                }
+            case var k when k.StartsWith("Variable."):
+                {
+                    var (rootKey, nestedPath) = GetRootAndPath(k, "Variable.");
+                    var root = expressionContext.GetVariableInScope(rootKey);
+                    return ResolveNestedValue(root, nestedPath);
+                }
+            case var k when k.StartsWith("Activity."):
+                {
+                    var (rootKey, nestedPath) = GetRootAndPath(k, "Activity.");
+                    var root = activityContext;
+                    return ResolveNestedValue(root, nestedPath);
+                }
+            case var k when k.StartsWith("Execution."):
+                {
+                    var (rootKey, nestedPath) = GetRootAndPath(k, "Execution.");
+                    var root = executionContext;
+                    return ResolveNestedValue(root, nestedPath);
+                }
+            case var k when k.StartsWith("Workflow."):
+                {
+                    var (rootKey, nestedPath) = GetRootAndPath(k, "Workflow.");
+                    var root = executionContext.Workflow;
+                    return ResolveNestedValue(root, nestedPath);
+                }
+            case "LastResult":
+                return expressionContext.GetLastResult();
+            default:
+                throw new NullReferenceException($"No matching property found for {{{{{key}}}}}.");
         }
-        if (key.StartsWith("Output."))
-        {
-            var (rootKey, nestedPath) = GetRootAndPath(key, "Output.");
-            executionContext.Output.TryGetValue(rootKey, out var root);
-            return ResolveNestedValue(root, nestedPath);
-        }
-        if (key.StartsWith("Variable."))
-        {
-            var (rootKey, nestedPath) = GetRootAndPath(key, "Variable.");
-            var root = expressionContext.GetVariableInScope(rootKey);
-            return ResolveNestedValue(root, nestedPath);
-        }
-        // Deprecated, use {{Variable.<VariableName>}} instead.
-        if (key.StartsWith("Variables."))
-        {
-            var (rootKey, nestedPath) = GetRootAndPath(key, "Variables.");
-            var root = expressionContext.GetVariableInScope(rootKey);
-            return ResolveNestedValue(root, nestedPath);
-        }
-        if (key.StartsWith("Activity."))
-        {
-            var (rootKey, nestedPath) = GetRootAndPath(key, "Activity.");
-            var root = activityContext;
-            return ResolveNestedValue(root, nestedPath);
-        }
-        if (key.StartsWith("Execution."))
-        {
-            var (rootKey, nestedPath) = GetRootAndPath(key, "Execution.");
-            var root = executionContext;
-            return ResolveNestedValue(root, nestedPath);
-        }
-
-        // TODO: Remove deprecated keys in a future major release and re-order these.
-        // Handle custom keys
-        var switchResult = key switch
-        {
-            "Workflow.Definition.Id" => executionContext.Workflow.Identity.DefinitionId,    // Deprecated, use {{Workflow.Identity.DefinitionId}} instead.
-            "Workflow.Definition.Version.Id" => executionContext.Workflow.Identity.Id,      // Deprecated, use {{Workflow.Identity.Id}} instead.
-            "Workflow.Definition.Version" => executionContext.Workflow.Identity.Version,    // Deprecated, use {{Workflow.Identity.Version}} instead.
-            "Workflow.Instance.Id" => activityContext.WorkflowExecutionContext.Id,          // Deprecated, use {{Activity.WorkflowExecutionContext.Id}} instead.
-            "Correlation.Id" => activityContext.WorkflowExecutionContext.CorrelationId,     // Deprecated, use {{Activity.WorkflowExecutionContext.CorrelationId}} instead.
-            "LastResult" => expressionContext.GetLastResult(),
-            _ => null //throw new NullReferenceException($"No matching property found for {{{{{key}}}}}.")
-        };
-        if (switchResult is not null)
-            return switchResult;
-
-        if (key.StartsWith("Workflow."))
-        {
-            var (rootKey, nestedPath) = GetRootAndPath(key, "Workflow.");
-            var root = executionContext.Workflow;
-            return ResolveNestedValue(root, nestedPath);
-        }
-
-        throw new NullReferenceException($"No matching property found for {{{{{key}}}}}.");
     }
 
     /// <summary>
