@@ -39,6 +39,7 @@ This package extends [Elsa Workflows](https://github.com/elsa-workflows/elsa-cor
 - Automatic sql parameterization of Variables, Inputs, Outputs and other keywords to help Sql injection.
 - Add-in approach to each database provider, with the ability to easily integrate other providers using the `ISqlClient` interface.
 - Syntax highlighting for SQL
+- `NEW` (3.6.0)  - Support for resolving JSON, POCO's, Objects and ExpandoObjects. 
 
 ---
 
@@ -161,17 +162,54 @@ SELECT * FROM [Users] WHERE [Name] = @p1 AND [Age] > @p2;
 ```
 
 
-### Supported Expressions
+### Expressions
 
-```csharp
-{{Workflow.Definition.Id}}
-{{Workflow.Definition.Version}}
-{{Workflow.Instance.Id}} 
-{{Correlation.Id}}
-{{LastResult}} 
+You can use Liquid-like expressions to access Input, Output and Variable values in your query.
+
+```liquid
 {{Input.<InputName>}}
 {{Output.<OutputName>}}
 {{Variable.<VariableName>}}
+```
+
+Expressions can also access objects with nested properties. The following objects are supported:
+- POCOs
+- ExpandoObject
+- IDictionary
+- Arrays
+- Lists
+- JSON objects
+
+```liquid
+{{Input.MyObjectArr[0]}}
+{{Variable.MyObject.User.Id}}
+{{Variable.MyObject.Users[3].Name}}
+{{Activity.MyObject.Users[2].Age}}
+```
+
+There is also added support for accessing workflow related properties:
+- `ActivityContext`, aliased as `Activity`
+- `ExecutionContext`, aliased as `Execution`
+- `ExecutionContext.Workflow`, aliased as `Workflow`
+
+```liquid
+{{LastResult}} 
+{{Workflow.Identity.DefinitionId}}
+{{Activity.WorkflowExecutionContext.Id}}
+```
+
+### Breaking Expression Changes in 3.6.0
+
+As the evaluator can now use workflow properties directly, the previous hard coded expression keys have been be removed.
+To access the previous key values you will need to update your expressions.
+
+```liquid
+{{Variables.<VariableName>}}        -->     {{Variable.<VariableName>}}
+{{Workflow.Definition.Id}}          -->     {{Workflow.Identity.DefinitionId}}
+{{Workflow.Definition.Version.Id}}  -->     {{Workflow.Identity.Id}}
+{{Workflow.Definition.Version}}     -->     {{Workflow.Identity.Version}}
+{{Workflow.Instance.Id}}            -->     {{Activity.WorkflowExecutionContext.Id}}
+{{Correlation.Id}}                  -->     {{Activity.WorkflowExecutionContext.CorrelationId}}
 ```
 
 ---
