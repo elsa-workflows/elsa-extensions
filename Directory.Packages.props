@@ -92,7 +92,7 @@
         <PackageVersion Include="Hangfire.SqlServer" Version="1.8.20"/>
         <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.12"/>
         <PackageVersion Include="Humanizer.Core" Version="2.14.1"/>
-        <PackageVersion Include="JetBrains.Annotations" Version="2025.2.0"/>
+        <PackageVersion Include="JetBrains.Annotations" Version="2025.2.2"/>
         <PackageVersion Include="Jint" Version="4.2.2"/>
         <PackageVersion Include="MailKit" Version="4.12.1"/>
         <PackageVersion Include="MassTransit" Version="8.4.1"/>
