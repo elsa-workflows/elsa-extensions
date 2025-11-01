@@ -144,8 +144,7 @@ dotnet add package Elsa.Gmail
 ```
 To enable it in Elsa Workflows:
 ```csharp
-services.AddElsa()
-        .AddGmail();
+services.AddElsa(elsa => elsa.AddGmail());
 ```
 
 ## 🔥 Contributing
