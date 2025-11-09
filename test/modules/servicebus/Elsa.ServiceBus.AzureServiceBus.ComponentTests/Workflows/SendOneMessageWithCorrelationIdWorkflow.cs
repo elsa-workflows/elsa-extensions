@@ -9,7 +9,7 @@ public class SendOneMessageWithCorrelationIdWorkflow : WorkflowBase
 {
     public static readonly string Topic = nameof(SendOneMessageWithCorrelationIdWorkflow);
     public static readonly string CorrelationId = Guid.NewGuid().ToString();
-    public static readonly object Signal1 = new();
+    public static readonly string Signal1 = "signal-1";
 
     protected override void Build(IWorkflowBuilder builder)
     {
