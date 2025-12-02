@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Reflection;
-using Elsa.Extensions;
 using Elsa.Telnyx.Activities;
 using Elsa.Telnyx.Attributes;
 using Elsa.Telnyx.Helpers;
@@ -14,7 +13,7 @@ namespace Elsa.Telnyx.Providers;
 /// <summary>
 /// Provides activity descriptors based on Telnyx webhook event payload types (types inheriting <see cref="Payload"/>. 
 /// </summary>
-public class WebhookEventActivityProvider(IActivityFactory activityFactory, IActivityDescriber activityDescriber) : IActivityProvider
+public class WebhookEventActivityProvider(IActivityDescriber activityDescriber) : IActivityProvider
 {
     /// <inheritdoc />
     public async ValueTask<IEnumerable<ActivityDescriptor>> GetDescriptorsAsync(CancellationToken cancellationToken = default)
@@ -56,7 +55,7 @@ public class WebhookEventActivityProvider(IActivityFactory activityFactory, IAct
             Outputs = { outputPropertyDescriptor },
             Constructor = context =>
             {
-                var activity = activityFactory.Create<WebhookEvent>(context);
+                var activity = context.CreateActivity<WebhookEvent>();
                 activity.Type = typeName;
                 activity.EventType = webhookAttribute!.EventType;
 

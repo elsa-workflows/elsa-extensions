@@ -13,6 +13,7 @@ service WorkflowInstance {
   rpc CreateAndRun (CreateAndRunWorkflowInstanceRequest) returns (RunWorkflowInstanceResponse);
   rpc Stop (Empty) returns (Empty);
   rpc Cancel (Empty) returns (Empty);
+  rpc Delete (Empty) returns (Empty);
   rpc ExportState(Empty) returns (ExportWorkflowStateResponse);
   rpc ImportState(ImportWorkflowStateRequest) returns (Empty);
   rpc InstanceExists(Empty) returns (InstanceExistsResponse);

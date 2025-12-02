@@ -14,11 +14,6 @@
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     </ItemGroup>
 
-    <!-- System.Linq.Async only for .NET 8 and 9 - .NET 10 has native async LINQ support -->
-    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0'">
-        <PackageReference Include="System.Linq.Async" />
-    </ItemGroup>
-
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Workflows.Runtime" />
     </ItemGroup>

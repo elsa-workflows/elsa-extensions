@@ -53,7 +53,7 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
     /// <summary>
     /// A delegate that returns an instance of <see cref="GrpcNetRemoteConfig"/> to be used by the actor system.
     /// </summary>
-    public Func<IServiceProvider, GrpcNetRemoteConfig> ConfigureRemoteConfig { get; set; } = CreateDefaultRemoteConfig;
+    public Func<IServiceProvider, RemoteConfig> ConfigureRemoteConfig { get; set; } = CreateDefaultRemoteConfig;
 
     /// <summary>
     /// A delegate that returns an instance of a concrete implementation of <see cref="IProvider"/> to use for persisting events and snapshots.
@@ -185,8 +185,8 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
         return config;
     }
 
-    private static GrpcNetRemoteConfig CreateDefaultRemoteConfig(IServiceProvider serviceProvider)
+    private static RemoteConfig CreateDefaultRemoteConfig(IServiceProvider serviceProvider)
     {
-        return GrpcNetRemoteConfig.BindToLocalhost();
+        return RemoteConfig.BindToLocalhost();
     }
 }

@@ -14,7 +14,7 @@ namespace Elsa.OrchardCore.ActivityProviders;
 /// An activity provider that generates activity types based on Orchard content type events.
 /// </summary>
 [UsedImplicitly]
-public class OrchardContentItemsEventActivityProvider(IOptions<OrchardCoreOptions> options, IActivityFactory activityFactory, IActivityDescriber activityDescriber) : IActivityProvider
+public class OrchardContentItemsEventActivityProvider(IOptions<OrchardCoreOptions> options, IActivityDescriber activityDescriber) : IActivityProvider
 {
     /// <inheritdoc />
     public async ValueTask<IEnumerable<ActivityDescriptor>> GetDescriptorsAsync(CancellationToken cancellationToken = default)
@@ -50,7 +50,7 @@ public class OrchardContentItemsEventActivityProvider(IOptions<OrchardCoreOption
         activityDescriptor.Description = description;
         activityDescriptor.Constructor = context =>
         {
-            var activity = (ContentItemEvent)activityFactory.Create(activityType, context);
+            var activity = context.CreateActivity<ContentItemEvent>();
             activity.Type = fullTypeName;
             activity.ContentType = contentType;
             activity.EventType = eventType;
