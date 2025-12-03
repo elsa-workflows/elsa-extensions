@@ -559,7 +559,7 @@ services
                     var kubernetesConfig = new KubernetesProviderConfig();
                     var clusterProvider = new KubernetesProvider(kubernetesConfig);
 
-                    var remoteConfig = GrpcNetRemoteConfig
+                    var remoteConfig = RemoteConfig
                         .BindToAllInterfaces(advertisedHost: configuration["ProtoActor:AdvertisedHost"]) // Environment variable to be provided by Kubernetes using pod.status.podIP.
                         .WithLogLevelForDeserializationErrors(LogLevel.Critical)
                         .WithRemoteDiagnostics(true);

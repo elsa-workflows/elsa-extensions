@@ -26,7 +26,7 @@ public class Endpoint(IAgentManager agentManager) : ElsaEndpoint<Request, AgentM
         
         if(entity == null)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return null!;
         }
         

@@ -8,8 +8,15 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="Elsa" />
         <PackageReference Include="Octokit" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa\Elsa.csproj" />        
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="Elsa" />
     </ItemGroup>
 
 </Project>

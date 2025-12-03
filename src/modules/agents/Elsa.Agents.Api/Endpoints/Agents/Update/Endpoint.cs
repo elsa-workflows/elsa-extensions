@@ -27,7 +27,7 @@ public class Endpoint(IAgentManager agentManager) : ElsaEndpoint<AgentInputModel
 
         if (entity == null)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return null!;
         }
 
@@ -36,7 +36,7 @@ public class Endpoint(IAgentManager agentManager) : ElsaEndpoint<AgentInputModel
         if (isNameDuplicate)
         {
             AddError("Another agent already exists with the specified name");
-            await SendErrorsAsync(cancellation: ct);
+            await Send.ErrorsAsync(cancellation: ct);
             return entity.ToModel();
         }
 

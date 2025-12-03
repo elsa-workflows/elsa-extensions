@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
@@ -16,6 +16,13 @@
 		<PackageReference Include="Elsa.Expressions.Liquid" />
 		<PackageReference Include="Elsa.Expressions.Python" />
         <PackageReference Include="Elsa.Http" />
+        <PackageReference Include="Elsa.Persistence.EFCore.Common" />
+        <PackageReference Include="Elsa.Persistence.EFCore.MySql" />
+        <PackageReference Include="Elsa.Persistence.EFCore.Oracle" />
+        <PackageReference Include="Elsa.Persistence.EFCore.PostgreSql" />
+        <PackageReference Include="Elsa.Persistence.EFCore.Sqlite" />
+        <PackageReference Include="Elsa.Persistence.EFCore.SqlServer" />
+        <PackageReference Include="Elsa.Persistence.EFCore" />
         <PackageReference Include="Elsa.Identity" />
         <PackageReference Include="Elsa.Scheduling" />
 		<PackageReference Include="Elsa.Workflows.Api" />
@@ -43,10 +50,6 @@
 		<ProjectReference Include="..\..\modules\connections\Elsa.Connections.Persistence\Elsa.Connections.Persistence.csproj" />
 		<ProjectReference Include="..\..\modules\email\Elsa.Email\Elsa.Email.csproj" />
 		<ProjectReference Include="..\..\modules\http\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
-		<ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore.MySql\Elsa.Persistence.EFCore.MySql.csproj" />
-		<ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore.Oracle\Elsa.Persistence.EFCore.Oracle.csproj" />
-		<ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore.PostgreSql\Elsa.Persistence.EFCore.PostgreSql.csproj" />
-		<ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.EFCore.SqlServer\Elsa.Persistence.EFCore.SqlServer.csproj" />
 		<ProjectReference Include="..\..\modules\runtimes\Elsa.Workflows.Runtime.ProtoActor\Elsa.Workflows.Runtime.ProtoActor.csproj" />
 		<ProjectReference Include="..\..\modules\secrets\Elsa.Secrets.Persistence.EFCore.PostgreSql\Elsa.Secrets.Persistence.EFCore.PostgreSql.csproj" />
 		<ProjectReference Include="..\..\modules\secrets\Elsa.Secrets.Persistence.EFCore.Sqlite\Elsa.Secrets.Persistence.EFCore.Sqlite.csproj" />

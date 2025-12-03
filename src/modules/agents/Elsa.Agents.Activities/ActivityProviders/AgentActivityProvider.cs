@@ -16,7 +16,6 @@ namespace Elsa.Agents.Activities.ActivityProviders;
 public class AgentActivityProvider(
     IKernelConfigProvider kernelConfigProvider,
     IActivityDescriber activityDescriber,
-    IActivityFactory activityFactory,
     IWellKnownTypeRegistry wellKnownTypeRegistry
 ) : IActivityProvider
 {
@@ -43,7 +42,7 @@ public class AgentActivityProvider(
 
             activityDescriptor.Constructor = context =>
             {
-                var activity = (AgentActivity)activityFactory.Create(typeof(AgentActivity), context);
+                var activity = context.CreateActivity<AgentActivity>();
                 activity.Type = activityTypeName;
                 activity.AgentName = agentConfig.Name;
                 return activity;

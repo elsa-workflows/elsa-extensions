@@ -21,7 +21,7 @@ public class Endpoint(IConnectionStore store) : ElsaEndpoint<ConnectionInputMode
 
         if (entity == null)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return null!;
         }
 
@@ -30,7 +30,7 @@ public class Endpoint(IConnectionStore store) : ElsaEndpoint<ConnectionInputMode
         if (isNameDuplicate)
         {
             AddError("Another connection already exist with the specified name");
-            await SendErrorsAsync(cancellation: ct);
+            await Send.ErrorsAsync(cancellation: ct);
             return entity.ToModel();
         }
 

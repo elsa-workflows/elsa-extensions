@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>
+            Provides integrations with an Orchard Core application instances through activities and via HTTP.
+        </Description>
+        <PackageTags>elsa extension module orchardcore</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Http\Elsa.Http.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="Elsa.Http" />
+    </ItemGroup>
+	
+    <ItemGroup>
+      <ProjectReference Include="..\..\http\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
+    </ItemGroup>
+    
+</Project>

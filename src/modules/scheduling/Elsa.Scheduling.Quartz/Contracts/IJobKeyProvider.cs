@@ -2,7 +2,7 @@ using Quartz;
 
 namespace Elsa.Scheduling.Quartz.Contracts;
 
-internal interface IJobKeyProvider
+public interface IJobKeyProvider
 {
     JobKey GetJobKey<TJob>() where TJob : IJob;
     string GetGroupName();

@@ -10,8 +10,8 @@ public class MessageReceivedTriggerWorkflow : WorkflowBase
 {
     public static readonly string DefinitionId = Guid.NewGuid().ToString();
     public static readonly string Topic = nameof(MessageReceivedTriggerWorkflow);
-    public static readonly object Signal1 = new();
-    public static readonly object Signal2 = new();
+    public static readonly string Signal1 = "signal-1";
+    public static readonly string Signal2 = "signal-2"; 
 
     protected override void Build(IWorkflowBuilder builder)
     {

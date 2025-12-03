@@ -18,7 +18,7 @@ namespace Elsa.ServiceBus.MassTransit.Services;
 /// Provides activities to the system from the configured MassTransit message types.
 /// </summary>
 [UsedImplicitly]
-public class MassTransitActivityTypeProvider(IActivityFactory activityFactory, IOptions<MassTransitActivityOptions> options, IActivityDescriber activityDescriber) : IActivityProvider
+public class MassTransitActivityTypeProvider(IOptions<MassTransitActivityOptions> options, IActivityDescriber activityDescriber) : IActivityProvider
 {
     /// <inheritdoc />
     public async ValueTask<IEnumerable<ActivityDescriptor>> GetDescriptorsAsync(CancellationToken cancellationToken = default)
@@ -75,7 +75,7 @@ public class MassTransitActivityTypeProvider(IActivityFactory activityFactory, I
             },
             Constructor = context =>
             {
-                var activity = activityFactory.Create<MessageReceived>(context);
+                var activity = context.CreateActivity<MessageReceived>();
                 activity.Type = fullTypeName;
                 activity.MessageType = messageType;
                 return activity;
@@ -117,7 +117,7 @@ public class MassTransitActivityTypeProvider(IActivityFactory activityFactory, I
             },
             Constructor = context =>
             {
-                var activity = activityFactory.Create<PublishMessage>(context);
+                var activity = context.CreateActivity<PublishMessage>();
                 activity.Type = fullTypeName;
                 activity.MessageType = messageType;
                 return activity;

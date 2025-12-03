@@ -1,8 +1,5 @@
 <Project>
     <PropertyGroup>
-        <UseProjectReferences>true</UseProjectReferences>
-    </PropertyGroup>
-    <PropertyGroup>
         <Authors>Elsa Workflows Community</Authors>
         <Copyright>2025</Copyright>
 
@@ -40,13 +37,10 @@
 		<NoWarn>$(NoWarn);IL2026;IL2046;IL2057;IL2067;IL2070;IL2072;IL2075;IL2087;IL2091</NoWarn>
 	</PropertyGroup>
     
-	<PropertyGroup Label="PackageVersions">
-        <ElsaVersion>3.7.0-preview.3055</ElsaVersion>
-		<ElsaStudioVersion>3.6.0-preview.1029</ElsaStudioVersion>
-        <MicrosoftVersion>9.0.6</MicrosoftVersion>
+    <PropertyGroup Label="PackageVersions">
+        <ElsaVersion>3.6.0-preview.3976</ElsaVersion>
+        <ElsaStudioVersion>3.6.0-preview.1286</ElsaStudioVersion>
     </PropertyGroup>
-
-    <Import Project=".build\ElsaCore.ProjectReferences.targets" />
-    <Import Project=".build\ElsaStudio.ProjectReferences.targets" />
+    
 
 </Project>

@@ -4,11 +4,15 @@
         <Description>
             Provides OpenTelemetry sources for tracing workflow and activity execution.
         </Description>
-        <PackageTags>elsa module open-telemetry</PackageTags>
+        <PackageTags>elsa module diagnostics open-telemetry</PackageTags>
     </PropertyGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Workflows.Core" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+      <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Core\Elsa.Workflows.Core.csproj" />
     </ItemGroup>
 
 </Project>

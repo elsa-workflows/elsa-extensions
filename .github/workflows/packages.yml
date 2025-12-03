@@ -62,7 +62,10 @@ jobs:
           fi
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.x
+          dotnet-version: |
+            8.x
+            9.x
+            10.x
       - name: Compile+Test+Pack
         run: ./build.sh Compile+Test+Pack --version ${VERSION} --analyseCode true
       - name: Upload artifact

@@ -33,7 +33,7 @@ public class Endpoint(IServiceStore store, IIdentityGenerator identityGenerator)
         if (existingEntity != null)
         {
             AddError("A Service already exists with the specified name");
-            await SendErrorsAsync(cancellation: ct);
+            await Send.ErrorsAsync(cancellation: ct);
             return existingEntity.ToModel();
         }
 

@@ -1,5 +1,6 @@
 using Elsa.Extensions;
 using Elsa.Workflows.Management;
+using Elsa.Workflows.Management.Filters;
 using Elsa.Workflows.Management.Options;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Options;
@@ -168,6 +169,19 @@ internal class WorkflowInstance(
         await workflowInstanceManager.SaveAsync(WorkflowState, Context.CancellationToken);
     }
 
+    public override async Task Delete()
+    {
+        if (HasState()) 
+            _linkedTokenSource.Cancel();
+        
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var serviceProvider = scope.ServiceProvider;
+        var workflowInstanceManager = serviceProvider.GetRequiredService<IWorkflowInstanceManager>();
+        var workflowInstanceId = GetWorkflowInstanceId();
+        var filter = new WorkflowInstanceFilter { Id = workflowInstanceId };
+        await workflowInstanceManager.DeleteAsync(filter, Context.CancellationToken);
+    }
+    
     public override async Task<ExportWorkflowStateResponse> ExportState()
     {
         await EnsureStateAsync();
@@ -202,7 +216,7 @@ internal class WorkflowInstance(
         if (_isRunning)
         {
             _queuedRunWorkflowOptions.Enqueue(runWorkflowOptions);
-            return new(null!, null!, null!, null);
+            return new(null!, null!, null!, null, Journal.Empty);
         }
 
         _isRunning = true;
@@ -235,20 +249,14 @@ internal class WorkflowInstance(
 
     private async Task EnsureStateAsync()
     {
-        if (_workflowState != null)
+        if (HasState())
             return;
 
-        if (_workflowInstanceId == null)
-        {
-            // Parse the cluster identity to get the workflow instance ID.
-            var clusterIdentity = Context.ClusterIdentity()!.Identity;
-            _workflowInstanceId = clusterIdentity.Split('-').Last();
-        }
-
-        var workflowInstance = await FindWorkflowInstanceAsync(_workflowInstanceId, Context.CancellationToken);
+        var workflowInstanceId = GetWorkflowInstanceId();
+        var workflowInstance = await FindWorkflowInstanceAsync(workflowInstanceId, Context.CancellationToken);
 
         if (workflowInstance == null)
-            throw new InvalidOperationException($"Workflow instance {_workflowInstanceId} not found.");
+            throw new InvalidOperationException($"Workflow instance {workflowInstanceId} not found.");
 
         var workflowDefinitionHandle = WorkflowDefinitionHandle.ByDefinitionVersionId(workflowInstance.DefinitionVersionId);
         var workflowGraph = await FindWorkflowGraphAsync(workflowDefinitionHandle, Context.CancellationToken);
@@ -256,6 +264,24 @@ internal class WorkflowInstance(
         WorkflowGraph = workflowGraph;
         WorkflowState = workflowInstance.WorkflowState;
     }
+
+    private bool HasState()
+    {
+        return _workflowState != null;
+    }
+
+    private string GetWorkflowInstanceId()
+    {
+        if (_workflowInstanceId != null)
+            return _workflowInstanceId;
+
+        // Parse the cluster identity to get the workflow instance ID.
+        var clusterIdentity = Context.ClusterIdentity()!.Identity;
+        _workflowInstanceId = clusterIdentity.Split('-').Last();
+
+        return _workflowInstanceId;
+    }
+    
 
     private async Task CreateNewWorkflowInstanceAsync(CreateWorkflowInstanceRequest request, CancellationToken cancellationToken)
     {

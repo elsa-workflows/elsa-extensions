@@ -18,7 +18,7 @@ namespace Elsa.OpenTelemetry.Middleware;
 /// Middleware that traces workflow execution using OpenTelemetry.
 /// </summary>
 [UsedImplicitly]
-public class OpenTelemetryTracingWorkflowExecutionMiddleware(WorkflowMiddlewareDelegate next, IOptions<OpenTelemetryOptions> options) : WorkflowExecutionMiddleware(next)
+public class OpenTelemetryTracingWorkflowExecutionMiddleware(WorkflowMiddlewareDelegate next, ISystemClock systemClock, IOptions<OpenTelemetryOptions> options) : WorkflowExecutionMiddleware(next)
 {
     /// <inheritdoc />
     public override async ValueTask InvokeAsync(WorkflowExecutionContext context)
@@ -96,14 +96,28 @@ public class OpenTelemetryTracingWorkflowExecutionMiddleware(WorkflowMiddlewareD
 
         if (context.Incidents.Any())
         {
-            span.SetTag("workflow.incidents.count", context.Incidents.Count);
+            var incidentsList = context.Incidents.ToList();
+            for (int i = 0; i < incidentsList.Count; i++)
+            {
+                AddIncidentToSpan(span, incidentsList[i], i);
+            }
 
-            foreach (var incident in context.Incidents)
-                span.AddEvent(new("incident", incident.Timestamp, CreateIncidentTags(incident)));
+            span.SetTag("workflow.incidents.count", incidentsList.Count);
         }
 
         if (!string.IsNullOrWhiteSpace(context.CorrelationId))
             span.SetTag("workflow.correlation_id", context.CorrelationId);
+    }
+    
+    private void AddIncidentToSpan(Activity span, ActivityIncident incident, int index)
+    {
+        var tags = CreateIncidentTags(incident);
+        span.AddEvent(new ActivityEvent("incident", incident.Timestamp, tags));
+
+        foreach (var tag in tags)
+        {
+            span.SetTag($"workflow.incidents.{index}.{tag.Key}", tag.Value);
+        }
     }
 
     private Activity? CreateTraceActivity(WorkflowExecutionContext context, string? workflowName)

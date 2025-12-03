@@ -26,7 +26,7 @@ public class Endpoint(IServiceStore store) : ElsaEndpoint<ServiceModel, ServiceM
         
         if(entity == null)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return null!;
         }
         
@@ -35,7 +35,7 @@ public class Endpoint(IServiceStore store) : ElsaEndpoint<ServiceModel, ServiceM
         if (isNameDuplicate)
         {
             AddError("Another service already exists with the specified name");
-            await SendErrorsAsync(cancellation: ct);
+            await Send.ErrorsAsync(cancellation: ct);
             return entity.ToModel();
         }
 

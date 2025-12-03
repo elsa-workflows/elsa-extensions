@@ -17,11 +17,11 @@ public class Endpoint(IConnectionStore store) : ElsaEndpoint<Request>
 
         if (entity == null)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return;
         }
         
         await store.DeleteAsync(entity, ct);
-        await SendOkAsync(ct);
+        await Send.OkAsync(ct);
     }
 }

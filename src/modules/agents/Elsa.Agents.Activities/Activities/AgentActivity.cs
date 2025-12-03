@@ -42,6 +42,12 @@ public class AgentActivity : CodeActivity
         {
             var input = (Input?)inputDescriptor.ValueGetter(this);
             var inputValue = input != null ? context.Get(input.MemoryBlockReference()) : null;
+
+            if (inputValue is ExpandoObject expandoObject)
+            {
+                inputValue = expandoObject.ConvertTo<string>();
+            }
+            
             functionInput[inputDescriptor.Name] = inputValue;
         }
 

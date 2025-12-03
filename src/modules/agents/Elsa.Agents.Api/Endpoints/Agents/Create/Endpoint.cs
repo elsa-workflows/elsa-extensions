@@ -30,7 +30,7 @@ public class Endpoint(IAgentManager agentManager, IIdentityGenerator identityGen
         if (!isNameUnique)
         {
             AddError("An Agent already exists with the specified name");
-            await SendErrorsAsync(cancellation: ct);
+            await Send.ErrorsAsync(cancellation: ct);
             return null!;
         }
 

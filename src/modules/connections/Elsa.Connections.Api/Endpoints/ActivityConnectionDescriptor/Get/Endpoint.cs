@@ -19,11 +19,11 @@ public class Endpoint(IConnectionDescriptorRegistry store) : ElsaEndpointWithout
         if (string.IsNullOrWhiteSpace(type))
         {
             AddError("ActivityType is required");
-            await SendErrorsAsync(cancellation: ct);
+            await Send.ErrorsAsync(cancellation: ct);
             return;
         }
         
         var config = await store.GetConnectionDescriptorAsync(type, ct);
-        await SendOkAsync(config, ct);
+        await Send.OkAsync(config, ct);
     }
 }

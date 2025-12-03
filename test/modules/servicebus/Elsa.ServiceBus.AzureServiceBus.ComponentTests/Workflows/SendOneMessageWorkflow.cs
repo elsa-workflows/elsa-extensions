@@ -8,7 +8,7 @@ namespace Elsa.ServiceBus.AzureServiceBus.ComponentTests.Workflows;
 public class SendOneMessageWorkflow : WorkflowBase
 {
     public static readonly string Topic = nameof(SendOneMessageWorkflow);
-    public static readonly object Signal1 = new();
+    public static readonly string Signal1 = "signal-1";
     
     protected override void Build(IWorkflowBuilder builder)
     {

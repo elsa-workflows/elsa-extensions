@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="Elsa" />
         <PackageReference Include="Elsa.Features" />
+        <PackageReference Include="Elsa.Http" />
         <PackageReference Include="Elsa.Identity" />
 		<PackageReference Include="Elsa.Expressions.JavaScript" />
         <PackageReference Include="Elsa.Workflows.Api" />

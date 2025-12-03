@@ -8,7 +8,7 @@ namespace Elsa.Http.Webhooks.ActivityProviders;
 /// <summary>
 /// An activity provider that generates activity types based on webhook sources.
 /// </summary>
-public class WebhookEventActivityProvider(IWebhookSourceProvider webhookSourceProvider, IActivityFactory activityFactory, IActivityDescriber activityDescriber) : IActivityProvider
+public class WebhookEventActivityProvider(IWebhookSourceProvider webhookSourceProvider, IActivityDescriber activityDescriber) : IActivityProvider
 {
     public async ValueTask<IEnumerable<ActivityDescriptor>> GetDescriptorsAsync(CancellationToken cancellationToken = default)
     {
@@ -41,7 +41,7 @@ public class WebhookEventActivityProvider(IWebhookSourceProvider webhookSourcePr
         activityDescriptor.Description = eventTypeDescription;
         activityDescriptor.Constructor = context =>
         {
-            var activity = (WebhookEventReceived)activityFactory.Create(typeof(WebhookEventReceived), context);
+            var activity = context.CreateActivity<WebhookEventReceived>();
             activity.Type = fullTypeName;
             activity.EventType = eventType.EventType;
             activity.PayloadType = eventType.PayloadType;

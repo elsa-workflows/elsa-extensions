@@ -66,6 +66,12 @@ public class ProtoActorWorkflowClient : IWorkflowClient
     {
         await _actorClient.Cancel(CreateHeaders(), cancellationToken);
     }
+    
+    /// <inheritdoc />
+    public Task<bool> DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 
     /// <inheritdoc />
     public async Task<WorkflowState> ExportStateAsync(CancellationToken cancellationToken = default)

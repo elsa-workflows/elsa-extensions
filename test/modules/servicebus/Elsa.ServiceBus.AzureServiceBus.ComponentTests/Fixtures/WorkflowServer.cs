@@ -31,53 +31,41 @@ public class WorkflowServer(Infrastructure infrastructure, string url) : WebAppl
 
         builder.UseUrls(url);
 
-        if (Program.ConfigureForTest == null)
+        Elsa.TestServer.Web.Program.ConfigureForTest ??= elsa =>
         {
-            Program.ConfigureForTest = elsa =>
+            elsa.AddWorkflowsFrom<WorkflowServer>();
+            elsa.AddActivitiesFrom<WorkflowServer>();
+            elsa.UseDefaultAuthentication(defaultAuthentication => defaultAuthentication.UseAdminApiKey());
+            elsa.UseFluentStorageProvider(sp =>
             {
-                elsa.AddWorkflowsFrom<WorkflowServer>();
-                elsa.AddActivitiesFrom<WorkflowServer>();
-                elsa.UseDefaultAuthentication(defaultAuthentication => defaultAuthentication.UseAdminApiKey());
-                elsa.UseFluentStorageProvider(sp =>
+                var assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                var assemblyDirectory = Path.GetDirectoryName(assemblyLocation)!;
+                var workflowsDirectorySegments = new[]
                 {
-                    var assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                    var assemblyDirectory = Path.GetDirectoryName(assemblyLocation)!;
-                    var workflowsDirectorySegments = new[]
-                    {
-                        assemblyDirectory, "Scenarios"
-                    };
-                    var workflowsDirectory = Path.Join(workflowsDirectorySegments);
-                    return StorageFactory.Blobs.DirectoryFiles(workflowsDirectory);
-                });
-                elsa.UseMassTransit(massTransit =>
-                {
-                    massTransit.UseRabbitMq(rabbitMqConnectionString);
-                });
-                elsa.UseIdentity(identity => identity.UseEntityFrameworkCore(ef => ef.UsePostgreSql(dbConnectionString)));
-                elsa.UseWorkflowManagement(management =>
-                {
-                    management.UseEntityFrameworkCore(ef => ef.UsePostgreSql(dbConnectionString));
-                    management.UseMassTransitDispatcher();
-                    management.UseCache();
-                });
-                elsa.UseWorkflowRuntime(runtime =>
-                {
-                    runtime.UseEntityFrameworkCore(ef => ef.UsePostgreSql(dbConnectionString));
-                    runtime.UseCache();
-                    runtime.UseMassTransitDispatcher();
-                    runtime.UseProtoActor();
-                });
-                elsa.UseAlterations(alterations =>
-                {
-                    alterations.UseEntityFrameworkCore(e => e.UsePostgreSql(dbConnectionString));
-                });
-                elsa.UseHttp(http =>
-                {
-                    http.UseCache();
-                });
-                elsa.UseAzureServiceBus();
-            };
-        }
+                    assemblyDirectory, "Scenarios"
+                };
+                var workflowsDirectory = Path.Join(workflowsDirectorySegments);
+                return StorageFactory.Blobs.DirectoryFiles(workflowsDirectory);
+            });
+            elsa.UseMassTransit(massTransit => { massTransit.UseRabbitMq(rabbitMqConnectionString); });
+            elsa.UseIdentity(identity => identity.UseEntityFrameworkCore(ef => ef.UsePostgreSql(dbConnectionString)));
+            elsa.UseWorkflowManagement(management =>
+            {
+                management.UseEntityFrameworkCore(ef => ef.UsePostgreSql(dbConnectionString));
+                management.UseMassTransitDispatcher();
+                management.UseCache();
+            });
+            elsa.UseWorkflowRuntime(runtime =>
+            {
+                runtime.UseEntityFrameworkCore(ef => ef.UsePostgreSql(dbConnectionString));
+                runtime.UseCache();
+                runtime.UseMassTransitDispatcher();
+                runtime.UseProtoActor();
+            });
+            elsa.UseAlterations(alterations => { alterations.UseEntityFrameworkCore(e => e.UsePostgreSql(dbConnectionString)); });
+            elsa.UseHttp(http => { http.UseCache(); });
+            elsa.UseAzureServiceBus();
+        };
 
         builder.ConfigureTestServices(services =>
         {
@@ -91,6 +79,6 @@ public class WorkflowServer(Infrastructure infrastructure, string url) : WebAppl
 
     protected override void ConfigureClient(HttpClient client)
     {
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("ApiKey", AdminApiKeyProvider.DefaultApiKey);
+        client.DefaultRequestHeaders.Authorization = new("ApiKey", AdminApiKeyProvider.DefaultApiKey);
     }
 }

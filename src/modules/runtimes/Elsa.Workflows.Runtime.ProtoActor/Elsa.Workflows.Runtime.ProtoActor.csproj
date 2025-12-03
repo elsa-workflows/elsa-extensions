@@ -8,23 +8,27 @@
     </PropertyGroup>
 
     <ItemGroup>
-		<PackageReference Include="Google.Protobuf" />
-        <PackageReference Include="Grpc.Tools" PrivateAssets="all" />
-        <PackageReference Include="Proto.Cluster.CodeGen" />
+        <PackageReference Include="Google.Protobuf"/>
+        <PackageReference Include="Grpc.Tools" PrivateAssets="all"/>
+        <PackageReference Include="Proto.Cluster.CodeGen"/>
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
-        <PackageReference Include="Elsa.Workflows.Runtime" />
+        <PackageReference Include="Elsa.Workflows.Runtime"/>
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Runtime\Elsa.Workflows.Runtime.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\actors\Elsa.Actors.ProtoActor\Elsa.Actors.ProtoActor.csproj" />
+        <ProjectReference Include="..\..\actors\Elsa.Actors.ProtoActor\Elsa.Actors.ProtoActor.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Protobuf Include="Proto\Shared.proto" AdditionalImportDirs="./Proto" />
-        <Protobuf Include="Proto\WorkflowInstance.Messages.proto" AdditionalImportDirs="./Proto" />
-        <ProtoGrain Include="Proto\WorkflowInstance.proto" AdditionalImportDirs="./Proto" TemplateFiles="./Templates/Grain.tt" />
+        <Protobuf Include="Proto\Shared.proto" AdditionalImportDirs="./Proto"/>
+        <Protobuf Include="Proto\WorkflowInstance.Messages.proto" AdditionalImportDirs="./Proto"/>
+        <ProtoGrain Include="Proto\WorkflowInstance.proto" AdditionalImportDirs="./Proto" TemplateFiles="./Templates/Grain.tt"/>
     </ItemGroup>
 
 </Project>

@@ -24,7 +24,7 @@ public class Endpoint(ISecretManager agentManager) : ElsaEndpoint<Request, Secre
         
         if(entity == null)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return null!;
         }
         

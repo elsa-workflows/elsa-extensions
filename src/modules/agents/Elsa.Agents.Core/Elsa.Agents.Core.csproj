@@ -17,6 +17,10 @@
         <PackageReference Include="System.Linq.Async" />
     </ItemGroup>
 
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Common\Elsa.Common.csproj" />
+    </ItemGroup>
+    
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Common" />
     </ItemGroup>
