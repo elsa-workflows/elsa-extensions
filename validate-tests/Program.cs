@@ -2,11 +2,18 @@ using System;
 using System.Threading.Tasks;
 using Elsa.OpenAI.Activities.Chat;
 using Elsa.OpenAI.Services;
+using Microsoft.Extensions.Configuration;
 using OpenAI;
 
 // Simple test validation script
 Console.WriteLine("OpenAI Integration Test Validation");
 Console.WriteLine("===================================");
+
+// Build configuration to access user secrets and environment variables
+var configuration = new ConfigurationBuilder()
+    .AddUserSecrets<Program>()
+    .AddEnvironmentVariables()
+    .Build();
 
 var testsPassed = 0;
 var testsTotal = 0;
@@ -107,17 +114,21 @@ catch (Exception ex)
     Console.WriteLine($"❌ Test 3: Different client types creation - ERROR: {ex.Message}");
 }
 
-// Test 4: Environment Variable Check
+// Test 4: API Key Configuration Check
 testsTotal++;
-var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+var apiKey = configuration["OpenAI:ApiKey"] ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+var keySource = configuration["OpenAI:ApiKey"] != null ? "user secrets" : 
+                !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("OPENAI_API_KEY")) ? "environment variable" : "none";
+
 if (string.IsNullOrEmpty(apiKey))
 {
-    Console.WriteLine("⚠️  Test 4: OPENAI_API_KEY environment variable - NOT SET (this is fine for testing)");
+    Console.WriteLine("⚠️  Test 4: OpenAI API key - NOT SET (this is fine for basic testing)");
+    Console.WriteLine("   To set: dotnet user-secrets set \"OpenAI:ApiKey\" \"your-key\" --project validate-tests/");
     testsPassed++; // We'll count this as passed since it's optional for basic testing
 }
 else
 {
-    Console.WriteLine($"✅ Test 4: OPENAI_API_KEY environment variable - SET (length: {apiKey.Length} characters)");
+    Console.WriteLine($"✅ Test 4: OpenAI API key loaded from {keySource} (length: {apiKey.Length} characters)");
     testsPassed++;
 }
 

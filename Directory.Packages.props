@@ -94,7 +94,9 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-preview.3.efcore.9.0.0" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="$(MicrosoftVersion)" />
-    <PackageVersion Include="System.Text.Json" Version="$(MicrosoftVersion)" />
-    <PackageVersion Include="OpenAI" Version="2.7.0" />
-  </ItemGroup>
+        <PackageVersion Include="System.Text.Json" Version="$(MicrosoftVersion)"/>
+        <PackageVersion Include="OpenAI" Version="2.7.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(MicrosoftVersion)"/>
+    </ItemGroup>
 </Project>
