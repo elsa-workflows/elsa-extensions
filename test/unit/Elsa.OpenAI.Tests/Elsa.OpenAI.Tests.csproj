@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Elsa.OpenAI/Elsa.OpenAI.csproj" />
+  </ItemGroup>
+
+</Project>
