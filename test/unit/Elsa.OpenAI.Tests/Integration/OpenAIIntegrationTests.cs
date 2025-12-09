@@ -111,7 +111,7 @@ public class OpenAIIntegrationTests
         catch (Exception ex)
         {
             // If API call fails, provide helpful error message
-            Assert.True(false, $"OpenAI API call failed: {ex.Message}. Check your API key and network connection.");
+            Assert.Fail($"OpenAI API call failed: {ex.Message}. Check your API key and network connection.");
         }
     }
 

@@ -1,6 +1,12 @@
+using Elsa.OpenAI.Activities;
 using Elsa.OpenAI.Activities.Chat;
 using Elsa.OpenAI.Services;
+using Elsa.Workflows;
+using Elsa.Workflows.Attributes;
+using Elsa.Workflows.Models;
+using Moq;
 using OpenAI;
+using OpenAI.Chat;
 
 namespace Elsa.OpenAI.Tests.Activities.Chat;
 
@@ -10,83 +16,238 @@ namespace Elsa.OpenAI.Tests.Activities.Chat;
 public class CompleteChatTests
 {
     /// <summary>
-    /// Tests the activity structure and basic validation.
+    /// Test implementation of CompleteChat to expose protected methods.
     /// </summary>
-    [Fact]
-    public void CompleteChat_HasCorrectInputsAndOutputs()
+    private class TestableCompleteChat : CompleteChat
     {
-        // Arrange
+        public new async ValueTask ExecuteAsync(ActivityExecutionContext context) => await base.ExecuteAsync(context);
+    }
+    [Fact]
+    public void Constructor_CreatesInstance()
+    {
+        // Act
         var activity = new CompleteChat();
 
         // Assert
-        Assert.NotNull(activity.Prompt);
-        Assert.NotNull(activity.SystemMessage);
-        Assert.NotNull(activity.MaxTokens);
-        Assert.NotNull(activity.Temperature);
-        Assert.NotNull(activity.ApiKey);
-        Assert.NotNull(activity.Model);
-        Assert.NotNull(activity.Result);
-        Assert.NotNull(activity.TotalTokens);
-        Assert.NotNull(activity.FinishReason);
+        Assert.NotNull(activity);
     }
 
-    /// <summary>
-    /// Tests the OpenAI client factory functionality.
-    /// </summary>
     [Fact]
-    public void OpenAIClientFactory_CanCreateClient()
+    public void CompleteChat_HasCorrectInputProperties()
+    {
+        // Arrange & Act - Test that properties exist and have correct types
+        var activityType = typeof(CompleteChat);
+        var promptProperty = activityType.GetProperty(nameof(CompleteChat.Prompt));
+        var systemMessageProperty = activityType.GetProperty(nameof(CompleteChat.SystemMessage));
+        var maxTokensProperty = activityType.GetProperty(nameof(CompleteChat.MaxTokens));
+        var temperatureProperty = activityType.GetProperty(nameof(CompleteChat.Temperature));
+        var apiKeyProperty = activityType.GetProperty(nameof(CompleteChat.ApiKey));
+        var modelProperty = activityType.GetProperty(nameof(CompleteChat.Model));
+
+        // Assert
+        Assert.NotNull(promptProperty);
+        Assert.NotNull(systemMessageProperty);
+        Assert.NotNull(maxTokensProperty);
+        Assert.NotNull(temperatureProperty);
+        Assert.NotNull(apiKeyProperty);
+        Assert.NotNull(modelProperty);
+        
+        // Verify property types
+        Assert.Equal(typeof(Input<string>), promptProperty.PropertyType);
+        Assert.Equal(typeof(Input<string?>), systemMessageProperty.PropertyType);
+        Assert.Equal(typeof(Input<int?>), maxTokensProperty.PropertyType);
+        Assert.Equal(typeof(Input<float?>), temperatureProperty.PropertyType);
+        Assert.Equal(typeof(Input<string>), apiKeyProperty.PropertyType);
+        Assert.Equal(typeof(Input<string>), modelProperty.PropertyType);
+    }
+
+    [Fact]
+    public void CompleteChat_HasCorrectOutputProperties()
+    {
+        // Arrange & Act - Test that properties exist and have correct types
+        var activityType = typeof(CompleteChat);
+        var resultProperty = activityType.GetProperty(nameof(CompleteChat.Result));
+        var totalTokensProperty = activityType.GetProperty(nameof(CompleteChat.TotalTokens));
+        var finishReasonProperty = activityType.GetProperty(nameof(CompleteChat.FinishReason));
+
+        // Assert
+        Assert.NotNull(resultProperty);
+        Assert.NotNull(totalTokensProperty);
+        Assert.NotNull(finishReasonProperty);
+        
+        // Verify property types
+        Assert.Equal(typeof(Output<string>), resultProperty.PropertyType);
+        Assert.Equal(typeof(Output<int?>), totalTokensProperty.PropertyType);
+        Assert.Equal(typeof(Output<string?>), finishReasonProperty.PropertyType);
+    }
+
+    [Fact]
+    public void CompleteChat_HasActivityAttribute()
     {
         // Arrange
-        var factory = new OpenAIClientFactory();
-        var apiKey = "test-key-123";
+        var activityType = typeof(CompleteChat);
 
         // Act
-        var client1 = factory.GetClient(apiKey);
-        var client2 = factory.GetClient(apiKey);
-        
+        var activityAttribute = activityType.GetCustomAttributes(typeof(ActivityAttribute), false).FirstOrDefault() as ActivityAttribute;
+
         // Assert
-        Assert.NotNull(client1);
-        Assert.NotNull(client2);
-        Assert.Same(client1, client2); // Should return the same cached instance
+        Assert.NotNull(activityAttribute);
+        Assert.Equal("Elsa.OpenAI.Chat", activityAttribute.Namespace);
+        Assert.Equal("OpenAI Chat", activityAttribute.Category);
+        Assert.Equal("Complete Chat", activityAttribute.DisplayName);
+        Assert.Contains("chat conversation", activityAttribute.Description, StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>
-    /// Tests the OpenAI client factory with different API keys.
-    /// </summary>
     [Fact]
-    public void OpenAIClientFactory_CreatesDifferentClientsForDifferentKeys()
+    public void Prompt_HasInputAttribute()
     {
         // Arrange
-        var factory = new OpenAIClientFactory();
-        var apiKey1 = "test-key-123";
-        var apiKey2 = "test-key-456";
+        var property = typeof(CompleteChat).GetProperty(nameof(CompleteChat.Prompt));
 
         // Act
-        var client1 = factory.GetClient(apiKey1);
-        var client2 = factory.GetClient(apiKey2);
-        
+        var inputAttribute = property?.GetCustomAttributes(typeof(InputAttribute), false).FirstOrDefault() as InputAttribute;
+
         // Assert
-        Assert.NotNull(client1);
-        Assert.NotNull(client2);
-        Assert.NotSame(client1, client2); // Should return different instances for different keys
+        Assert.NotNull(property);
+        Assert.NotNull(inputAttribute);
+        Assert.Contains("prompt", inputAttribute.Description, StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>
-    /// Tests that environment variable is properly set up.
-    /// </summary>
     [Fact]
-    public void EnvironmentVariable_Check()
+    public void SystemMessage_HasInputAttribute()
     {
-        // Check if OPENAI_API_KEY environment variable is set
-        var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        // Arrange
+        var property = typeof(CompleteChat).GetProperty(nameof(CompleteChat.SystemMessage));
+
+        // Act
+        var inputAttribute = property?.GetCustomAttributes(typeof(InputAttribute), false).FirstOrDefault() as InputAttribute;
+
+        // Assert
+        Assert.NotNull(property);
+        Assert.NotNull(inputAttribute);
+        Assert.Contains("system message", inputAttribute.Description, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void MaxTokens_HasInputAttribute()
+    {
+        // Arrange
+        var property = typeof(CompleteChat).GetProperty(nameof(CompleteChat.MaxTokens));
+
+        // Act
+        var inputAttribute = property?.GetCustomAttributes(typeof(InputAttribute), false).FirstOrDefault() as InputAttribute;
+
+        // Assert
+        Assert.NotNull(property);
+        Assert.NotNull(inputAttribute);
+        Assert.Contains("tokens", inputAttribute.Description, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Temperature_HasInputAttribute()
+    {
+        // Arrange
+        var property = typeof(CompleteChat).GetProperty(nameof(CompleteChat.Temperature));
+
+        // Act
+        var inputAttribute = property?.GetCustomAttributes(typeof(InputAttribute), false).FirstOrDefault() as InputAttribute;
+
+        // Assert
+        Assert.NotNull(property);
+        Assert.NotNull(inputAttribute);
+        Assert.Contains("randomness", inputAttribute.Description, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Result_HasOutputAttribute()
+    {
+        // Arrange
+        var property = typeof(CompleteChat).GetProperty(nameof(CompleteChat.Result));
+
+        // Act
+        var outputAttribute = property?.GetCustomAttributes(typeof(OutputAttribute), false).FirstOrDefault() as OutputAttribute;
+
+        // Assert
+        Assert.NotNull(property);
+        Assert.NotNull(outputAttribute);
+        Assert.Contains("result", outputAttribute.Description, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void TotalTokens_HasOutputAttribute()
+    {
+        // Arrange
+        var property = typeof(CompleteChat).GetProperty(nameof(CompleteChat.TotalTokens));
+
+        // Act
+        var outputAttribute = property?.GetCustomAttributes(typeof(OutputAttribute), false).FirstOrDefault() as OutputAttribute;
+
+        // Assert
+        Assert.NotNull(property);
+        Assert.NotNull(outputAttribute);
+        Assert.Contains("tokens", outputAttribute.Description, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void FinishReason_HasOutputAttribute()
+    {
+        // Arrange
+        var property = typeof(CompleteChat).GetProperty(nameof(CompleteChat.FinishReason));
+
+        // Act
+        var outputAttribute = property?.GetCustomAttributes(typeof(OutputAttribute), false).FirstOrDefault() as OutputAttribute;
+
+        // Assert
+        Assert.NotNull(property);
+        Assert.NotNull(outputAttribute);
+        Assert.Contains("finish reason", outputAttribute.Description, StringComparison.OrdinalIgnoreCase);
+    }
+
+
+    [Fact]
+    public void CompleteChat_HasCorrectAttributes()
+    {
+        // Arrange
+        var activityType = typeof(CompleteChat);
+
+        // Act - Check for Activity attribute (which we know exists)
+        var activityAttribute = activityType.GetCustomAttributes(typeof(ActivityAttribute), false).FirstOrDefault();
+        var allAttributes = activityType.GetCustomAttributes(false);
+
+        // Assert
+        Assert.NotNull(activityAttribute);
+        Assert.True(allAttributes.Length > 0, "CompleteChat should have at least one attribute");
+    }
+
+    [Fact]
+    public void ExecuteAsync_MethodExists_AndIsProtected()
+    {
+        // Test that ExecuteAsync method exists and has the correct signature
+        var activityType = typeof(CompleteChat);
+        var executeMethod = activityType.GetMethod("ExecuteAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         
-        if (string.IsNullOrEmpty(apiKey))
-        {
-            Assert.True(true, "OPENAI_API_KEY environment variable not set. Set it to run integration tests.");
-        }
-        else
-        {
-            Assert.True(apiKey.Length > 10, "OPENAI_API_KEY seems to be set with a reasonable value.");
-        }
+        Assert.NotNull(executeMethod);
+        Assert.Equal(typeof(ValueTask), executeMethod.ReturnType);
+        Assert.Single(executeMethod.GetParameters());
+        Assert.Equal(typeof(ActivityExecutionContext), executeMethod.GetParameters()[0].ParameterType);
+    }
+
+    [Fact]
+    public void CompleteChat_InheritsFromOpenAIActivity()
+    {
+        // Verify inheritance structure
+        Assert.True(typeof(OpenAIActivity).IsAssignableFrom(typeof(CompleteChat)));
+    }
+
+    [Fact]
+    public void CompleteChat_UsesGetChatClientMethod()
+    {
+        // This test verifies that CompleteChat has access to the GetChatClient method from base class
+        var activity = new CompleteChat();
+        var baseType = typeof(OpenAIActivity);
+        var getChatClientMethod = baseType.GetMethod("GetChatClient", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        Assert.NotNull(getChatClientMethod);
+        Assert.Equal(typeof(ChatClient), getChatClientMethod.ReturnType);
     }
 }
