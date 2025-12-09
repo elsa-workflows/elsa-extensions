@@ -119,7 +119,7 @@ public class OpenAIIntegrationTests
     public void CompleteChat_Activity_HasCorrectStructure()
     {
         // Arrange & Act
-        var activity = new CompleteChat();
+        
         var activityType = typeof(CompleteChat);
 
         // Assert - Check that all required properties exist
