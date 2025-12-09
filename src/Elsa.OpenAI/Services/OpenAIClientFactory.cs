@@ -58,6 +58,8 @@ public class OpenAIClientFactory
     /// </summary>
     public ImageClient GetImageClient(string model, string apiKey)
     {
+        if (string.IsNullOrWhiteSpace(model))
+            throw new ArgumentException("Model must not be null or empty.", nameof(model));
         OpenAIClient client = GetClient(apiKey);
         return client.GetImageClient(model);
     }
