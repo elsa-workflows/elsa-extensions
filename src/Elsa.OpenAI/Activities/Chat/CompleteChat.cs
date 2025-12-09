@@ -87,6 +87,7 @@ public class CompleteChat : OpenAIActivity
             context.Set(Result, $"Error: {ex.Message}");
             context.Set(TotalTokens, null);
             context.Set(FinishReason, "error");
+            throw;
         }
     }
 }

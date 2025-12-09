@@ -13,7 +13,7 @@ dotnet add package Elsa.OpenAI
 ```csharp
 services.AddElsa(elsa =>
 {
-    elsa.AddOpenAI();
+    elsa.UseOpenAIFeature();
 });
 ```
 
@@ -84,7 +84,8 @@ public class CustomerSupportWorkflow : WorkflowBase
                     Prompt = customerQuery,
                     Model = new("gpt-4"),
                     Temperature = new(0.3f),
-                    Result = new(aiResponse)
+                    Result = new(aiResponse),
+                    ApiKey = new("your-api-key-here")
                 },
                 // Return response to customer
                 new WriteHttpResponse

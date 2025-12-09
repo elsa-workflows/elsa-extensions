@@ -89,7 +89,7 @@ public class OpenAIActivityTests
     {
         // Since GetClientFactory uses GetRequiredService which is non-virtual,
         // we test that the method exists and has correct signature
-        var activity = new TestOpenAIActivity();
+
         var methodInfo = typeof(TestOpenAIActivity).GetMethod("GetClientFactory");
         
         Assert.NotNull(methodInfo);
@@ -154,7 +154,7 @@ public class OpenAIActivityTests
     public void GetEmbeddingClient_Integration_Test()
     {
         // Test that the method exists and has correct signature
-        var activity = new TestOpenAIActivity();
+
         var methodInfo = typeof(TestOpenAIActivity).GetMethod("GetEmbeddingClient");
         
         Assert.NotNull(methodInfo);
@@ -167,7 +167,7 @@ public class OpenAIActivityTests
     public void GetModerationClient_Integration_Test()
     {
         // Test that the method exists and has correct signature
-        var activity = new TestOpenAIActivity();
+
         var methodInfo = typeof(TestOpenAIActivity).GetMethod("GetModerationClient");
         
         Assert.NotNull(methodInfo);

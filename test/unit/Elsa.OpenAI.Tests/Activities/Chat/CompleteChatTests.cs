@@ -243,7 +243,7 @@ public class CompleteChatTests
     public void CompleteChat_UsesGetChatClientMethod()
     {
         // This test verifies that CompleteChat has access to the GetChatClient method from base class
-        var activity = new CompleteChat();
+
         var baseType = typeof(OpenAIActivity);
         var getChatClientMethod = baseType.GetMethod("GetChatClient", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         

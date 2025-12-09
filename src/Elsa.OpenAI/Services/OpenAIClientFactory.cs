@@ -69,6 +69,8 @@ public class OpenAIClientFactory
     /// </summary>
     public AudioClient GetAudioClient(string model, string apiKey)
     {
+        if (string.IsNullOrWhiteSpace(model))
+            throw new ArgumentException("Model parameter cannot be null or empty.", nameof(model));
         OpenAIClient client = GetClient(apiKey);
         return client.GetAudioClient(model);
     }
@@ -78,6 +80,8 @@ public class OpenAIClientFactory
     /// </summary>
     public EmbeddingClient GetEmbeddingClient(string model, string apiKey)
     {
+        if (string.IsNullOrWhiteSpace(model))
+            throw new ArgumentException("Model parameter cannot be null or empty.", nameof(model));
         OpenAIClient client = GetClient(apiKey);
         return client.GetEmbeddingClient(model);
     }
@@ -87,6 +91,8 @@ public class OpenAIClientFactory
     /// </summary>
     public ModerationClient GetModerationClient(string model, string apiKey)
     {
+        if (string.IsNullOrWhiteSpace(model))
+            throw new ArgumentException("Model parameter cannot be null or empty.", nameof(model));
         OpenAIClient client = GetClient(apiKey);
         return client.GetModerationClient(model);
     }
