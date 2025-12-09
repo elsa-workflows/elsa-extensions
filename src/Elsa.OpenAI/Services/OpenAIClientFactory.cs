@@ -45,6 +45,10 @@ public class OpenAIClientFactory
     /// </summary>
     public ChatClient GetChatClient(string model, string apiKey)
     {
+        if (string.IsNullOrWhiteSpace(model))
+            throw new ArgumentException("Model must not be null or empty.", nameof(model));
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new ArgumentException("API key must not be null or empty.", nameof(apiKey));
         OpenAIClient client = GetClient(apiKey);
         return client.GetChatClient(model);
     }
