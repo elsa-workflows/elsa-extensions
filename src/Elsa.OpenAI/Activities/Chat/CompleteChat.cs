@@ -71,27 +71,22 @@ public class CompleteChat : OpenAIActivity
 
         ChatClient client = GetChatClient(context);
 
-        // Build the messages list
-        var messages = new List<ChatMessage>();
-        
-        if (!string.IsNullOrWhiteSpace(systemMessage))
+        try
         {
-            messages.Add(ChatMessage.CreateSystemMessage(systemMessage));
+            // Build a simple prompt string for now
+            string fullPrompt = systemMessage != null ? $"{systemMessage}\n\n{prompt}" : prompt;
+            
+            ChatCompletion completion = await client.CompleteChatAsync(fullPrompt);
+
+            context.Set(Result, completion.Content?[0]?.Text ?? string.Empty);
+            context.Set(TotalTokens, completion.Usage?.TotalTokenCount);
+            context.Set(FinishReason, completion.FinishReason.ToString());
         }
-        
-        messages.Add(ChatMessage.CreateUserMessage(prompt));
-
-        // Create completion options
-        var options = new ChatCompletionOptions();
-        if (maxTokens.HasValue)
-            options.MaxOutputTokenCount = maxTokens.Value;
-        if (temperature.HasValue)
-            options.Temperature = temperature.Value;
-
-        ChatCompletion completion = await client.CompleteChatAsync(messages, options);
-
-        context.Set(Result, completion.Content[0].Text);
-        context.Set(TotalTokens, completion.Usage?.TotalTokenCount);
-        context.Set(FinishReason, completion.FinishReason?.ToString());
+        catch (Exception ex)
+        {
+            context.Set(Result, $"Error: {ex.Message}");
+            context.Set(TotalTokens, null);
+            context.Set(FinishReason, "error");
+        }
     }
 }
