@@ -125,6 +125,8 @@
         <PackageVersion Include="Microsoft.Identity.Client" Version="4.79.2"/>
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1"/>
 		<PackageVersion Include="Microsoft.SemanticKernel" Version="1.68.0" />
+		<PackageVersion Include="Microsoft.SemanticKernel.Agents.Abstractions" Version="1.68.0" />
+		<PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0" />
 		<PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.58.0-preview" />
 		<PackageVersion Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" Version="1.68.0" />
 		<PackageVersion Include="Microsoft.SemanticKernel.Plugins.Memory" Version="1.58.0-alpha" />
