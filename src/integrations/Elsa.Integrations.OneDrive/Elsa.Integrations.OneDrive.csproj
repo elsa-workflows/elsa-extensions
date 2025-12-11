@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>
+            Provides integration with OneDrive through Microsoft Graph API.
+        </Description>
+        <PackageTags>elsa extension module onedrive microsoftgraph</PackageTags>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Elsa" />
+        <PackageReference Include="Microsoft.Graph" Version="5.38.0" />
+        <PackageReference Include="Azure.Identity" Version="1.10.3" />
+    </ItemGroup>
+
+</Project>
