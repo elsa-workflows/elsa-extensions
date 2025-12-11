@@ -65,7 +65,11 @@ public class AgentWorkflowActivity : CodeActivity
         if (string.IsNullOrWhiteSpace(json))
             throw new InvalidOperationException("The workflow output is empty or null.");
 
-        var outputType = context.ActivityDescriptor.Outputs.Single().Type;
+        var outputs = context.ActivityDescriptor.Outputs;
+        if (outputs.Count != 1)
+            throw new InvalidOperationException($"Expected exactly one output, but found {outputs.Count}");
+
+        var outputType = outputs.First().Type;
 
         // If the target type is object, we want the JSON to be deserialized into an ExpandoObject for dynamic field access. 
         if (outputType == typeof(object))
@@ -73,8 +77,12 @@ public class AgentWorkflowActivity : CodeActivity
 
         var converterOptions = new ObjectConverterOptions(SerializerOptions);
         var outputValue = json.ConvertTo(outputType, converterOptions);
-        var outputDescriptor = activityDescriptor.Outputs.Single();
-        var output = (Output)outputDescriptor.ValueGetter(this);
+        var outputDescriptor = outputs.First();
+        var output = outputDescriptor.ValueGetter(this) as Output;
+        
+        if (output == null)
+            throw new InvalidOperationException("Output descriptor did not return a valid Output object");
+            
         context.Set(output, outputValue);
     }
 }

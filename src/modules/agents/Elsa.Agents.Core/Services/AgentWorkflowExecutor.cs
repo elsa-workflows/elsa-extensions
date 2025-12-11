@@ -184,7 +184,6 @@ public class AgentWorkflowExecutor
 internal class MaxChatHistoryTerminationStrategy : TerminationStrategy
 {
     private readonly int _maxMessages;
-    private int _messageCount;
 
     public MaxChatHistoryTerminationStrategy(int maxMessages)
     {
@@ -193,8 +192,8 @@ internal class MaxChatHistoryTerminationStrategy : TerminationStrategy
 
     protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
     {
-        _messageCount = history.Count;
-        return Task.FromResult(_messageCount >= _maxMessages);
+        // Terminate when history length reaches or exceeds the maximum
+        return Task.FromResult(history.Count >= _maxMessages);
     }
 }
 
