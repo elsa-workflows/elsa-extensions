@@ -14,7 +14,7 @@ public class V3_5 : Migration
     /// <inheritdoc />
     public override void Up()
     {
-        Alter.Table("ActivityExecutionRecords").AddColumn("AggregateFaultCount").AsInt32().NotNullable().WithDefault(0);
+        Alter.Table("ActivityExecutionRecords").AddColumn("AggregateFaultCount").AsInt32().NotNullable().WithDefaultValue(0);
     }
 
     /// <inheritdoc />
