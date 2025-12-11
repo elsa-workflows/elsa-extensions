@@ -16,13 +16,22 @@ public class ConfigurationKernelConfigProvider(
     {
         var kernelConfig = new KernelConfig();
         
-        // Add configuration-based items
-        foreach (var apiKey in options.Value.ApiKeys) 
-            kernelConfig.ApiKeys[apiKey.Name] = apiKey;
-        foreach (var service in options.Value.Services) 
-            kernelConfig.Services[service.Name] = service;
-        foreach (var agent in options.Value.Agents) 
-            kernelConfig.Agents[agent.Name] = agent;
+        // Add configuration-based items (if available)
+        if (options.Value.ApiKeys != null)
+        {
+            foreach (var apiKey in options.Value.ApiKeys) 
+                kernelConfig.ApiKeys[apiKey.Name] = apiKey;
+        }
+        if (options.Value.Services != null)
+        {
+            foreach (var service in options.Value.Services) 
+                kernelConfig.Services[service.Name] = service;
+        }
+        if (options.Value.Agents != null)
+        {
+            foreach (var agent in options.Value.Agents) 
+                kernelConfig.Agents[agent.Name] = agent;
+        }
         
         // Add code-first agents
         foreach (var agentDef in agentDefinitionProvider.GetDefinitions())
