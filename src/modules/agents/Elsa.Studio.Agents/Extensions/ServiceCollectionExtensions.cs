@@ -26,7 +26,9 @@ public static class ServiceCollectionExtensions
                 .AddRemoteApi<IServicesApi>(backendApiConfig)
                 .AddRemoteApi<IPluginsApi>(backendApiConfig)
                 .AddActivityDisplaySettingsProvider<AgentsActivityDisplaySettingsProvider>()
-                .AddScoped<ICreateWorkflowDialogComponentProvider, AICreateWorkflowDialogComponentProvider>()
+                
+            // TODO: Move this to a separate module.
+            //.AddScoped<ICreateWorkflowDialogComponentProvider, AICreateWorkflowDialogComponentProvider>()
             ;
     }
 }

@@ -3,13 +3,6 @@
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     </PropertyGroup>
-	<PropertyGroup Label="PackageVersions">
-		<ElsaVersion>3.7.0-preview.3961</ElsaVersion>
-		<ElsaStudioVersion>3.7.0-preview.1198</ElsaStudioVersion>
-		<MicrosoftNet8Version>8.0.22</MicrosoftNet8Version>
-		<MicrosoftNet9Version>9.0.11</MicrosoftNet9Version>
-		<MicrosoftNet10Version>10.0.0</MicrosoftNet10Version>
-	</PropertyGroup>
     <ItemGroup Label="Elsa">
         <PackageVersion Include="Elsa" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Alterations" Version="$(ElsaVersion)"/>
@@ -55,6 +48,74 @@
         <PackageVersion Include="Elsa.Studio.Shared" Version="$(ElsaStudioVersion)"/>
         <PackageVersion Include="Elsa.Studio.Workflows" Version="$(ElsaStudioVersion)"/>
         <PackageVersion Include="Elsa.Studio.Login.BlazorWasm" Version="$(ElsaStudioVersion)"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0'">
+        <PackageVersion Include="Microsoft.AspNetCore.Components" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.11" PrivateAssets="all"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="1.1.6"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.10.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.11"/>
+        <PackageVersion Include="Microsoft.Extensions.Resilience" Version="9.10.0"/>
+        <PackageVersion Include="Npgsql" Version="9.0.4"/>
+        <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
+        <PackageVersion Include="Oracle.EntityFrameworkCore" Version="9.23.26000"/>
+        <PackageVersion Include="System.Formats.Asn1" Version="9.0.11"/>
+        <PackageVersion Include="System.Text.Json" Version="9.0.11"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <PackageVersion Include="Microsoft.AspNetCore.Components" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.1" PrivateAssets="all"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="1.1.6"/>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.6.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.1"/>
+        <PackageVersion Include="Microsoft.Extensions.Resilience" Version="10.0.1"/>
+        <PackageVersion Include="Npgsql" Version="10.0.0"/>
+        <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0"/>
+        <PackageVersion Include="Oracle.EntityFrameworkCore" Version="10.23.26000"/>
+        <PackageVersion Include="System.Formats.Asn1" Version="10.0.1"/>
+        <PackageVersion Include="System.Text.Json" Version="10.0.1"/>
     </ItemGroup>
     <ItemGroup>
         <PackageVersion Include="AppAny.Quartz.EntityFrameworkCore.Migrations" Version="0.5.1"/>
@@ -106,30 +167,14 @@
         <PackageVersion Include="MassTransit.RabbitMQ" Version="8.5.7"/>
         <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0"/>
         <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.3"/>
-		<PackageVersion Include="Microsoft.Data.Sqlite" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="1.1.6"/>
-		<PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.6.0"/>
-		<PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.Options" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.Extensions.Resilience" Version="$(MicrosoftNet10Version)"/>
         <PackageVersion Include="Microsoft.Identity.Client" Version="4.79.2"/>
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1"/>
-		<PackageVersion Include="Microsoft.SemanticKernel" Version="1.68.0" />
-		<PackageVersion Include="Microsoft.SemanticKernel.Agents.Abstractions" Version="1.68.0" />
-		<PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0" />
-		<PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.58.0-preview" />
-		<PackageVersion Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" Version="1.68.0" />
-		<PackageVersion Include="Microsoft.SemanticKernel.Plugins.Memory" Version="1.58.0-alpha" />
+        <PackageVersion Include="Microsoft.SemanticKernel" Version="1.68.0"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.Agents.Abstractions" Version="1.68.0" />
+        <PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0" />
+        <PackageVersion Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" Version="1.68.0" />
+        <PackageVersion Include="Microsoft.SemanticKernel.Plugins.Memory" Version="1.68.0-alpha" />
+        <PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.68.0-preview" />
         <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0"/>
         <PackageVersion Include="MongoDB.Driver" Version="3.5.2"/>
         <PackageVersion Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" Version="3.0.0"/>
@@ -139,10 +184,10 @@
         <PackageVersion Include="NSubstitute" Version="5.3.0"/>
         <PackageVersion Include="NuGet.Packaging" Version="7.0.1"/>
         <PackageVersion Include="NuGet.Protocol" Version="7.0.1"/>
-		<PackageVersion Include="Npgsql" Version="10.0.0"/>
         <PackageVersion Include="Octokit" Version="14.0.0"/>
         <PackageVersion Include="Open.Linq.AsyncExtensions" Version="1.2.0"/>
         <PackageVersion Include="Polly" Version="8.6.5"/>
+        <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0"/>
         <PackageVersion Include="Proto.Actor" Version="1.8.0"/>
         <PackageVersion Include="Proto.Cluster" Version="1.8.0"/>
         <PackageVersion Include="Proto.Cluster.CodeGen" Version="1.8.0"/>
@@ -165,9 +210,7 @@
         <PackageVersion Include="SlackNet" Version="0.17.7"/>
         <PackageVersion Include="System.CommandLine" Version="2.0.0"/>
         <PackageVersion Include="System.Data.SqlClient" Version="4.9.0"/>
-		<PackageVersion Include="System.Formats.Asn1" Version="$(MicrosoftNet10Version)"/>
         <PackageVersion Include="System.Linq.Async" Version="7.0.0"/>
-		<PackageVersion Include="System.Text.Json" Version="$(MicrosoftNet10Version)"/>
         <PackageVersion Include="Testcontainers" Version="4.9.0"/>
         <PackageVersion Include="Testcontainers.PostgreSql" Version="4.9.0"/>
         <PackageVersion Include="Testcontainers.RabbitMq" Version="4.9.0"/>
@@ -179,47 +222,4 @@
         <PackageVersion Include="xunit.extensibility.core" Version="2.9.3"/>
         <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5"/>
     </ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageVersion Include="Microsoft.AspNetCore.Components" Version="$(MicrosoftNet8Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftNet8Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftNet8Version)" PrivateAssets="all"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="$(MicrosoftNet8Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(MicrosoftNet8Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftNet8Version)"/>
-		<PackageVersion Include="Oracle.EntityFrameworkCore" Version="8.23.26000"/>
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-		<PackageVersion Include="Microsoft.AspNetCore.Components" Version="$(MicrosoftNet9Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftNet9Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftNet9Version)" PrivateAssets="all"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="$(MicrosoftNet9Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(MicrosoftNet9Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftNet9Version)"/>
-		<PackageVersion Include="Oracle.EntityFrameworkCore" Version="9.23.26000"/>
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0'">
-		<PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftNet9Version)"/>
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftNet9Version)"/>
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftNet9Version)"/>
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftNet9Version)"/>
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftNet9Version)"/>
-		<PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
-		<PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0"/>
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-		<PackageVersion Include="Microsoft.AspNetCore.Components" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(MicrosoftNet10Version)" PrivateAssets="all"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftNet10Version)"/>
-		<PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0"/>
-		<PackageVersion Include="Oracle.EntityFrameworkCore" Version="10.23.26000"/>
-		<PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0"/>
-	</ItemGroup>
 </Project>
