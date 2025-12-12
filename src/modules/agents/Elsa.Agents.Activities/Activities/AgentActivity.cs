@@ -57,6 +57,8 @@ public class AgentActivity : CodeActivity
 
         if (string.IsNullOrWhiteSpace(json))
             throw new InvalidOperationException("The message content is empty or null.");
+        
+        json = StripCodeFences(json);
 
         var outputType = context.ActivityDescriptor.Outputs.Single().Type;
 
@@ -68,6 +70,17 @@ public class AgentActivity : CodeActivity
         var outputValue = json.ConvertTo(outputType, converterOptions);
         var outputDescriptor = activityDescriptor.Outputs.Single();
         var output = (Output)outputDescriptor.ValueGetter(this);
-        context.Set(output, outputValue);
+        context.Set(output, outputValue, "Output");
+    }
+    
+    private static string StripCodeFences(string content)
+    {
+        var trimmed = content.Trim();
+
+        if (!trimmed.StartsWith("```", StringComparison.Ordinal))
+            return trimmed;
+
+        var lines = trimmed.Split('\n');
+        return lines.Length < 2 ? trimmed : string.Join('\n', lines.Skip(1).Take(lines.Length - 2)).Trim();
     }
 }

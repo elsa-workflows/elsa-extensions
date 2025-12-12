@@ -26,7 +26,6 @@ public class AgentsFeature(IModule module) : FeatureBase(module)
         Services.AddOptions<AgentsOptions>();
 
         Services
-            .AddScoped<KernelFactory>()
             .AddScoped<AgentInvoker>()
             .AddScoped<AgentFrameworkFactory>()
             .AddScoped<AgentWorkflowExecutor>()

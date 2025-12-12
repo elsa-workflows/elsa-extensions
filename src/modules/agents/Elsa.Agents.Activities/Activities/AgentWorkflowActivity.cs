@@ -53,7 +53,6 @@ public class AgentWorkflowActivity : CodeActivity
 
         var kernelConfigProvider = context.GetRequiredService<IKernelConfigProvider>();
         var workflowExecutor = context.GetRequiredService<AgentWorkflowExecutor>();
-        
         var kernelConfig = await kernelConfigProvider.GetKernelConfigAsync(context.CancellationToken);
         
         if (!kernelConfig.AgentWorkflows.TryGetValue(WorkflowName, out var workflowConfig))

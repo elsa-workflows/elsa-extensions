@@ -9,70 +9,34 @@ using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Elsa.Agents;
 
-public class AgentInvoker(
-    IKernelFactory kernelFactory, 
-    IKernelConfigProvider kernelConfigProvider,
-    AgentFrameworkFactory agentFrameworkFactory)
+public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, AgentFrameworkFactory agentFrameworkFactory)
 {
     /// <summary>
     /// Invokes an agent using the Microsoft Agent Framework (new approach).
     /// </summary>
     public async Task<InvokeAgentResult> InvokeAgentAsync(string agentName, IDictionary<string, object?> input, CancellationToken cancellationToken = default)
     {
-        return await InvokeAgentAsync(agentName, input, useAgentFramework: true, cancellationToken);
-    }
-
-    /// <summary>
-    /// Invokes an agent with option to use legacy Semantic Kernel or new Agent Framework.
-    /// </summary>
-    public async Task<InvokeAgentResult> InvokeAgentAsync(string agentName, IDictionary<string, object?> input, bool useAgentFramework, CancellationToken cancellationToken = default)
-    {
-        if (useAgentFramework)
-            return await InvokeAgentWithFrameworkAsync(agentName, input, cancellationToken);
-        else
-            return await InvokeAgentLegacyAsync(agentName, input, cancellationToken);
-    }
-
-    private async Task<InvokeAgentResult> InvokeAgentWithFrameworkAsync(string agentName, IDictionary<string, object?> input, CancellationToken cancellationToken)
-    {
         var kernelConfig = await kernelConfigProvider.GetKernelConfigAsync(cancellationToken);
         var agentConfig = kernelConfig.Agents[agentName];
-        
+
         // Create agent using Agent Framework
         var agent = agentFrameworkFactory.CreateAgent(kernelConfig, agentConfig);
-        
+
         // Create chat history
         ChatHistory chatHistory = [];
-        
+
         // Format and add user input
         var promptTemplateConfig = new PromptTemplateConfig
         {
             Template = agentConfig.PromptTemplate,
             TemplateFormat = "handlebars",
-            Name = agentConfig.FunctionName
+            Name = agentConfig.FunctionName,
+            AllowDangerouslySetContent = true,
+            
         };
 
         var templateFactory = new HandlebarsPromptTemplateFactory();
         var promptTemplate = templateFactory.Create(promptTemplateConfig);
-        var kernelArguments = new KernelArguments(input);
-        string renderedPrompt = await promptTemplate.RenderAsync(agent.Kernel, kernelArguments);
-        
-        chatHistory.AddUserMessage(renderedPrompt);
-
-        // Get response from agent
-        var response = await agent.InvokeAsync(chatHistory, cancellationToken: cancellationToken).LastOrDefaultAsync(cancellationToken);
-        
-        if (response == null)
-            throw new InvalidOperationException("Agent did not produce a response");
-
-        return new InvokeAgentResult(agentConfig, response);
-    }
-
-    private async Task<InvokeAgentResult> InvokeAgentLegacyAsync(string agentName, IDictionary<string, object?> input, CancellationToken cancellationToken)
-    {
-        var kernelConfig = await kernelConfigProvider.GetKernelConfigAsync(cancellationToken);
-        var kernel = kernelFactory.CreateKernel(kernelConfig, agentName);
-        var agentConfig = kernelConfig.Agents[agentName];
         var executionSettings = agentConfig.ExecutionSettings;
         var promptExecutionSettings = new OpenAIPromptExecutionSettings
         {
@@ -91,50 +55,29 @@ public class AgentInvoker(
             [PromptExecutionSettings.DefaultServiceId] = promptExecutionSettings,
         };
         
-        var promptTemplateConfig = new PromptTemplateConfig
-        {
-            Name = agentConfig.FunctionName,
-            Description = agentConfig.Description,
-            Template = agentConfig.PromptTemplate,
-            ExecutionSettings = promptExecutionSettingsDictionary,
-            AllowDangerouslySetContent = true,
-            InputVariables = agentConfig.InputVariables.Select(x => new InputVariable
-            {
-                Name = x.Name,
-                Description = x.Description,
-                IsRequired = true,
-                AllowDangerouslySetContent = true
-            }).ToList()
-        };
+        var kernelArguments = new KernelArguments(input, promptExecutionSettingsDictionary);
+        var renderedPrompt = await promptTemplate.RenderAsync(agent.Kernel, kernelArguments, cancellationToken);
 
-        var templateFactory = new HandlebarsPromptTemplateFactory();
-
-        var promptConfig = new PromptTemplateConfig
-        {
-            Template = agentConfig.PromptTemplate,
-            TemplateFormat = "handlebars",
-            Name = agentConfig.FunctionName
-        };
-
-        var promptTemplate = templateFactory.Create(promptConfig);
-
-        var kernelArguments = new KernelArguments(input);
-        string renderedPrompt = await promptTemplate.RenderAsync(kernel, kernelArguments);
-
-        ChatHistory chatHistory = [];
         chatHistory.AddUserMessage(renderedPrompt);
+        chatHistory.AddSystemMessage(
+            """"
+              You are a function that returns *only* JSON.
 
-        IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+              Rules:
+              - Return a single valid JSON object.
+              - Do not add explanations.
+              - Do not add code fences.
+              - Do not prefix with ```json or any other markers.
+              - Output must start with { and end with }.
+              
+              If there's a problem with the JSON input, include the exact JSON input in your response for troubleshooting.
+            """");
 
-        OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
-        {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-        };
+        // Get response from agent
+        var response = await agent.InvokeAsync(chatHistory, cancellationToken: cancellationToken).LastOrDefaultAsync(cancellationToken);
 
-        var response = await chatCompletion.GetChatMessageContentAsync(
-            chatHistory,
-            executionSettings: openAIPromptExecutionSettings,
-            kernel: kernel);
+        if (response == null)
+            throw new InvalidOperationException("Agent did not produce a response");
 
         return new(agentConfig, response);
     }

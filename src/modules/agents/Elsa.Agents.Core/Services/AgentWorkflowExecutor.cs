@@ -65,7 +65,7 @@ public class AgentWorkflowExecutor
             _ => throw new NotSupportedException($"Workflow type {workflowConfig.WorkflowType} is not supported")
         };
 
-        return new AgentWorkflowResult(workflowConfig, result, chatHistory);
+        return new(workflowConfig, result, chatHistory);
     }
 
     private async Task<string> ExecuteSequentialWorkflowAsync(
@@ -124,7 +124,7 @@ public class AgentWorkflowExecutor
         switch (config.Termination.Type)
         {
             case TerminationType.MaxMessages:
-                agentChat.ExecutionSettings = new AgentGroupChatSettings
+                agentChat.ExecutionSettings = new()
                 {
                     TerminationStrategy = new MaxChatHistoryTerminationStrategy(config.Termination.MaxMessages)
                 };
@@ -132,7 +132,7 @@ public class AgentWorkflowExecutor
             case TerminationType.Keyword:
                 if (!string.IsNullOrEmpty(config.Termination.TerminationKeyword))
                 {
-                    agentChat.ExecutionSettings = new AgentGroupChatSettings
+                    agentChat.ExecutionSettings = new()
                     {
                         TerminationStrategy = new KeywordTerminationStrategy(config.Termination.TerminationKeyword)
                     };
@@ -152,14 +152,14 @@ public class AgentWorkflowExecutor
         switch (strategyConfig.Type)
         {
             case SelectionStrategyType.Sequential:
-                agentChat.ExecutionSettings = new AgentGroupChatSettings
+                agentChat.ExecutionSettings = new()
                 {
                     SelectionStrategy = new SequentialSelectionStrategy()
                 };
                 break;
             case SelectionStrategyType.RoundRobin:
                 // Round-robin is similar to sequential in most implementations
-                agentChat.ExecutionSettings = new AgentGroupChatSettings
+                agentChat.ExecutionSettings = new()
                 {
                     SelectionStrategy = new SequentialSelectionStrategy()
                 };
