@@ -23,7 +23,7 @@ public class PluginDescriptor
     {
         var pluginType = typeof(TPlugin);
         var description = pluginType.GetCustomAttribute<DescriptionAttribute>()?.Description ?? string.Empty;
-        return new PluginDescriptor
+        return new()
         {
             Name = name ?? pluginType.Name.Replace("Plugin", ""),
             Description = description,

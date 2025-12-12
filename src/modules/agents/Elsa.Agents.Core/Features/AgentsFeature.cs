@@ -3,6 +3,7 @@ using Elsa.Features.Abstractions;
 using Elsa.Features.Services;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Elsa.Agents.Features;
 
@@ -23,18 +24,18 @@ public class AgentsFeature(IModule module) : FeatureBase(module)
     /// <inheritdoc />
     public override void Apply()
     {
-        Services.AddOptions<AgentsOptions>();
+        Services.AddOptions<ConfiguredAgentOptions>();
 
         Services
             .AddScoped<AgentInvoker>()
             .AddScoped<AgentFrameworkFactory>()
-            .AddScoped<AgentWorkflowExecutor>()
             .AddScoped<IPluginDiscoverer, PluginDiscoverer>()
             .AddScoped<IServiceDiscoverer, ServiceDiscoverer>()
-            .AddScoped<IAgentDefinitionProvider, AgentDefinitionProvider>()
-            .AddScoped<IAgentWorkflowDefinitionProvider, AgentWorkflowDefinitionProvider>()
             .AddScoped(_kernelConfigProviderFactory)
             .AddScoped<ConfigurationKernelConfigProvider>()
+            .AddScoped<IAgentResolver, DefaultAgentResolver>()
+            .AddScoped<IAgentProvider, KernelConfigAgentProvider>()
+            .AddScoped<IAgentProvider, CodeFirstAgentProvider>()
             .AddPluginProvider<ImageGeneratorPluginProvider>()
             .AddPluginProvider<DocumentQueryPluginProvider>()
             .AddAgentServiceProvider<OpenAIChatCompletionProvider>()

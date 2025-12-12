@@ -10,7 +10,7 @@ public static class AgentConfigExtensions
 {
     public static OpenAIPromptExecutionSettings ToOpenAIPromptExecutionSettings(this AgentConfig agentConfig)
     {
-        return new OpenAIPromptExecutionSettings
+        return new()
         {
             Temperature = agentConfig.ExecutionSettings.Temperature,
             TopP = agentConfig.ExecutionSettings.TopP,
@@ -31,7 +31,7 @@ public static class AgentConfigExtensions
             [PromptExecutionSettings.DefaultServiceId] = agentConfig.ToOpenAIPromptExecutionSettings(),
         };
 
-        return new PromptTemplateConfig
+        return new()
         {
             Name = agentConfig.FunctionName,
             Description = agentConfig.Description,

@@ -108,7 +108,7 @@ public class AgentActivityProvider(
 
     private async Task<ActivityDescriptor> CreateAgentWorkflowActivityDescriptor(AgentWorkflowConfig workflowConfig, CancellationToken cancellationToken)
     {
-        var activityDescriptor = await activityDescriber.DescribeActivityAsync(typeof(AgentWorkflowActivity), cancellationToken);
+        var activityDescriptor = await activityDescriber.DescribeActivityAsync(typeof(AgentActivity), cancellationToken);
         var activityTypeName = $"Elsa.Agents.Workflows.{workflowConfig.Name.Pascalize()}";
         activityDescriptor.Name = workflowConfig.Name.Pascalize();
         activityDescriptor.TypeName = activityTypeName;
@@ -117,13 +117,14 @@ public class AgentActivityProvider(
         activityDescriptor.IsBrowsable = true;
         activityDescriptor.Category = "Agent Workflows";
         activityDescriptor.Kind = ActivityKind.Task;
-        activityDescriptor.CustomProperties["RootType"] = nameof(AgentWorkflowActivity);
+        activityDescriptor.CustomProperties["RootType"] = nameof(AgentActivity);
 
         activityDescriptor.Constructor = context =>
         {
-            var activity = context.CreateActivity<AgentWorkflowActivity>();
+            var activity = context.CreateActivity<AgentActivity>();
             activity.Type = activityTypeName;
-            activity.WorkflowName = workflowConfig.Name;
+            // Workflows will be resolved by name via IAgentResolver.
+            activity.AgentName = workflowConfig.Name;
             return activity;
         };
 

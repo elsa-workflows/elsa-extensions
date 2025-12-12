@@ -13,27 +13,14 @@ namespace Elsa.Agents;
 /// <summary>
 /// Factory for creating Agent Framework agents from Elsa agent configurations.
 /// </summary>
-public class AgentFrameworkFactory
+public class AgentFrameworkFactory(
+    IPluginDiscoverer pluginDiscoverer,
+    IServiceDiscoverer serviceDiscoverer,
+    ILoggerFactory loggerFactory,
+    IServiceProvider serviceProvider,
+    ILogger<AgentFrameworkFactory> logger)
 {
-    private readonly IPluginDiscoverer _pluginDiscoverer;
-    private readonly IServiceDiscoverer _serviceDiscoverer;
-    private readonly ILoggerFactory _loggerFactory;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<AgentFrameworkFactory> _logger;
-
-    public AgentFrameworkFactory(
-        IPluginDiscoverer pluginDiscoverer,
-        IServiceDiscoverer serviceDiscoverer,
-        ILoggerFactory loggerFactory,
-        IServiceProvider serviceProvider,
-        ILogger<AgentFrameworkFactory> logger)
-    {
-        _pluginDiscoverer = pluginDiscoverer;
-        _serviceDiscoverer = serviceDiscoverer;
-        _loggerFactory = loggerFactory;
-        _serviceProvider = serviceProvider;
-        _logger = logger;
-    }
+    private readonly ILoggerFactory _loggerFactory = loggerFactory;
 
     /// <summary>
     /// Creates a ChatCompletionAgent from an Elsa agent configuration.
@@ -42,13 +29,23 @@ public class AgentFrameworkFactory
     {
         var kernel = CreateKernel(kernelConfig, agentConfig);
         
-        return new ChatCompletionAgent
+        return new()
         {
             Name = agentConfig.Name,
             Description = agentConfig.Description,
             Instructions = agentConfig.PromptTemplate,
             Kernel = kernel
         };
+    }
+
+    /// <summary>
+    /// Creates an IElsaAgent adapter for a given configuration, so callers can
+    /// work against a unified abstraction regardless of the underlying implementation.
+    /// </summary>
+    public IElsaAgent CreateElsaAgent(KernelConfig kernelConfig, AgentConfig agentConfig)
+    {
+        var skAgent = CreateAgent(kernelConfig, agentConfig);
+        return new SemanticKernelElsaAgent(skAgent);
     }
 
     /// <summary>
@@ -67,13 +64,13 @@ public class AgentFrameworkFactory
 
     private void ApplyAgentConfig(IKernelBuilder builder, KernelConfig kernelConfig, AgentConfig agentConfig)
     {
-        var services = _serviceDiscoverer.Discover().ToDictionary(x => x.Name);
+        var services = serviceDiscoverer.Discover().ToDictionary(x => x.Name);
         
         foreach (string serviceName in agentConfig.Services)
         {
             if (!kernelConfig.Services.TryGetValue(serviceName, out var serviceConfig))
             {
-                _logger.LogWarning($"Service {serviceName} not found");
+                logger.LogWarning($"Service {serviceName} not found");
                 continue;
             }
 
@@ -87,7 +84,7 @@ public class AgentFrameworkFactory
     {
         if (!services.TryGetValue(serviceConfig.Type, out var serviceProvider))
         {
-            _logger.LogWarning($"Service provider {serviceConfig.Type} not found");
+            logger.LogWarning($"Service provider {serviceConfig.Type} not found");
             return;
         }
         
@@ -97,17 +94,17 @@ public class AgentFrameworkFactory
     
     private void AddPlugins(IKernelBuilder builder, AgentConfig agent)
     {
-        var plugins = _pluginDiscoverer.GetPluginDescriptors().ToDictionary(x => x.Name);
+        var plugins = pluginDiscoverer.GetPluginDescriptors().ToDictionary(x => x.Name);
         foreach (var pluginName in agent.Plugins)
         {
             if (!plugins.TryGetValue(pluginName, out var pluginDescriptor))
             {
-                _logger.LogWarning($"Plugin {pluginName} not found");
+                logger.LogWarning($"Plugin {pluginName} not found");
                 continue;
             }
 
             var pluginType = pluginDescriptor.PluginType;
-            var pluginInstance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, pluginType);
+            var pluginInstance = ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, pluginType);
             builder.Plugins.AddFromObject(pluginInstance, pluginName);
         }
     }

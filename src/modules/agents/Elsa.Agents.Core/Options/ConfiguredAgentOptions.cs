@@ -1,6 +1,6 @@
 namespace Elsa.Agents;
 
-public class AgentsOptions
+public class ConfiguredAgentOptions
 {
     public ICollection<ApiKeyConfig> ApiKeys { get; set; } = new List<ApiKeyConfig>();
     public ICollection<ServiceConfig> Services { get; set; } = new List<ServiceConfig>();

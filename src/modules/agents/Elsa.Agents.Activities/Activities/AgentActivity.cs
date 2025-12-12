@@ -44,22 +44,23 @@ public class AgentActivity : CodeActivity
             var inputValue = input != null ? context.Get(input.MemoryBlockReference()) : null;
 
             if (inputValue is ExpandoObject expandoObject)
-            {
                 inputValue = expandoObject.ConvertTo<string>();
-            }
             
             functionInput[inputDescriptor.Name] = inputValue;
         }
 
-        var agentInvoker = context.GetRequiredService<AgentInvoker>();
-        var result = await agentInvoker.InvokeAgentAsync(AgentName, functionInput, context.CancellationToken);
-        var json = result.ChatMessageContent.Content?.Trim();
+        // Resolve the agent via the unified abstraction.
+        var agentResolver = context.GetRequiredService<IAgentResolver>();
+        var agent = await agentResolver.ResolveAsync(AgentName, context.CancellationToken);
 
-        if (string.IsNullOrWhiteSpace(json))
-            throw new InvalidOperationException("The message content is empty or null.");
-        
-        json = StripCodeFences(json);
-
+        // For now, pass the serialized input dictionary as a JSON prompt to the agent
+        // to keep compatibility with the existing JSON-output expectations.
+        var agentExecutionContext = new AgentExecutionContext
+        {
+            CancellationToken = context.CancellationToken
+        };
+        var agentExecutionResponse = await agent.RunAsync(agentExecutionContext);
+        var json = StripCodeFences(agentExecutionResponse.Text);
         var outputType = context.ActivityDescriptor.Outputs.Single().Type;
 
         // If the target type is object, we want the JSON to be deserialized into an ExpandoObject for dynamic field access. 
@@ -69,7 +70,7 @@ public class AgentActivity : CodeActivity
         var converterOptions = new ObjectConverterOptions(SerializerOptions);
         var outputValue = json.ConvertTo(outputType, converterOptions);
         var outputDescriptor = activityDescriptor.Outputs.Single();
-        var output = (Output)outputDescriptor.ValueGetter(this);
+        var output = (Output?)outputDescriptor.ValueGetter(this);
         context.Set(output, outputValue, "Output");
     }
     
