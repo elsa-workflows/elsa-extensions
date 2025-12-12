@@ -36,19 +36,14 @@ public class AgentWorkflowDefinitionProviderTests
         Assert.Empty(result);
     }
 
-    private class TestWorkflowDefinition : IAgentWorkflowDefinition
+    private class TestWorkflowDefinition(string name) : IAgentWorkflowDefinition
     {
-        public TestWorkflowDefinition(string name)
-        {
-            Name = name;
-        }
-
-        public string Name { get; }
+        public string Name { get; } = name;
         public string Description => $"Test workflow {Name}";
 
         public AgentWorkflowConfig GetWorkflowConfig()
         {
-            return new AgentWorkflowConfig
+            return new()
             {
                 Name = Name,
                 Description = Description,
@@ -56,7 +51,7 @@ public class AgentWorkflowDefinitionProviderTests
                 Agents = Array.Empty<string>(),
                 Services = Array.Empty<string>(),
                 InputVariables = Array.Empty<InputVariableConfig>(),
-                OutputVariable = new OutputVariableConfig()
+                OutputVariable = new()
             };
         }
     }
