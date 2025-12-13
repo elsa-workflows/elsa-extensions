@@ -277,6 +277,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data", "data", "{6D2A4421-A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Data.Csv", "src\modules\data\Elsa.Data.Csv\Elsa.Data.Csv.csproj", "{015646EB-EC33-4ADF-8417-B9D1A6B7CF06}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{60A25F2D-634D-438A-87EA-F204677978BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Agents.Tests", "test\modules\agents\Elsa.Agents.Tests\Elsa.Agents.Tests.csproj", "{F997734B-468C-40ED-9CBB-F759F71AA06E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -627,6 +631,10 @@ Global
 		{015646EB-EC33-4ADF-8417-B9D1A6B7CF06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{015646EB-EC33-4ADF-8417-B9D1A6B7CF06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{015646EB-EC33-4ADF-8417-B9D1A6B7CF06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F997734B-468C-40ED-9CBB-F759F71AA06E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F997734B-468C-40ED-9CBB-F759F71AA06E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F997734B-468C-40ED-9CBB-F759F71AA06E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F997734B-468C-40ED-9CBB-F759F71AA06E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -751,6 +759,8 @@ Global
 		{BEB35A25-5A80-4B56-A1EC-F005288CD11C} = {AAD61D93-7C78-42C4-9F37-2564D127A668}
 		{6D2A4421-A388-4BEE-BB11-D0FC32A80A10} = {30CF0330-4B09-4784-B499-46BED303810B}
 		{015646EB-EC33-4ADF-8417-B9D1A6B7CF06} = {6D2A4421-A388-4BEE-BB11-D0FC32A80A10}
+		{60A25F2D-634D-438A-87EA-F204677978BE} = {3DDE6F89-531C-47F8-9CD7-7A4E6984FA48}
+		{F997734B-468C-40ED-9CBB-F759F71AA06E} = {60A25F2D-634D-438A-87EA-F204677978BE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11A771DA-B728-445E-8A88-AE1C84C3B3A6}

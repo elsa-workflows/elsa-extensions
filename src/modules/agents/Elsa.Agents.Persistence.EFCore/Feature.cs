@@ -18,11 +18,7 @@ public class EFCoreAgentPersistenceFeature(IModule module) : PersistenceFeatureB
     {
         Module.Configure<AgentPersistenceFeature>(feature =>
         {
-            feature
-                .UseApiKeyStore(sp => sp.GetRequiredService<EFCoreApiKeyStore>())
-                .UseServiceStore(sp => sp.GetRequiredService<EFCoreServiceStore>())
-                .UseAgentStore(sp => sp.GetRequiredService<EFCoreAgentStore>());
-                ;
+            feature.UseAgentStore(sp => sp.GetRequiredService<EFCoreAgentStore>());
         });
     }
 
@@ -30,8 +26,6 @@ public class EFCoreAgentPersistenceFeature(IModule module) : PersistenceFeatureB
     public override void Apply()
     {
         base.Apply();
-        AddEntityStore<ApiKeyDefinition, EFCoreApiKeyStore>();
-        AddEntityStore<ServiceDefinition, EFCoreServiceStore>();
         AddEntityStore<AgentDefinition, EFCoreAgentStore>();
     }
 }

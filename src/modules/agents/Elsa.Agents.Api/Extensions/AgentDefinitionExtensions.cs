@@ -8,7 +8,7 @@ public static class AgentDefinitionExtensions
 {
     public static AgentModel ToModel(this AgentDefinition agentDefinition)
     {
-        return new AgentModel
+        return new()
         {
             Id = agentDefinition.Id,
             Name = agentDefinition.Name,
@@ -17,9 +17,7 @@ public static class AgentDefinitionExtensions
             ExecutionSettings = agentDefinition.AgentConfig.ExecutionSettings,
             InputVariables = agentDefinition.AgentConfig.InputVariables,
             OutputVariable = agentDefinition.AgentConfig.OutputVariable,
-            Services = agentDefinition.AgentConfig.Services,
-            Plugins = agentDefinition.AgentConfig.Plugins,
-            FunctionName = agentDefinition.AgentConfig.FunctionName,
+            Skills = agentDefinition.AgentConfig.Skills,
             PromptTemplate = agentDefinition.AgentConfig.PromptTemplate
         };
     }

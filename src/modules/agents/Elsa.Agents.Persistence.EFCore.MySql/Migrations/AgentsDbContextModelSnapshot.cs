@@ -17,7 +17,7 @@ namespace Elsa.Agents.Persistence.EFCore.MySql.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Elsa")
-                .HasAnnotation("ProductVersion", "8.0.13")
+                .HasAnnotation("ProductVersion", "9.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -51,64 +51,6 @@ namespace Elsa.Agents.Persistence.EFCore.MySql.Migrations
                         .HasDatabaseName("IX_AgentDefinition_TenantId");
 
                     b.ToTable("AgentDefinitions", "Elsa");
-                });
-
-            modelBuilder.Entity("Elsa.Agents.Persistence.Entities.ApiKeyDefinition", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .HasDatabaseName("IX_ApiKeyDefinition_Name");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("IX_ApiKeyDefinition_TenantId");
-
-                    b.ToTable("ApiKeysDefinitions", "Elsa");
-                });
-
-            modelBuilder.Entity("Elsa.Agents.Persistence.Entities.ServiceDefinition", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Settings")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .HasDatabaseName("IX_ServiceDefinition_Name");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("IX_ServiceDefinition_TenantId");
-
-                    b.ToTable("ServicesDefinitions", "Elsa");
                 });
 #pragma warning restore 612, 618
         }

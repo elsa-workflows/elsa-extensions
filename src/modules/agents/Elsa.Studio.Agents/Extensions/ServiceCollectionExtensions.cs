@@ -20,13 +20,12 @@ public static class ServiceCollectionExtensions
         return services
                 .AddScoped<IFeature, Feature>()
                 .AddScoped<IMenuProvider, AgentsMenu>()
-                .AddScoped<IMenuGroupProvider, AgentsMenu>()
                 .AddRemoteApi<IAgentsApi>(backendApiConfig)
-                .AddRemoteApi<IApiKeysApi>(backendApiConfig)
-                .AddRemoteApi<IServicesApi>(backendApiConfig)
-                .AddRemoteApi<IPluginsApi>(backendApiConfig)
+                .AddRemoteApi<ISkillsApi>(backendApiConfig)
                 .AddActivityDisplaySettingsProvider<AgentsActivityDisplaySettingsProvider>()
-                .AddScoped<ICreateWorkflowDialogComponentProvider, AICreateWorkflowDialogComponentProvider>()
+                
+            // TODO: Move this to a separate module.
+            //.AddScoped<ICreateWorkflowDialogComponentProvider, AICreateWorkflowDialogComponentProvider>()
             ;
     }
 }

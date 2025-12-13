@@ -16,7 +16,7 @@ namespace Elsa.Agents.Persistence.EFCore.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Elsa")
-                .HasAnnotation("ProductVersion", "8.0.13");
+                .HasAnnotation("ProductVersion", "9.0.11");
 
             modelBuilder.Entity("Elsa.Agents.Persistence.Entities.AgentDefinition", b =>
                 {
@@ -47,64 +47,6 @@ namespace Elsa.Agents.Persistence.EFCore.Sqlite.Migrations
                         .HasDatabaseName("IX_AgentDefinition_TenantId");
 
                     b.ToTable("AgentDefinitions", "Elsa");
-                });
-
-            modelBuilder.Entity("Elsa.Agents.Persistence.Entities.ApiKeyDefinition", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .HasDatabaseName("IX_ApiKeyDefinition_Name");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("IX_ApiKeyDefinition_TenantId");
-
-                    b.ToTable("ApiKeysDefinitions", "Elsa");
-                });
-
-            modelBuilder.Entity("Elsa.Agents.Persistence.Entities.ServiceDefinition", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Settings")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .HasDatabaseName("IX_ServiceDefinition_Name");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("IX_ServiceDefinition_TenantId");
-
-                    b.ToTable("ServicesDefinitions", "Elsa");
                 });
 #pragma warning restore 612, 618
         }

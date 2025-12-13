@@ -1,5 +1,4 @@
 using Elsa.Abstractions;
-using Elsa.Agents;
 using Elsa.Extensions;
 using Elsa.Agents.Persistence.Contracts;
 using Elsa.Models;
@@ -25,6 +24,6 @@ public class Endpoint(IAgentManager agentManager) : ElsaEndpointWithoutRequest<L
     {
         var entities = await agentManager.ListAsync(ct);
         var models = entities.Select(x => x.ToModel()).ToList();
-        return new ListResponse<AgentModel>(models);
+        return new(models);
     }
 }
