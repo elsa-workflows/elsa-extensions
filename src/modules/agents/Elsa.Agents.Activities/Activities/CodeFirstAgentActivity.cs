@@ -11,6 +11,8 @@ using Elsa.Agents.Activities.ActivityProviders;
 using Elsa.Workflows;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Serialization.Converters;
+using Microsoft.Extensions.Options;
+using Microsoft.SemanticKernel.Agents;
 
 namespace Elsa.Agents.Activities;
 
@@ -18,7 +20,7 @@ namespace Elsa.Agents.Activities;
 /// An activity that executes a function of a skilled agent. This is an internal activity that is used by <see cref="AgentActivityProvider"/>.
 /// </summary>
 [Browsable(false)]
-public class AgentActivity : CodeActivity
+public class CodeFirstAgentActivity : CodeActivity
 {
     private static JsonSerializerOptions? _serializerOptions;
 
@@ -34,6 +36,7 @@ public class AgentActivity : CodeActivity
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
+        var cancellationToken = context.CancellationToken;
         var activityDescriptor = context.ActivityDescriptor;
         var inputDescriptors = activityDescriptor.Inputs;
         var functionInput = new Dictionary<string, object?>();
@@ -45,13 +48,13 @@ public class AgentActivity : CodeActivity
 
             if (inputValue is ExpandoObject expandoObject)
                 inputValue = expandoObject.ConvertTo<string>();
-            
+
             functionInput[inputDescriptor.Name] = inputValue;
         }
 
         // Resolve the agent via the unified abstraction.
-        var agentResolver = context.GetRequiredService<IAgentResolver>();
-        var agent = await agentResolver.ResolveAsync(AgentName, context.CancellationToken);
+        var agentResolver = context.GetRequiredService<ICodeFirstAgentResolver>();
+        var agent = await agentResolver.ResolveAsync(AgentName, cancellationToken);
         var agentType = agent.GetType();
         var agentPropertyLookup = agentType.GetProperties().ToDictionary(x => x.Name, x => x);
 
@@ -62,11 +65,8 @@ public class AgentActivity : CodeActivity
             var inputValue = input != null ? context.Get(input.MemoryBlockReference()) : null;
             agentPropertyLookup[inputDescriptor.Name].SetValue(agent, inputValue);
         }
-        
-        var agentExecutionContext = new AgentExecutionContext
-        {
-            CancellationToken = context.CancellationToken
-        };
+
+        var agentExecutionContext = new AgentExecutionContext { CancellationToken = context.CancellationToken };
         var agentExecutionResponse = await agent.RunAsync(agentExecutionContext);
         var responseText = StripCodeFences(agentExecutionResponse.Text);
         var isJsonResponse = IsJsonResponse(responseText);
@@ -87,7 +87,7 @@ public class AgentActivity : CodeActivity
     {
         return text.StartsWith("{", StringComparison.OrdinalIgnoreCase) || text.StartsWith("[", StringComparison.OrdinalIgnoreCase);
     }
-    
+
     private static string StripCodeFences(string content)
     {
         var trimmed = content.Trim();

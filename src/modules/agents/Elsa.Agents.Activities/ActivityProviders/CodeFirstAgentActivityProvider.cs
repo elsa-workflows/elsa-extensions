@@ -40,7 +40,7 @@ public class CodeFirstAgentActivityProvider(
 
     private async Task<ActivityDescriptor> CreateDescriptorForAgentAsync(string key, Type agentType, CancellationToken cancellationToken)
     {
-        var descriptor = await activityDescriber.DescribeActivityAsync(typeof(AgentActivity), cancellationToken);
+        var descriptor = await activityDescriber.DescribeActivityAsync(typeof(CodeFirstAgentActivity), cancellationToken);
         var activityTypeName = $"Elsa.Agents.CodeFirst.{key.Pascalize()}";
 
         descriptor.Name = key.Pascalize();
@@ -49,11 +49,11 @@ public class CodeFirstAgentActivityProvider(
         descriptor.Category = "Code-First Agents";
         descriptor.Kind = ActivityKind.Task;
         descriptor.IsBrowsable = true;
-        descriptor.ClrType = agentType;
+        descriptor.ClrType = typeof(CodeFirstAgentActivity);
 
         descriptor.Constructor = context =>
         {
-            var activity = context.CreateActivity<AgentActivity>();
+            var activity = context.CreateActivity<CodeFirstAgentActivity>();
             activity.Type = activityTypeName;
             activity.AgentName = key;
             return activity;
