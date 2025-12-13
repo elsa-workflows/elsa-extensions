@@ -52,26 +52,40 @@ public class AgentActivity : CodeActivity
         // Resolve the agent via the unified abstraction.
         var agentResolver = context.GetRequiredService<IAgentResolver>();
         var agent = await agentResolver.ResolveAsync(AgentName, context.CancellationToken);
+        var agentType = agent.GetType();
+        var agentPropertyLookup = agentType.GetProperties().ToDictionary(x => x.Name, x => x);
 
-        // For now, pass the serialized input dictionary as a JSON prompt to the agent
-        // to keep compatibility with the existing JSON-output expectations.
+        // Copy activity input descriptor values into the agent public properties:
+        foreach (var inputDescriptor in inputDescriptors)
+        {
+            var input = (Input?)inputDescriptor.ValueGetter(this);
+            var inputValue = input != null ? context.Get(input.MemoryBlockReference()) : null;
+            agentPropertyLookup[inputDescriptor.Name].SetValue(agent, inputValue);
+        }
+        
         var agentExecutionContext = new AgentExecutionContext
         {
             CancellationToken = context.CancellationToken
         };
         var agentExecutionResponse = await agent.RunAsync(agentExecutionContext);
-        var json = StripCodeFences(agentExecutionResponse.Text);
+        var responseText = StripCodeFences(agentExecutionResponse.Text);
+        var isJsonResponse = IsJsonResponse(responseText);
         var outputType = context.ActivityDescriptor.Outputs.Single().Type;
 
-        // If the target type is object, we want the JSON to be deserialized into an ExpandoObject for dynamic field access. 
-        if (outputType == typeof(object))
+        // If the target type is object and the response is in JSON format, we want it to be deserialized into an ExpandoObject for dynamic field access. 
+        if (outputType == typeof(object) && isJsonResponse)
             outputType = typeof(ExpandoObject);
 
         var converterOptions = new ObjectConverterOptions(SerializerOptions);
-        var outputValue = json.ConvertTo(outputType, converterOptions);
+        var outputValue = isJsonResponse ? responseText.ConvertTo(outputType, converterOptions) : responseText;
         var outputDescriptor = activityDescriptor.Outputs.Single();
         var output = (Output?)outputDescriptor.ValueGetter(this);
         context.Set(output, outputValue, "Output");
+    }
+
+    private static bool IsJsonResponse(string text)
+    {
+        return text.StartsWith("{", StringComparison.OrdinalIgnoreCase) || text.StartsWith("[", StringComparison.OrdinalIgnoreCase);
     }
     
     private static string StripCodeFences(string content)

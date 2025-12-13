@@ -25,6 +25,7 @@ public class AgentsFeature(IModule module) : FeatureBase(module)
     public override void Apply()
     {
         Services.AddOptions<ConfiguredAgentOptions>();
+        Services.AddOptions<CodeFirstAgentOptions>();
 
         Services
             .AddScoped<AgentInvoker>()

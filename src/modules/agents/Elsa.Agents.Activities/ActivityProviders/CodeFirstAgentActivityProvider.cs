@@ -7,6 +7,7 @@ using Elsa.Workflows;
 using Elsa.Workflows.Models;
 using Humanizer;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Options;
 
 namespace Elsa.Agents.Activities.ActivityProviders;
 
@@ -18,7 +19,7 @@ namespace Elsa.Agents.Activities.ActivityProviders;
 /// </summary>
 [UsedImplicitly]
 public class CodeFirstAgentActivityProvider(
-    CodeFirstAgentOptions codeFirstAgentOptions,
+    IOptions<CodeFirstAgentOptions> codeFirstAgentOptions,
     IActivityDescriber activityDescriber,
     IWellKnownTypeRegistry wellKnownTypeRegistry) : IActivityProvider
 {
@@ -26,7 +27,7 @@ public class CodeFirstAgentActivityProvider(
     {
         var descriptors = new List<ActivityDescriptor>();
 
-        foreach (var kvp in codeFirstAgentOptions.CodeFirstAgents)
+        foreach (var kvp in codeFirstAgentOptions.Value.CodeFirstAgents)
         {
             var key = kvp.Key;
             var type = kvp.Value;
@@ -47,7 +48,8 @@ public class CodeFirstAgentActivityProvider(
         descriptor.DisplayName = key.Humanize().Transform(To.TitleCase);
         descriptor.Category = "Code-First Agents";
         descriptor.Kind = ActivityKind.Task;
-        descriptor.CustomProperties["RootType"] = nameof(AgentActivity);
+        descriptor.IsBrowsable = true;
+        descriptor.ClrType = agentType;
 
         descriptor.Constructor = context =>
         {
@@ -92,7 +94,7 @@ public class CodeFirstAgentActivityProvider(
         var outputDescriptor = new OutputDescriptor
         {
             Name = outputName,
-            Description = "The agent's JSON output.",
+            Description = "The agent's output.",
             Type = typeof(object),
             IsSynthetic = true,
             ValueGetter = activity => activity.SyntheticProperties.GetValueOrDefault(outputName),

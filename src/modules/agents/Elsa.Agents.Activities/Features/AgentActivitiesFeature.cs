@@ -23,6 +23,7 @@ public class AgentActivitiesFeature(IModule module) : FeatureBase(module)
     {
         Services
             .AddActivityProvider<AgentActivityProvider>()
+            .AddActivityProvider<CodeFirstAgentActivityProvider>()
             .AddNotificationHandler<RefreshActivityRegistry>()
             ;
     }

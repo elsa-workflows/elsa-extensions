@@ -55,7 +55,7 @@ public class AgentActivityProvider(
         activityDescriptor.IsBrowsable = true;
         activityDescriptor.Category = "Agents";
         activityDescriptor.Kind = ActivityKind.Task;
-        activityDescriptor.CustomProperties["RootType"] = nameof(AgentActivity);
+        activityDescriptor.ClrType = typeof(AgentActivity);
 
         activityDescriptor.Constructor = context =>
         {
