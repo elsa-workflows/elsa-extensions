@@ -15,7 +15,7 @@ namespace Elsa.Agents.Activities.ActivityProviders;
 /// Provides activities for each code-first agent registered via <see cref="CodeFirstAgentOptions"/>.
 /// Inputs are derived from public properties on the agent type using simple
 /// reflection rules. Execution is delegated to <see cref="AgentActivity"/>
-/// via the common <see cref="IElsaAgent"/> abstraction.
+/// via the common <see cref="IAgent"/> abstraction.
 /// </summary>
 [UsedImplicitly]
 public class CodeFirstAgentActivityProvider(

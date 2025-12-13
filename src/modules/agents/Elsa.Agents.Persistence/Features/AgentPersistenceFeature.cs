@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Elsa.Agents.Persistence.Features;
 
-[DependsOn(typeof(AgentsFeature))]
+[DependsOn(typeof(AgentsCoreFeature))]
 public class AgentPersistenceFeature(IModule module) : FeatureBase(module)
 {
     private Func<IServiceProvider, IApiKeyStore> _apiKeyStoreFactory = sp => sp.GetRequiredService<MemoryApiKeyStore>();
@@ -36,7 +36,7 @@ public class AgentPersistenceFeature(IModule module) : FeatureBase(module)
 
     public override void Configure()
     {
-        Module.UseAgents(agents => agents.UseKernelConfigProvider(sp => sp.GetRequiredService<StoreKernelConfigProvider>()));
+        Module.UseAgentsCore(agents => agents.UseKernelConfigProvider(sp => sp.GetRequiredService<StoreKernelConfigProvider>()));
     }
 
     public override void Apply()

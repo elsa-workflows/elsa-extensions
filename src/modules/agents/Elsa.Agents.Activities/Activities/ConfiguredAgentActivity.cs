@@ -10,6 +10,7 @@ using Elsa.Agents.Activities.ActivityProviders;
 using Elsa.Workflows;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Serialization.Converters;
+using static Elsa.Agents.Activities.Extensions.ResponseHelpers;
 
 namespace Elsa.Agents.Activities;
 
@@ -63,21 +64,5 @@ public class ConfiguredAgentActivity : CodeActivity
         var outputDescriptor = activityDescriptor.Outputs.Single();
         var output = (Output?)outputDescriptor.ValueGetter(this);
         context.Set(output, outputValue, "Output");
-    }
-
-    private static bool IsJsonResponse(string text)
-    {
-        return text.StartsWith("{", StringComparison.OrdinalIgnoreCase) || text.StartsWith("[", StringComparison.OrdinalIgnoreCase);
-    }
-    
-    private static string StripCodeFences(string content)
-    {
-        var trimmed = content.Trim();
-
-        if (!trimmed.StartsWith("```", StringComparison.Ordinal))
-            return trimmed;
-
-        var lines = trimmed.Split('\n');
-        return lines.Length < 2 ? trimmed : string.Join('\n', lines.Skip(1).Take(lines.Length - 2)).Trim();
     }
 }

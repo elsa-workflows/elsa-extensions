@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Elsa.Agents;
 
-public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, AgentFrameworkFactory agentFrameworkFactory)
+public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, AgentFactory agentFactory)
 {
     /// <summary>
     /// Invokes an agent using the Microsoft Agent Framework (new approach).
@@ -20,7 +20,7 @@ public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, AgentFrame
         var agentConfig = kernelConfig.Agents[agentName];
 
         // Create agent using Agent Framework
-        var agent = agentFrameworkFactory.CreateAgent(kernelConfig, agentConfig);
+        var agent = agentFactory.CreateAgent(kernelConfig, agentConfig);
 
         // Create chat history
         ChatHistory chatHistory = [];
@@ -32,7 +32,6 @@ public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, AgentFrame
             TemplateFormat = "handlebars",
             Name = agentConfig.FunctionName,
             AllowDangerouslySetContent = true,
-            
         };
 
         var templateFactory = new HandlebarsPromptTemplateFactory();

@@ -12,7 +12,7 @@ public static class ModuleExtensions
     /// <summary>
     /// Installs the Semantic Kernel API feature.
     /// </summary>
-    public static IModule UseAgents(this IModule module, Action<AgentsFeature>? configure = null)
+    public static IModule UseAgentsCore(this IModule module, Action<AgentsCoreFeature>? configure = null)
     {
         return module.Use(configure);
     }

@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 #pragma warning disable SKEXP0001
 #pragma warning disable SKEXP0010
@@ -13,15 +12,12 @@ namespace Elsa.Agents;
 /// <summary>
 /// Factory for creating Agent Framework agents from Elsa agent configurations.
 /// </summary>
-public class AgentFrameworkFactory(
+public class AgentFactory(
     IPluginDiscoverer pluginDiscoverer,
     IServiceDiscoverer serviceDiscoverer,
-    ILoggerFactory loggerFactory,
     IServiceProvider serviceProvider,
-    ILogger<AgentFrameworkFactory> logger)
+    ILogger<AgentFactory> logger)
 {
-    private readonly ILoggerFactory _loggerFactory = loggerFactory;
-
     /// <summary>
     /// Creates a ChatCompletionAgent from an Elsa agent configuration.
     /// </summary>
@@ -36,16 +32,6 @@ public class AgentFrameworkFactory(
             Instructions = agentConfig.PromptTemplate,
             Kernel = kernel
         };
-    }
-
-    /// <summary>
-    /// Creates an IElsaAgent adapter for a given configuration, so callers can
-    /// work against a unified abstraction regardless of the underlying implementation.
-    /// </summary>
-    public IElsaAgent CreateElsaAgent(KernelConfig kernelConfig, AgentConfig agentConfig)
-    {
-        var skAgent = CreateAgent(kernelConfig, agentConfig);
-        return new SemanticKernelElsaAgent(skAgent);
     }
 
     /// <summary>

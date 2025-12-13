@@ -11,11 +11,11 @@ namespace Elsa.Agents.Features;
 /// A feature that installs API endpoints to interact with skilled agents.
 /// </summary>
 [UsedImplicitly]
-public class AgentsFeature(IModule module) : FeatureBase(module)
+public class AgentsCoreFeature(IModule module) : FeatureBase(module)
 {
     private Func<IServiceProvider, IKernelConfigProvider> _kernelConfigProviderFactory = sp => sp.GetRequiredService<ConfigurationKernelConfigProvider>();
     
-    public AgentsFeature UseKernelConfigProvider(Func<IServiceProvider, IKernelConfigProvider> factory)
+    public AgentsCoreFeature UseKernelConfigProvider(Func<IServiceProvider, IKernelConfigProvider> factory)
     {
         _kernelConfigProviderFactory = factory;
         return this;
@@ -29,12 +29,12 @@ public class AgentsFeature(IModule module) : FeatureBase(module)
 
         Services
             .AddScoped<AgentInvoker>()
-            .AddScoped<AgentFrameworkFactory>()
+            .AddScoped<AgentFactory>()
             .AddScoped<IPluginDiscoverer, PluginDiscoverer>()
             .AddScoped<IServiceDiscoverer, ServiceDiscoverer>()
             .AddScoped(_kernelConfigProviderFactory)
             .AddScoped<ConfigurationKernelConfigProvider>()
-            .AddScoped<ICodeFirstAgentResolver, CodeFirstAgentResolver>()
+            .AddScoped<IAgentResolver, AgentResolver>()
             .AddPluginProvider<ImageGeneratorPluginProvider>()
             .AddPluginProvider<DocumentQueryPluginProvider>()
             .AddAgentServiceProvider<OpenAIChatCompletionProvider>()

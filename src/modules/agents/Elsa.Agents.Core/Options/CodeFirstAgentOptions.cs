@@ -15,7 +15,7 @@ public class CodeFirstAgentOptions
     /// Registers a code-first agent type. If no key is provided, the type name
     /// is used as the key.
     /// </summary>
-    public CodeFirstAgentOptions AddAgent<TAgent>(string? key = null) where TAgent : class, IElsaAgent
+    public CodeFirstAgentOptions AddAgent<TAgent>(string? key = null) where TAgent : class, IAgent
     {
         key ??= typeof(TAgent).Name;
         CodeFirstAgents[key] = typeof(TAgent);

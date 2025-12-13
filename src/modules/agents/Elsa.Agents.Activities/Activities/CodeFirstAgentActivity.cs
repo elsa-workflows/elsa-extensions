@@ -1,18 +1,12 @@
 using System.ComponentModel;
 using System.Dynamic;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Unicode;
-using Elsa.Agents;
 using Elsa.Expressions.Helpers;
-using Elsa.Extensions;
 using Elsa.Agents.Activities.ActivityProviders;
 using Elsa.Workflows;
 using Elsa.Workflows.Models;
-using Elsa.Workflows.Serialization.Converters;
-using Microsoft.Extensions.Options;
-using Microsoft.SemanticKernel.Agents;
+using static Elsa.Agents.Activities.Extensions.ResponseHelpers;
 
 namespace Elsa.Agents.Activities;
 
@@ -23,13 +17,6 @@ namespace Elsa.Agents.Activities;
 public class CodeFirstAgentActivity : CodeActivity
 {
     private static JsonSerializerOptions? _serializerOptions;
-
-    private static JsonSerializerOptions SerializerOptions =>
-        _serializerOptions ??= new JsonSerializerOptions
-        {
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
-            PropertyNameCaseInsensitive = true
-        }.WithConverters(new ExpandoObjectConverterFactory());
 
     [JsonIgnore] internal string AgentName { get; set; } = null!;
 
@@ -53,7 +40,7 @@ public class CodeFirstAgentActivity : CodeActivity
         }
 
         // Resolve the agent via the unified abstraction.
-        var agentResolver = context.GetRequiredService<ICodeFirstAgentResolver>();
+        var agentResolver = context.GetRequiredService<IAgentResolver>();
         var agent = await agentResolver.ResolveAsync(AgentName, cancellationToken);
         var agentType = agent.GetType();
         var agentPropertyLookup = agentType.GetProperties().ToDictionary(x => x.Name, x => x);
@@ -75,27 +62,10 @@ public class CodeFirstAgentActivity : CodeActivity
         // If the target type is object and the response is in JSON format, we want it to be deserialized into an ExpandoObject for dynamic field access. 
         if (outputType == typeof(object) && isJsonResponse)
             outputType = typeof(ExpandoObject);
-
-        var converterOptions = new ObjectConverterOptions(SerializerOptions);
-        var outputValue = isJsonResponse ? responseText.ConvertTo(outputType, converterOptions) : responseText;
+        
+        var outputValue = isJsonResponse ? responseText.ConvertTo(outputType) : responseText;
         var outputDescriptor = activityDescriptor.Outputs.Single();
         var output = (Output?)outputDescriptor.ValueGetter(this);
         context.Set(output, outputValue, "Output");
-    }
-
-    private static bool IsJsonResponse(string text)
-    {
-        return text.StartsWith("{", StringComparison.OrdinalIgnoreCase) || text.StartsWith("[", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string StripCodeFences(string content)
-    {
-        var trimmed = content.Trim();
-
-        if (!trimmed.StartsWith("```", StringComparison.Ordinal))
-            return trimmed;
-
-        var lines = trimmed.Split('\n');
-        return lines.Length < 2 ? trimmed : string.Join('\n', lines.Skip(1).Take(lines.Length - 2)).Trim();
     }
 }
