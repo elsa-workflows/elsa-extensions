@@ -6,8 +6,6 @@ public class AgentInputModel
 {
     [Required] public string Name { get; set; } = "";
     [Required] public string Description { get; set; } = "";
-    public ICollection<string> Services { get; set; } = [];
-    [Required] public string FunctionName { get; set; } = "";
     [Required] public string PromptTemplate { get; set; } = "";
     public ICollection<InputVariableConfig> InputVariables { get; set; } = [];
     [Required] public OutputVariableConfig OutputVariable { get; set; } = new();

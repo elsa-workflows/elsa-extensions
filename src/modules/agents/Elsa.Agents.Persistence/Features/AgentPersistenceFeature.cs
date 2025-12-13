@@ -12,21 +12,7 @@ namespace Elsa.Agents.Persistence.Features;
 [DependsOn(typeof(AgentsCoreFeature))]
 public class AgentPersistenceFeature(IModule module) : FeatureBase(module)
 {
-    private Func<IServiceProvider, IApiKeyStore> _apiKeyStoreFactory = sp => sp.GetRequiredService<MemoryApiKeyStore>();
-    private Func<IServiceProvider, IServiceStore> _serviceStoreFactory = sp => sp.GetRequiredService<MemoryServiceStore>();
     private Func<IServiceProvider, IAgentStore> _agentStoreFactory = sp => sp.GetRequiredService<MemoryAgentStore>();
-    
-    public AgentPersistenceFeature UseApiKeyStore(Func<IServiceProvider, IApiKeyStore> factory)
-    {
-        _apiKeyStoreFactory = factory;
-        return this;
-    }
-    
-    public AgentPersistenceFeature UseServiceStore(Func<IServiceProvider, IServiceStore> factory)
-    {
-        _serviceStoreFactory = factory;
-        return this;
-    }
     
     public AgentPersistenceFeature UseAgentStore(Func<IServiceProvider, IAgentStore> factory)
     {
@@ -41,19 +27,9 @@ public class AgentPersistenceFeature(IModule module) : FeatureBase(module)
 
     public override void Apply()
     {
-        Services
-            .AddScoped(_apiKeyStoreFactory)
-            .AddScoped(_serviceStoreFactory)
-            .AddScoped(_agentStoreFactory);
-
-        Services
-            .AddScoped<IAgentManager, AgentManager>();
-
-        Services
-            .AddMemoryStore<ApiKeyDefinition, MemoryApiKeyStore>()
-            .AddMemoryStore<ServiceDefinition, MemoryServiceStore>()
-            .AddMemoryStore<AgentDefinition, MemoryAgentStore>();
-
+        Services.AddScoped(_agentStoreFactory);
+        Services.AddScoped<IAgentManager, AgentManager>();
+        Services.AddMemoryStore<AgentDefinition, MemoryAgentStore>();
         Services.AddScoped<StoreKernelConfigProvider>();
     }
 }

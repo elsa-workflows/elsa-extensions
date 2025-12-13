@@ -1,5 +1,4 @@
 using Elsa.Abstractions;
-using Elsa.Agents;
 using Elsa.Extensions;
 using Elsa.Agents.Persistence.Contracts;
 using JetBrains.Annotations;
@@ -42,12 +41,10 @@ public class Endpoint(IAgentManager agentManager) : ElsaEndpoint<AgentInputModel
 
         entity.Name = req.Name.Trim();
         entity.Description = req.Description.Trim();
-        entity.AgentConfig = new AgentConfig
+        entity.AgentConfig = new()
         {
             Name = req.Name.Trim(),
             Description = req.Description.Trim(),
-            FunctionName = req.FunctionName.Trim(),
-            Services = req.Services,
             PromptTemplate = req.PromptTemplate.Trim(),
             InputVariables = req.InputVariables,
             OutputVariable = req.OutputVariable,

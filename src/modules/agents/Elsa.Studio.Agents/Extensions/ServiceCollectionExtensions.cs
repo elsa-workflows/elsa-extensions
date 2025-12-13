@@ -20,10 +20,7 @@ public static class ServiceCollectionExtensions
         return services
                 .AddScoped<IFeature, Feature>()
                 .AddScoped<IMenuProvider, AgentsMenu>()
-                .AddScoped<IMenuGroupProvider, AgentsMenu>()
                 .AddRemoteApi<IAgentsApi>(backendApiConfig)
-                .AddRemoteApi<IApiKeysApi>(backendApiConfig)
-                .AddRemoteApi<IServicesApi>(backendApiConfig)
                 .AddRemoteApi<ISkillsApi>(backendApiConfig)
                 .AddActivityDisplaySettingsProvider<AgentsActivityDisplaySettingsProvider>()
                 

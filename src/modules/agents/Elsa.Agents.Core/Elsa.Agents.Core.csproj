@@ -17,21 +17,18 @@
         <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars"/>
         <PackageReference Include="Microsoft.SemanticKernel.Plugins.Memory"/>
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory"/>
-        <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI"/>
         <PackageReference Include="System.Linq.Async"/>
         <PackageReference Include="System.Memory.Data"/>
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Common\Elsa.Common.csproj"/>
+        <ProjectReference Include="..\Elsa.Agents.Models\Elsa.Agents.Models.csproj"/>
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Common"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\Elsa.Agents.Models\Elsa.Agents.Models.csproj"/>
+        <PackageReference Include="Elsa.Agents.Models"/>
     </ItemGroup>
 
 </Project>

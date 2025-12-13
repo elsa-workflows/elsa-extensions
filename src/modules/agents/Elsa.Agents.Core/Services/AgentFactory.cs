@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 
@@ -14,16 +15,16 @@ namespace Elsa.Agents;
 /// </summary>
 public class AgentFactory(
     ISkillDiscoverer skillDiscoverer,
-    IServiceDiscoverer serviceDiscoverer,
     IServiceProvider serviceProvider,
+    IOptions<ConfiguredAgentOptions> options,
     ILogger<AgentFactory> logger)
 {
     /// <summary>
     /// Creates a ChatCompletionAgent from an Elsa agent configuration.
     /// </summary>
-    public ChatCompletionAgent CreateAgent(KernelConfig kernelConfig, AgentConfig agentConfig)
+    public ChatCompletionAgent CreateAgent(AgentConfig agentConfig)
     {
-        var kernel = CreateKernel(kernelConfig, agentConfig);
+        var kernel = CreateKernel(agentConfig);
         
         return new()
         {
@@ -37,45 +38,27 @@ public class AgentFactory(
     /// <summary>
     /// Creates a Kernel configured for the specified agent.
     /// </summary>
-    private Kernel CreateKernel(KernelConfig kernelConfig, AgentConfig agentConfig)
+    private Kernel CreateKernel(AgentConfig agentConfig)
     {
         var builder = Kernel.CreateBuilder();
         builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
         builder.Services.AddSingleton(agentConfig);
 
-        ApplyAgentConfig(builder, kernelConfig, agentConfig);
+        ApplyAgentConfig(builder, agentConfig);
+        ApplyServiceDescriptors(builder, options.Value.ServiceDescriptors);
 
         return builder.Build();
     }
 
-    private void ApplyAgentConfig(IKernelBuilder builder, KernelConfig kernelConfig, AgentConfig agentConfig)
+    private void ApplyServiceDescriptors(IKernelBuilder builder, ICollection<ServiceDescriptor> serviceDescriptors)
     {
-        var services = serviceDiscoverer.Discover().ToDictionary(x => x.Name);
-        
-        foreach (string serviceName in agentConfig.Services)
-        {
-            if (!kernelConfig.Services.TryGetValue(serviceName, out var serviceConfig))
-            {
-                logger.LogWarning($"Service {serviceName} not found");
-                continue;
-            }
-
-            AddService(builder, kernelConfig, serviceConfig, services);
-        }
-
-        AddSkills(builder, agentConfig);
+        foreach (var descriptor in serviceDescriptors) 
+            descriptor.ConfigureKernel(builder);
     }
 
-    private void AddService(IKernelBuilder builder, KernelConfig kernelConfig, ServiceConfig serviceConfig, Dictionary<string, IAgentServiceProvider> services)
+    private void ApplyAgentConfig(IKernelBuilder builder, AgentConfig agentConfig)
     {
-        if (!services.TryGetValue(serviceConfig.Type, out var serviceProvider))
-        {
-            logger.LogWarning($"Service provider {serviceConfig.Type} not found");
-            return;
-        }
-        
-        var context = new KernelBuilderContext(builder, kernelConfig, serviceConfig);
-        serviceProvider.ConfigureKernel(context);
+        AddSkills(builder, agentConfig);
     }
     
     private void AddSkills(IKernelBuilder builder, AgentConfig agent)

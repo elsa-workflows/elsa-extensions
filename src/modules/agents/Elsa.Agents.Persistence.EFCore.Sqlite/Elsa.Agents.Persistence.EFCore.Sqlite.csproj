@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <Description>Provides an EF Core migrations for SQLite for the Agents Persistence module.</Description>
         <PackageTags>elsa extension module agents semantic kernel llm ai persistence efcore entity framework core sqlite</PackageTags>
     </PropertyGroup>

@@ -21,9 +21,6 @@ public partial class Agent : StudioComponentBase
         get => _agent.ExecutionSettings.ResponseFormat == "json_object";
         set => _agent.ExecutionSettings.ResponseFormat = value ? "json_object" : "string";
     }
-
-    private ICollection<ServiceModel> AvailableServices { get; set; } = [];
-    private IReadOnlyCollection<string> SelectedServices { get; set; } = [];
     
     private ICollection<SkillDescriptorModel> AvailableSkills { get; set; } = [];
     private IReadOnlyCollection<string> SelectedSkills { get; set; } = [];
@@ -33,18 +30,15 @@ public partial class Agent : StudioComponentBase
     private AgentInputModelValidator _validator = null!;
     private AgentModel _agent = new();
     private InputVariableConfig? _inputVariableBackup;
-    private MudTable<InputVariableConfig> _inputVariableTable;
+    private MudTable<InputVariableConfig> _inputVariableTable = null!;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
         var apiClient = await ApiClientProvider.GetApiAsync<IAgentsApi>();
         _validator = new(apiClient);
-        var servicesApi = await ApiClientProvider.GetApiAsync<IServicesApi>();
         var skillsApi = await ApiClientProvider.GetApiAsync<ISkillsApi>();
-        var servicesResponseList = await servicesApi.ListAsync();
         var skillsResponseList = await skillsApi.ListAsync();
-        AvailableServices = servicesResponseList.Items;
         AvailableSkills = skillsResponseList.Items;
     }
 
@@ -53,7 +47,6 @@ public partial class Agent : StudioComponentBase
     {
         var apiClient = await ApiClientProvider.GetApiAsync<IAgentsApi>();
         _agent = await apiClient.GetAsync(AgentId);
-        SelectedServices = _agent.Services.ToList().AsReadOnly();
         SelectedSkills = _agent.Skills.ToList().AsReadOnly();
     }
 
@@ -63,8 +56,7 @@ public partial class Agent : StudioComponentBase
 
         if (!_form.IsValid)
             return;
-
-        _agent.Services = SelectedServices.ToList();
+        
         _agent.Skills = SelectedSkills.ToList();
         var apiClient = await ApiClientProvider.GetApiAsync<IAgentsApi>();
         _agent = await apiClient.UpdateAsync(AgentId, _agent);

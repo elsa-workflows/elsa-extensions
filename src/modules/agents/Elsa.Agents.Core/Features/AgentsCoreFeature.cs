@@ -31,15 +31,11 @@ public class AgentsCoreFeature(IModule module) : FeatureBase(module)
             .AddScoped<AgentInvoker>()
             .AddScoped<AgentFactory>()
             .AddScoped<ISkillDiscoverer, SkillDiscoverer>()
-            .AddScoped<IServiceDiscoverer, ServiceDiscoverer>()
             .AddScoped(_kernelConfigProviderFactory)
             .AddScoped<ConfigurationKernelConfigProvider>()
             .AddScoped<IAgentResolver, AgentResolver>()
             .AddSkillsProvider<ImageGeneratorSkillsProvider>()
             .AddSkillsProvider<DocumentQuerySkillsProvider>()
-            .AddAgentServiceProvider<OpenAIChatCompletionProvider>()
-            .AddAgentServiceProvider<OpenAITextToImageProvider>()
-            .AddAgentServiceProvider<OpenAIEmbeddingGenerator>()
             ;
     }
 }

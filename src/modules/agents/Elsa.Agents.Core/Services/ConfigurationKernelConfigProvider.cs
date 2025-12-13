@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 namespace Elsa.Agents;
 
 /// <summary>
-/// Provides kernel configuration by merging configuration-based agents with code-first definitions.
+/// Provides kernel configuration from configuration.
 /// </summary>
 [UsedImplicitly]
 public class ConfigurationKernelConfigProvider(IOptions<ConfiguredAgentOptions> options) : IKernelConfigProvider
@@ -12,19 +12,6 @@ public class ConfigurationKernelConfigProvider(IOptions<ConfiguredAgentOptions> 
     public Task<KernelConfig> GetKernelConfigAsync(CancellationToken cancellationToken = default)
     {
         var kernelConfig = new KernelConfig();
-
-        // Add configuration-based items (if available)
-        if (options.Value.ApiKeys != null!)
-        {
-            foreach (var apiKey in options.Value.ApiKeys)
-                kernelConfig.ApiKeys[apiKey.Name] = apiKey;
-        }
-
-        if (options.Value.Services != null!)
-        {
-            foreach (var service in options.Value.Services)
-                kernelConfig.Services[service.Name] = service;
-        }
 
         if (options.Value.Agents != null!)
         {

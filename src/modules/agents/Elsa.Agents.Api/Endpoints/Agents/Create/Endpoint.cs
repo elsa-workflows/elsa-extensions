@@ -1,5 +1,4 @@
 using Elsa.Abstractions;
-using Elsa.Agents;
 using Elsa.Extensions;
 using Elsa.Agents.Persistence.Contracts;
 using Elsa.Agents.Persistence.Entities;
@@ -39,7 +38,7 @@ public class Endpoint(IAgentManager agentManager, IIdentityGenerator identityGen
             Id = identityGenerator.GenerateId(),
             Name = req.Name.Trim(),
             Description = req.Description.Trim(),
-            AgentConfig = new AgentConfig
+            AgentConfig = new()
             {
                 Description = req.Description.Trim(),
                 Name = req.Name.Trim(),
@@ -47,9 +46,7 @@ public class Endpoint(IAgentManager agentManager, IIdentityGenerator identityGen
                 ExecutionSettings = req.ExecutionSettings,
                 InputVariables = req.InputVariables,
                 OutputVariable = req.OutputVariable,
-                Services = req.Services,
                 Skills = req.Skills,
-                FunctionName = req.FunctionName,
                 PromptTemplate = req.PromptTemplate
             }
         };

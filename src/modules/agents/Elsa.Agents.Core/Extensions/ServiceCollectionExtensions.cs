@@ -8,9 +8,4 @@ public static class ServiceCollectionExtensions
     {
         return services.AddScoped<ISkillsProvider, T>();
     }
-    
-    public static IServiceCollection AddAgentServiceProvider<T>(this IServiceCollection services) where T: class, IAgentServiceProvider
-    {
-        return services.AddScoped<IAgentServiceProvider, T>();
-    }
 }

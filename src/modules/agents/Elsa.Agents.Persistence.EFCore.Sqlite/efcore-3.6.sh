@@ -1,0 +1,2 @@
+#ef-migration-runtime-schema --interface Elsa.Persistence.EFCore.IElsaDbContextSchema --efOptions "migrations add V3_6 -c AgentsDbContext -o Migrations"
+ef-migration-runtime-schema --interface Elsa.Persistence.EFCore.IElsaDbContextSchema --efOptions "migrations add V3_6 -c AgentsDbContext -p ./  -o Migrations --startup-project ./Elsa.Agents.Persistence.EFCore.Sqlite.csproj"

@@ -20,7 +20,7 @@ public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, AgentFacto
         var agentConfig = kernelConfig.Agents[agentName];
 
         // Create agent using Agent Framework
-        var agent = agentFactory.CreateAgent(kernelConfig, agentConfig);
+        var agent = agentFactory.CreateAgent(agentConfig);
 
         // Create chat history
         ChatHistory chatHistory = [];
@@ -30,7 +30,7 @@ public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, AgentFacto
         {
             Template = agentConfig.PromptTemplate,
             TemplateFormat = "handlebars",
-            Name = agentConfig.FunctionName,
+            Name = "Run",
             AllowDangerouslySetContent = true,
         };
 
