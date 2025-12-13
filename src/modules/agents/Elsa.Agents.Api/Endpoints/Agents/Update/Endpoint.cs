@@ -52,7 +52,7 @@ public class Endpoint(IAgentManager agentManager) : ElsaEndpoint<AgentInputModel
             InputVariables = req.InputVariables,
             OutputVariable = req.OutputVariable,
             ExecutionSettings = req.ExecutionSettings,
-            Plugins = req.Plugins,
+            Skills = req.Skills,
             Agents = req.Agents
         };
 

@@ -27,8 +27,8 @@ public partial class CreateAgentDialog
     [Inject] private IActivityDisplaySettingsRegistry ActivityDisplaySettingsRegistry { get; set; } = null!;
     private ICollection<ServiceModel> AvailableServices { get; set; } = [];
     private IReadOnlyCollection<string> SelectedServices { get; set; } = [];
-    private ICollection<PluginDescriptorModel> AvailablePlugins { get; set; } = [];
-    private IReadOnlyCollection<string> SelectedPlugins { get; set; } = [];
+    private ICollection<SkillDescriptorModel> AvailableSkills { get; set; } = [];
+    private IReadOnlyCollection<string> SelectedSkills { get; set; } = [];
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -43,14 +43,14 @@ public partial class CreateAgentDialog
         _editContext = new(_agentInputModel);
         var agentsApi = await ApiClientProvider.GetApiAsync<IAgentsApi>();
         var servicesApi = await ApiClientProvider.GetApiAsync<IServicesApi>();
-        var pluginsApi = await ApiClientProvider.GetApiAsync<IPluginsApi>();
+        var skillsApi = await ApiClientProvider.GetApiAsync<ISkillsApi>();
         _validator = new(agentsApi);
         var servicesResponseList = await servicesApi.ListAsync();
-        var pluginsResponseList = await pluginsApi.ListAsync();
+        var skillsResponseList = await skillsApi.ListAsync();
         AvailableServices = servicesResponseList.Items;
-        AvailablePlugins = pluginsResponseList.Items;
+        AvailableSkills = skillsResponseList.Items;
         SelectedServices = _agentInputModel.Services.ToList().AsReadOnly();
-        SelectedPlugins = _agentInputModel.Plugins.ToList().AsReadOnly();
+        SelectedSkills = _agentInputModel.Skills.ToList().AsReadOnly();
     }
 
     private Task OnCancelClicked()
@@ -70,7 +70,7 @@ public partial class CreateAgentDialog
     private Task OnValidSubmit()
     {
         _agentInputModel.Services = SelectedServices.ToList();
-        _agentInputModel.Plugins = SelectedPlugins.ToList();
+        _agentInputModel.Skills = SelectedSkills.ToList();
         MudDialog.Close(_agentInputModel);
         ActivityRegistry.MarkStale();
         ActivityDisplaySettingsRegistry.MarkStale();

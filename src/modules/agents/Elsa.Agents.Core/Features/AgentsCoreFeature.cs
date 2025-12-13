@@ -1,4 +1,4 @@
-using Elsa.Agents.Plugins;
+using Elsa.Agents.Skills;
 using Elsa.Features.Abstractions;
 using Elsa.Features.Services;
 using JetBrains.Annotations;
@@ -30,13 +30,13 @@ public class AgentsCoreFeature(IModule module) : FeatureBase(module)
         Services
             .AddScoped<AgentInvoker>()
             .AddScoped<AgentFactory>()
-            .AddScoped<IPluginDiscoverer, PluginDiscoverer>()
+            .AddScoped<ISkillDiscoverer, SkillDiscoverer>()
             .AddScoped<IServiceDiscoverer, ServiceDiscoverer>()
             .AddScoped(_kernelConfigProviderFactory)
             .AddScoped<ConfigurationKernelConfigProvider>()
             .AddScoped<IAgentResolver, AgentResolver>()
-            .AddPluginProvider<ImageGeneratorPluginProvider>()
-            .AddPluginProvider<DocumentQueryPluginProvider>()
+            .AddSkillsProvider<ImageGeneratorSkillsProvider>()
+            .AddSkillsProvider<DocumentQuerySkillsProvider>()
             .AddAgentServiceProvider<OpenAIChatCompletionProvider>()
             .AddAgentServiceProvider<OpenAITextToImageProvider>()
             .AddAgentServiceProvider<OpenAIEmbeddingGenerator>()

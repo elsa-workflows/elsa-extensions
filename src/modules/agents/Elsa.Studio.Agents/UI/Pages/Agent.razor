@@ -153,8 +153,8 @@
 <MudTabPanel Text="@Localizer["Plugins"]">
     <MudStack Spacing="8">
         <MudField Label="@Localizer["Plugins"]" HelperText="@Localizer["The plugins that the agent can use."]">
-            <MudList T="string" @bind-SelectedValues="SelectedPlugins" SelectionMode="SelectionMode.MultiSelection">
-                @foreach (var plugin in AvailablePlugins)
+            <MudList T="string" @bind-SelectedValues="SelectedSkills" SelectionMode="SelectionMode.MultiSelection">
+                @foreach (var plugin in AvailableSkills)
                 {
                     <MudListItem Text="@plugin.Name" Value="@plugin.Name"/>
                 }

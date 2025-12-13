@@ -25,8 +25,8 @@ public partial class Agent : StudioComponentBase
     private ICollection<ServiceModel> AvailableServices { get; set; } = [];
     private IReadOnlyCollection<string> SelectedServices { get; set; } = [];
     
-    private ICollection<PluginDescriptorModel> AvailablePlugins { get; set; } = [];
-    private IReadOnlyCollection<string> SelectedPlugins { get; set; } = [];
+    private ICollection<SkillDescriptorModel> AvailableSkills { get; set; } = [];
+    private IReadOnlyCollection<string> SelectedSkills { get; set; } = [];
 
 
     private MudForm _form = null!;
@@ -39,13 +39,13 @@ public partial class Agent : StudioComponentBase
     protected override async Task OnInitializedAsync()
     {
         var apiClient = await ApiClientProvider.GetApiAsync<IAgentsApi>();
-        _validator = new AgentInputModelValidator(apiClient);
+        _validator = new(apiClient);
         var servicesApi = await ApiClientProvider.GetApiAsync<IServicesApi>();
-        var pluginsApi = await ApiClientProvider.GetApiAsync<IPluginsApi>();
+        var skillsApi = await ApiClientProvider.GetApiAsync<ISkillsApi>();
         var servicesResponseList = await servicesApi.ListAsync();
-        var pluginsResponseList = await pluginsApi.ListAsync();
+        var skillsResponseList = await skillsApi.ListAsync();
         AvailableServices = servicesResponseList.Items;
-        AvailablePlugins = pluginsResponseList.Items;
+        AvailableSkills = skillsResponseList.Items;
     }
 
     /// <inheritdoc />
@@ -54,7 +54,7 @@ public partial class Agent : StudioComponentBase
         var apiClient = await ApiClientProvider.GetApiAsync<IAgentsApi>();
         _agent = await apiClient.GetAsync(AgentId);
         SelectedServices = _agent.Services.ToList().AsReadOnly();
-        SelectedPlugins = _agent.Plugins.ToList().AsReadOnly();
+        SelectedSkills = _agent.Skills.ToList().AsReadOnly();
     }
 
     private async Task OnSaveClicked()
@@ -65,7 +65,7 @@ public partial class Agent : StudioComponentBase
             return;
 
         _agent.Services = SelectedServices.ToList();
-        _agent.Plugins = SelectedPlugins.ToList();
+        _agent.Skills = SelectedSkills.ToList();
         var apiClient = await ApiClientProvider.GetApiAsync<IAgentsApi>();
         _agent = await apiClient.UpdateAsync(AgentId, _agent);
         Snackbar.Add("Agent successfully updated.", Severity.Success);
@@ -96,7 +96,7 @@ public partial class Agent : StudioComponentBase
     private void BackupInputVariable(object obj)
     {
         var inputVariable = (InputVariableConfig)obj;
-        _inputVariableBackup = new InputVariableConfig
+        _inputVariableBackup = new()
         {
             Name = inputVariable.Name,
             Type = inputVariable.Type,

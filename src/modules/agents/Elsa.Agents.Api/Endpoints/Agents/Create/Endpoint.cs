@@ -48,7 +48,7 @@ public class Endpoint(IAgentManager agentManager, IIdentityGenerator identityGen
                 InputVariables = req.InputVariables,
                 OutputVariable = req.OutputVariable,
                 Services = req.Services,
-                Plugins = req.Plugins,
+                Skills = req.Skills,
                 FunctionName = req.FunctionName,
                 PromptTemplate = req.PromptTemplate
             }

@@ -5,11 +5,11 @@ using Microsoft.SemanticKernel.TextToImage;
 
 #pragma warning disable SKEXP0001
 
-namespace Elsa.Agents.Plugins;
+namespace Elsa.Agents.Skills;
 
 [Description("Generates an image from text")]
 [UsedImplicitly]
-public class ImageGeneratorPlugin
+public class ImageGeneratorSkill
 {
     [KernelFunction("generate_image_from_text")]
     [Description("Generates an image from text")]
@@ -30,10 +30,10 @@ public class ImageGeneratorPlugin
 }
 
 [UsedImplicitly]
-public class ImageGeneratorPluginProvider : PluginProvider
+public class ImageGeneratorSkillsProvider : SkillsProvider
 {
-    public override IEnumerable<PluginDescriptor> GetPlugins()
+    public override IEnumerable<SkillDescriptor> GetSkills()
     {
-        yield return PluginDescriptor.From<ImageGeneratorPlugin>();
+        yield return SkillDescriptor.From<ImageGeneratorSkill>();
     }
 }

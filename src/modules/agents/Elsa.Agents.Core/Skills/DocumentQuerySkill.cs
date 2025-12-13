@@ -6,9 +6,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Data;
 
-namespace Elsa.Agents.Plugins;
+namespace Elsa.Agents.Skills;
 
-public class DocumentQueryPlugin
+public class DocumentQuerySkill
 {
     [Experimental("SKEXP0001")]
     [KernelFunction("query_document")]
@@ -39,11 +39,11 @@ public class DocumentQueryPlugin
     }
 }
 
-public class DocumentQueryPluginProvider : PluginProvider
+public class DocumentQuerySkillsProvider : SkillsProvider
 {
-    public override IEnumerable<PluginDescriptor> GetPlugins()
+    public override IEnumerable<SkillDescriptor> GetSkills()
     {
-        yield return PluginDescriptor.From<DocumentQueryPlugin>();
+        yield return SkillDescriptor.From<DocumentQuerySkill>();
     }
 }
 

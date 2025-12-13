@@ -18,7 +18,7 @@ public static class AgentDefinitionExtensions
             InputVariables = agentDefinition.AgentConfig.InputVariables,
             OutputVariable = agentDefinition.AgentConfig.OutputVariable,
             Services = agentDefinition.AgentConfig.Services,
-            Plugins = agentDefinition.AgentConfig.Plugins,
+            Skills = agentDefinition.AgentConfig.Skills,
             FunctionName = agentDefinition.AgentConfig.FunctionName,
             PromptTemplate = agentDefinition.AgentConfig.PromptTemplate
         };

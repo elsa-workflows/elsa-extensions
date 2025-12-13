@@ -4,9 +4,9 @@ namespace Elsa.Agents;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddPluginProvider<T>(this IServiceCollection services) where T: class, IPluginProvider
+    public static IServiceCollection AddSkillsProvider<T>(this IServiceCollection services) where T: class, ISkillsProvider
     {
-        return services.AddScoped<IPluginProvider, T>();
+        return services.AddScoped<ISkillsProvider, T>();
     }
     
     public static IServiceCollection AddAgentServiceProvider<T>(this IServiceCollection services) where T: class, IAgentServiceProvider

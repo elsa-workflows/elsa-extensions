@@ -10,7 +10,7 @@ public class AgentConfig
     public ICollection<InputVariableConfig> InputVariables { get; set; } = [];
     public OutputVariableConfig OutputVariable { get; set; } = new();
     public ExecutionSettingsConfig ExecutionSettings { get; set; } = new();
-    public ICollection<string> Plugins { get; set; } = [];
+    public ICollection<string> Skills { get; set; } = [];
     public ICollection<string> Agents { get; set; } = [];
     
     

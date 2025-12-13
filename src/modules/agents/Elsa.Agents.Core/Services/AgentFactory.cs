@@ -13,7 +13,7 @@ namespace Elsa.Agents;
 /// Factory for creating Agent Framework agents from Elsa agent configurations.
 /// </summary>
 public class AgentFactory(
-    IPluginDiscoverer pluginDiscoverer,
+    ISkillDiscoverer skillDiscoverer,
     IServiceDiscoverer serviceDiscoverer,
     IServiceProvider serviceProvider,
     ILogger<AgentFactory> logger)
@@ -63,7 +63,7 @@ public class AgentFactory(
             AddService(builder, kernelConfig, serviceConfig, services);
         }
 
-        AddPlugins(builder, agentConfig);
+        AddSkills(builder, agentConfig);
     }
 
     private void AddService(IKernelBuilder builder, KernelConfig kernelConfig, ServiceConfig serviceConfig, Dictionary<string, IAgentServiceProvider> services)
@@ -78,20 +78,20 @@ public class AgentFactory(
         serviceProvider.ConfigureKernel(context);
     }
     
-    private void AddPlugins(IKernelBuilder builder, AgentConfig agent)
+    private void AddSkills(IKernelBuilder builder, AgentConfig agent)
     {
-        var plugins = pluginDiscoverer.GetPluginDescriptors().ToDictionary(x => x.Name);
-        foreach (var pluginName in agent.Plugins)
+        var skills = skillDiscoverer.DiscoverSkills().ToDictionary(x => x.Name);
+        foreach (var skillName in agent.Skills)
         {
-            if (!plugins.TryGetValue(pluginName, out var pluginDescriptor))
+            if (!skills.TryGetValue(skillName, out var skillDescriptor))
             {
-                logger.LogWarning($"Plugin {pluginName} not found");
+                logger.LogWarning($"Skill {skillName} not found");
                 continue;
             }
 
-            var pluginType = pluginDescriptor.PluginType;
-            var pluginInstance = ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, pluginType);
-            builder.Plugins.AddFromObject(pluginInstance, pluginName);
+            var clrType = skillDescriptor.ClrType;
+            var skillInstance = ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, clrType);
+            builder.Plugins.AddFromObject(skillInstance, skillName);
         }
     }
 }

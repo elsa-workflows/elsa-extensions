@@ -24,7 +24,7 @@ public static class ServiceCollectionExtensions
                 .AddRemoteApi<IAgentsApi>(backendApiConfig)
                 .AddRemoteApi<IApiKeysApi>(backendApiConfig)
                 .AddRemoteApi<IServicesApi>(backendApiConfig)
-                .AddRemoteApi<IPluginsApi>(backendApiConfig)
+                .AddRemoteApi<ISkillsApi>(backendApiConfig)
                 .AddActivityDisplaySettingsProvider<AgentsActivityDisplaySettingsProvider>()
                 
             // TODO: Move this to a separate module.
