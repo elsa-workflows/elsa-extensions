@@ -175,6 +175,7 @@
         <PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0"/>
         <PackageVersion Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" Version="1.68.0"/>
         <PackageVersion Include="Microsoft.SemanticKernel.Plugins.Memory" Version="1.68.0-alpha"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.68.0"/>
         <PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.68.0-preview"/>
         <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0"/>
         <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0"/>

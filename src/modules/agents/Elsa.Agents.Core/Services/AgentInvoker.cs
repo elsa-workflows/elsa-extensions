@@ -58,19 +58,23 @@ public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, AgentFacto
         var renderedPrompt = await promptTemplate.RenderAsync(agent.Kernel, kernelArguments, cancellationToken);
 
         chatHistory.AddUserMessage(renderedPrompt);
-        chatHistory.AddSystemMessage(
-            """"
-              You are a function that returns *only* JSON.
 
-              Rules:
-              - Return a single valid JSON object.
-              - Do not add explanations.
-              - Do not add code fences.
-              - Do not prefix with ```json or any other markers.
-              - Output must start with { and end with }.
-              
-              If there's a problem with the JSON input, include the exact JSON input in your response for troubleshooting.
-            """");
+        if (executionSettings.ResponseFormat == "json_object")
+        {
+            chatHistory.AddSystemMessage(
+                """"
+                  You are a function that returns *only* JSON.
+
+                  Rules:
+                  - Return a single valid JSON object.
+                  - Do not add explanations.
+                  - Do not add code fences.
+                  - Do not prefix with ```json or any other markers.
+                  - Output must start with { and end with }.
+                  
+                  If there's a problem with the JSON input, include the exact JSON input in your response for troubleshooting.
+                """");
+        }
 
         // Get response from agent
         var response = await agent.InvokeAsync(chatHistory, cancellationToken: cancellationToken).LastOrDefaultAsync(cancellationToken);
