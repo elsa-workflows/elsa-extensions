@@ -7,7 +7,7 @@ using JetBrains.Annotations;
 namespace Elsa.Agents.Activities.Handlers;
 
 [UsedImplicitly]
-public class RefreshActivityRegistry(IActivityRegistry activityRegistry, AgentActivityProvider agentActivityProvider) : 
+public class RefreshActivityRegistry(IActivityRegistry activityRegistry, ConfigurationAgentActivityProvider configurationAgentActivityProvider) : 
     INotificationHandler<AgentDefinitionCreated>,
     INotificationHandler<AgentDefinitionUpdated>,
     INotificationHandler<AgentDefinitionDeleted>,
@@ -17,5 +17,5 @@ public class RefreshActivityRegistry(IActivityRegistry activityRegistry, AgentAc
     public Task HandleAsync(AgentDefinitionUpdated notification, CancellationToken cancellationToken) => RefreshRegistryAsync(cancellationToken);
     public Task HandleAsync(AgentDefinitionDeleted notification, CancellationToken cancellationToken) => RefreshRegistryAsync(cancellationToken);
     public Task HandleAsync(AgentDefinitionsDeletedInBulk notification, CancellationToken cancellationToken) => RefreshRegistryAsync(cancellationToken);
-    private Task RefreshRegistryAsync(CancellationToken cancellationToken) => activityRegistry.RefreshDescriptorsAsync(agentActivityProvider, cancellationToken);
+    private Task RefreshRegistryAsync(CancellationToken cancellationToken) => activityRegistry.RefreshDescriptorsAsync(configurationAgentActivityProvider, cancellationToken);
 }

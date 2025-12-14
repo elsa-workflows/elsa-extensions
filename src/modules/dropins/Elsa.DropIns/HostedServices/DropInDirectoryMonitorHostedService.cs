@@ -67,7 +67,14 @@ public class DropInDirectoryMonitorHostedService : BackgroundService
         if (task == null)
             return;
 
-        await task;
+        try
+        {
+            await task;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing change for path {Path}", e.FullPath);
+        }
     }
 
     private async void OnDeleted(object sender, FileSystemEventArgs e)
@@ -77,7 +84,14 @@ public class DropInDirectoryMonitorHostedService : BackgroundService
         if (task == null)
             return;
 
-        await task;
+        try
+        {
+            await task;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing delete for path {Path}", e.FullPath);
+        }
     }
 
     private async Task LoadDropInAssemblyAsync(string fullPath)

@@ -40,6 +40,7 @@
         <PackageVersion Include="Elsa.Workflows.Management" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Workflows.Runtime" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Workflows.Runtime.Distributed" Version="$(ElsaVersion)"/>
+        <PackageVersion Include="Microsoft.Agents.AI" Version="1.0.0-preview.251204.1"/>
     </ItemGroup>
     <ItemGroup Label="Elsa Studio">
         <PackageVersion Include="Elsa.Studio" Version="$(ElsaStudioVersion)"/>
@@ -169,7 +170,14 @@
         <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.3"/>
         <PackageVersion Include="Microsoft.Identity.Client" Version="4.79.2"/>
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1"/>
-        <PackageVersion Include="Microsoft.SemanticKernel" Version="1.67.1"/>
+        <PackageVersion Include="Microsoft.SemanticKernel" Version="1.68.0"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.Agents.Abstractions" Version="1.68.0"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" Version="1.68.0"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.Plugins.Memory" Version="1.68.0-alpha"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.68.0"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.68.0-preview"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0"/>
         <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0"/>
         <PackageVersion Include="MongoDB.Driver" Version="3.5.2"/>
         <PackageVersion Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" Version="3.0.0"/>
@@ -206,6 +214,7 @@
         <PackageVersion Include="System.CommandLine" Version="2.0.0"/>
         <PackageVersion Include="System.Data.SqlClient" Version="4.9.0"/>
         <PackageVersion Include="System.Linq.Async" Version="7.0.0"/>
+        <PackageVersion Include="System.Memory.Data" Version="10.0.1"/>
         <PackageVersion Include="Testcontainers" Version="4.9.0"/>
         <PackageVersion Include="Testcontainers.PostgreSql" Version="4.9.0"/>
         <PackageVersion Include="Testcontainers.RabbitMq" Version="4.9.0"/>

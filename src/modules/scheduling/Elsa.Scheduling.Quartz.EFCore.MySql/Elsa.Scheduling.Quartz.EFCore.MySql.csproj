@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <Description>
             Provides EF Core migrations for Quartz.NET.
         </Description>
@@ -13,9 +12,6 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
 		<PackageReference Include="Quartz.Serialization.Json" />
-
-		<!-- Used to resolve the AppAny.Quartz.EntityFrameworkCore.Migrations.MySql package warning. -->
-		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
     </ItemGroup>
 
     <ItemGroup>

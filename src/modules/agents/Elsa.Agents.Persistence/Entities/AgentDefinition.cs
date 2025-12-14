@@ -1,4 +1,3 @@
-using Elsa.Agents;
 using Elsa.Common.Entities;
 
 namespace Elsa.Agents.Persistence.Entities;

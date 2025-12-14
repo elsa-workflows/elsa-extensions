@@ -1,5 +1,4 @@
 using Elsa.Abstractions;
-using Elsa.Agents;
 using Elsa.Agents.Persistence.Contracts;
 using Elsa.Agents.Persistence.Filters;
 using JetBrains.Annotations;
@@ -28,6 +27,6 @@ public class Endpoint(IAgentManager agentManager) : ElsaEndpoint<BulkDeleteReque
             Ids = ids
         };
         var count = await agentManager.DeleteManyAsync(filter, ct);
-        return new BulkDeleteResponse(count);
+        return new(count);
     }
 }

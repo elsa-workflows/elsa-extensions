@@ -14,7 +14,7 @@ namespace Elsa.Agents.Activities.Features;
 /// A feature that installs Semantic Kernel functionality.
 /// </summary>
 [DependsOn(typeof(WorkflowManagementFeature))]
-[DependsOn(typeof(AgentsFeature))]
+[DependsOn(typeof(AgentsCoreFeature))]
 [UsedImplicitly]
 public class AgentActivitiesFeature(IModule module) : FeatureBase(module)
 {
@@ -22,7 +22,8 @@ public class AgentActivitiesFeature(IModule module) : FeatureBase(module)
     public override void Apply()
     {
         Services
-            .AddActivityProvider<AgentActivityProvider>()
+            .AddActivityProvider<ConfigurationAgentActivityProvider>()
+            .AddActivityProvider<CodeFirstAgentActivityProvider>()
             .AddNotificationHandler<RefreshActivityRegistry>()
             ;
     }

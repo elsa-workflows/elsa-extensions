@@ -28,7 +28,6 @@
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 	</PropertyGroup>
 	<PropertyGroup>
@@ -38,9 +37,8 @@
 	</PropertyGroup>
     
     <PropertyGroup Label="PackageVersions">
-        <ElsaVersion>3.6.0-preview.4036</ElsaVersion>
-        <ElsaStudioVersion>3.6.0-preview.1293</ElsaStudioVersion>
+        <ElsaVersion>3.6.0-preview.4063</ElsaVersion>
+        <ElsaStudioVersion>3.6.0-preview.1297</ElsaStudioVersion>
     </PropertyGroup>
-    
 
 </Project>

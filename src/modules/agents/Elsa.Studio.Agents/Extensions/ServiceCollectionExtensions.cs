@@ -1,8 +1,10 @@
 using Elsa.Studio.Agents;
 using Elsa.Studio.Agents.Client;
+using Elsa.Studio.Agents.Services;
 using Elsa.Studio.Agents.UI.Providers;
 using Elsa.Studio.Contracts;
 using Elsa.Studio.Models;
+using Elsa.Studio.Workflows.Contracts;
 using Elsa.Studio.Workflows.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,12 +20,12 @@ public static class ServiceCollectionExtensions
         return services
                 .AddScoped<IFeature, Feature>()
                 .AddScoped<IMenuProvider, AgentsMenu>()
-                .AddScoped<IMenuGroupProvider, AgentsMenu>()
                 .AddRemoteApi<IAgentsApi>(backendApiConfig)
-                .AddRemoteApi<IApiKeysApi>(backendApiConfig)
-                .AddRemoteApi<IServicesApi>(backendApiConfig)
-                .AddRemoteApi<IPluginsApi>(backendApiConfig)
+                .AddRemoteApi<ISkillsApi>(backendApiConfig)
                 .AddActivityDisplaySettingsProvider<AgentsActivityDisplaySettingsProvider>()
+                
+            // TODO: Move this to a separate module.
+            //.AddScoped<ICreateWorkflowDialogComponentProvider, AICreateWorkflowDialogComponentProvider>()
             ;
     }
 }
