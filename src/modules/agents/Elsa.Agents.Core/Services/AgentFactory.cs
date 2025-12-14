@@ -14,7 +14,7 @@ namespace Elsa.Agents;
 public class AgentFactory(
     ISkillDiscoverer skillDiscoverer,
     IServiceProvider serviceProvider,
-    IOptions<AgentOptions> options,
+    IOptions<AgentsOptions> options,
     ILogger<AgentFactory> logger) : IAgentFactory
 {
     /// <inheritdoc />

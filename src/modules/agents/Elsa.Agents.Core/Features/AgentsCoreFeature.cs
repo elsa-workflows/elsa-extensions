@@ -23,7 +23,7 @@ public class AgentsCoreFeature(IModule module) : FeatureBase(module)
     /// <inheritdoc />
     public override void Apply()
     {
-        Services.AddOptions<AgentOptions>();
+        Services.AddOptions<AgentsOptions>();
 
         Services
             .AddScoped<IAgentInvoker, AgentInvoker>()

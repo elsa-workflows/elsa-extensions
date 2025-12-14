@@ -19,7 +19,7 @@ namespace Elsa.Agents.Activities.ActivityProviders;
 /// </summary>
 [UsedImplicitly]
 public class CodeFirstAgentActivityProvider(
-    IOptions<AgentOptions> agentOptions,
+    IOptions<AgentsOptions> agentOptions,
     IActivityDescriber activityDescriber,
     IWellKnownTypeRegistry wellKnownTypeRegistry) : IActivityProvider
 {

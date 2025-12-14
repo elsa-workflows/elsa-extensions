@@ -1,6 +1,6 @@
 namespace Elsa.Agents;
 
-public class AgentOptions
+public class AgentsOptions
 {
     public ICollection<AgentConfig> Agents { get; set; } = new List<AgentConfig>();
     public ICollection<ServiceDescriptor> ServiceDescriptors { get; set; } = new List<ServiceDescriptor>();
@@ -14,7 +14,7 @@ public class AgentOptions
     /// Registers a code-first agent type. If no key is provided, the type name
     /// is used as the key.
     /// </summary>
-    public AgentOptions AddAgentType<TAgent>(string? key = null) where TAgent : class, IAgent
+    public AgentsOptions AddAgentType<TAgent>(string? key = null) where TAgent : class, IAgent
     {
         key ??= typeof(TAgent).Name;
         AgentTypes[key] = typeof(TAgent);
