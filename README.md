@@ -68,7 +68,7 @@ Below is the current status of each integration. Checkboxes indicate implementat
 ### 🤖 AI & Automation
 | Status | Integration | Description | Module Name | Issue |
 |--------|------------|-------------|-------------|-------|
-| [ ] | **OpenAI** | GPT-based text generation, chatbots | `Elsa.OpenAI` | |
+| [x] | **OpenAI** | GPT-based text generation, chatbots | `Elsa.OpenAI` | |
 | [ ] | **Google AI** | AI-enhanced search, translation | `Elsa.GoogleAI` | |
 | [ ] | **AWS Comprehend** | NLP services for text analysis | `Elsa.AWSComprehend` | |
 | [ ] | **Azure AI** | Vision, speech, language processing | `Elsa.AzureAI` | |

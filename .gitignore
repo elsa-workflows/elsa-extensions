@@ -403,3 +403,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+# Local environment files
+.env
+.env.local
+appsettings.local.json

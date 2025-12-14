@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Elsa" />
+        <PackageReference Include="OpenAI" />
+    </ItemGroup>
+
+</Project>
