@@ -17,27 +17,15 @@ public class AgentsDbContext : ElsaDbContextBase
     }
     
     /// <summary>
-    /// The API Keys DB set.
-    /// </summary>
-    public DbSet<ApiKeyDefinition> ApiKeysDefinitions { get; set; } = null!;
-    
-    /// <summary>
     /// The Services DB set.
     /// </summary>
-    public DbSet<ServiceDefinition> ServicesDefinitions { get; set; } = null!;
-    
-    /// <summary>
-    /// The Services DB set.
-    /// </summary>
-    public DbSet<AgentDefinition> AgentDefinitions { get; set; } = null!;
+    [UsedImplicitly] public DbSet<AgentDefinition> AgentDefinitions { get; set; } = null!;
 
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var configuration = new Configurations();
-        modelBuilder.ApplyConfiguration<ApiKeyDefinition>(configuration);
-        modelBuilder.ApplyConfiguration<ServiceDefinition>(configuration);
-        modelBuilder.ApplyConfiguration<AgentDefinition>(configuration);
+        modelBuilder.ApplyConfiguration(configuration);
         base.OnModelCreating(modelBuilder);
     }
 }
