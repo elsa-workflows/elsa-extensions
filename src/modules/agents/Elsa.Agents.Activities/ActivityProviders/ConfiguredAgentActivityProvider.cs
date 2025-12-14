@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 namespace Elsa.Agents.Activities.ActivityProviders;
 
 /// <summary>
-/// Provides activities for each function of registered agents.
+/// Provides activities for each registered agent.
 /// </summary>
 [UsedImplicitly]
 public class ConfigurationAgentActivityProvider(
