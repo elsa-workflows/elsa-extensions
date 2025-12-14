@@ -19,7 +19,7 @@ namespace Elsa.Agents.Activities.ActivityProviders;
 /// </summary>
 [UsedImplicitly]
 public class CodeFirstAgentActivityProvider(
-    IOptions<CodeFirstAgentOptions> codeFirstAgentOptions,
+    IOptions<AgentOptions> agentOptions,
     IActivityDescriber activityDescriber,
     IWellKnownTypeRegistry wellKnownTypeRegistry) : IActivityProvider
 {
@@ -27,7 +27,7 @@ public class CodeFirstAgentActivityProvider(
     {
         var descriptors = new List<ActivityDescriptor>();
 
-        foreach (var kvp in codeFirstAgentOptions.Value.CodeFirstAgents)
+        foreach (var kvp in agentOptions.Value.AgentTypes)
         {
             var key = kvp.Key;
             var type = kvp.Value;

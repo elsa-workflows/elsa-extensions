@@ -10,18 +10,14 @@ using Microsoft.SemanticKernel.Agents;
 
 namespace Elsa.Agents;
 
-/// <summary>
-/// Factory for creating Agent Framework agents from Elsa agent configurations.
-/// </summary>
+/// <inheritdoc />
 public class AgentFactory(
     ISkillDiscoverer skillDiscoverer,
     IServiceProvider serviceProvider,
-    IOptions<ConfiguredAgentOptions> options,
+    IOptions<AgentOptions> options,
     ILogger<AgentFactory> logger) : IAgentFactory
 {
-    /// <summary>
-    /// Creates a ChatCompletionAgent from an Elsa agent configuration.
-    /// </summary>
+    /// <inheritdoc />
     public ChatCompletionAgent CreateAgent(AgentConfig agentConfig)
     {
         var kernel = CreateKernel(agentConfig);

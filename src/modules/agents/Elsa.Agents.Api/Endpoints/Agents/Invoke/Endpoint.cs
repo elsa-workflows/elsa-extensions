@@ -20,7 +20,13 @@ public class Execute(IAgentInvoker agentInvoker) : ElsaEndpoint<Request, JsonEle
     /// <inheritdoc />
     public override async Task<JsonElement> ExecuteAsync(Request req, CancellationToken ct)
     {
-        var result = await agentInvoker.InvokeAgentAsync(req.Agent, req.Inputs, ct).AsJsonElementAsync();
+        var request = new InvokeAgentRequest
+        {
+            AgentName = req.Agent,
+            Input = req.Inputs,
+            CancellationToken = ct
+        };
+        var result = await agentInvoker.InvokeAsync(request).AsJsonElementAsync();
         return result;
     }
 }

@@ -14,16 +14,16 @@ public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, IAgentFact
     /// <summary>
     /// Invokes an agent using the Microsoft Agent Framework (new approach).
     /// </summary>
-    public async Task<InvokeAgentResult> InvokeAgentAsync(string agentName, IDictionary<string, object?> input, CancellationToken cancellationToken = default)
+    public async Task<InvokeAgentResult> InvokeAsync(InvokeAgentRequest request)
     {
-        var kernelConfig = await kernelConfigProvider.GetKernelConfigAsync(cancellationToken);
-        var agentConfig = kernelConfig.Agents[agentName];
+        var kernelConfig = await kernelConfigProvider.GetKernelConfigAsync(request.CancellationToken);
+        var agentConfig = kernelConfig.Agents[request.AgentName];
 
         // Create agent using Agent Framework
         var agent = agentFactory.CreateAgent(agentConfig);
 
-        // Create chat history
-        ChatHistory chatHistory = [];
+        // Use provided chat history or create new one
+        ChatHistory chatHistory = request.ChatHistory ?? [];
 
         // Format and add user input
         var promptTemplateConfig = new PromptTemplateConfig
@@ -54,8 +54,8 @@ public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, IAgentFact
             [PromptExecutionSettings.DefaultServiceId] = promptExecutionSettings,
         };
         
-        var kernelArguments = new KernelArguments(input, promptExecutionSettingsDictionary);
-        var renderedPrompt = await promptTemplate.RenderAsync(agent.Kernel, kernelArguments, cancellationToken);
+        var kernelArguments = new KernelArguments(request.Input, promptExecutionSettingsDictionary);
+        var renderedPrompt = await promptTemplate.RenderAsync(agent.Kernel, kernelArguments, request.CancellationToken);
 
         chatHistory.AddUserMessage(renderedPrompt);
 
@@ -77,7 +77,7 @@ public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, IAgentFact
         }
 
         // Get response from agent
-        var response = await agent.InvokeAsync(chatHistory, cancellationToken: cancellationToken).LastOrDefaultAsync(cancellationToken);
+        var response = await agent.InvokeAsync(chatHistory, cancellationToken: request.CancellationToken).LastOrDefaultAsync(request.CancellationToken);
 
         if (response == null)
             throw new InvalidOperationException("Agent did not produce a response");

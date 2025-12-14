@@ -3,7 +3,6 @@ using Elsa.Features.Abstractions;
 using Elsa.Features.Services;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Elsa.Agents.Features;
 
@@ -24,8 +23,7 @@ public class AgentsCoreFeature(IModule module) : FeatureBase(module)
     /// <inheritdoc />
     public override void Apply()
     {
-        Services.AddOptions<ConfiguredAgentOptions>();
-        Services.AddOptions<CodeFirstAgentOptions>();
+        Services.AddOptions<AgentOptions>();
 
         Services
             .AddScoped<IAgentInvoker, AgentInvoker>()

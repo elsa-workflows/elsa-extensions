@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Agents;
 namespace Elsa.Agents;
 
 /// <summary>
-/// Factory for creating Agent Framework agents from Elsa agent configurations.
+/// Factory for creating agents from agent configurations.
 /// </summary>
 public interface IAgentFactory
 {

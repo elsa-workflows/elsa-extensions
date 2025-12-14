@@ -50,7 +50,13 @@ public class ConfiguredAgentActivity : CodeActivity
         }
 
         var agentInvoker = context.GetRequiredService<IAgentInvoker>();
-        var agentExecutionResponse = await agentInvoker.InvokeAgentAsync(AgentName, functionInput, context.CancellationToken);
+        var request = new InvokeAgentRequest
+        {
+            AgentName = AgentName,
+            Input = functionInput,
+            CancellationToken = context.CancellationToken
+        };
+        var agentExecutionResponse = await agentInvoker.InvokeAsync(request);
         var responseText = StripCodeFences(agentExecutionResponse.ChatMessageContent.Content!);
         var isJsonResponse = IsJsonResponse(responseText);
         var outputType = context.ActivityDescriptor.Outputs.Single().Type;

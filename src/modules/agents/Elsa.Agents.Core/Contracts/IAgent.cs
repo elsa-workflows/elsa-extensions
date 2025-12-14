@@ -3,9 +3,7 @@ using Microsoft.Agents.AI;
 namespace Elsa.Agents;
 
 /// <summary>
-/// Minimal abstraction over an executable agent so activities and endpoints
-/// do not need to know whether the underlying implementation is SK-based,
-/// ChatClientAgent-based, or something else.
+/// Minimal abstraction to represent a code-first agent that can be automatically discovered as an activity.
 /// </summary>
 public interface IAgent
 {
