@@ -13,13 +13,13 @@ public class AgentsFeature(IModule module) : FeatureBase(module)
 {
     public AgentsFeature AddAgent<TAgent>(string? key = null) where TAgent : class, IAgent
     {
-        Module.Services.Configure<AgentOptions>(options => options.AddAgentType<TAgent>(key));
+        Module.Services.Configure<AgentsOptions>(options => options.AddAgentType<TAgent>(key));
         return this;
     }
 
     public AgentsFeature AddServiceDescriptor(ServiceDescriptor descriptor)
     {
-        Module.Services.Configure<AgentOptions>(options => options.ServiceDescriptors.Add(descriptor));
+        Module.Services.Configure<AgentsOptions>(options => options.ServiceDescriptors.Add(descriptor));
         return this;
     }
 }
