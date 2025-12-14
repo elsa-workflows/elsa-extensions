@@ -1,4 +1,3 @@
-using Elsa.Agents;
 using Elsa.Expressions.Contracts;
 using Elsa.Expressions.Extensions;
 using Elsa.Extensions;
@@ -13,7 +12,7 @@ namespace Elsa.Agents.Activities.ActivityProviders;
 /// Provides activities for each function of registered agents.
 /// </summary>
 [UsedImplicitly]
-public class AgentActivityProvider(
+public class ConfigurationAgentActivityProvider(
     IKernelConfigProvider kernelConfigProvider,
     IActivityDescriber activityDescriber,
     IWellKnownTypeRegistry wellKnownTypeRegistry

@@ -15,7 +15,7 @@ using static Elsa.Agents.Activities.Extensions.ResponseHelpers;
 namespace Elsa.Agents.Activities;
 
 /// <summary>
-/// An activity that executes a function of a skilled agent. This is an internal activity that is used by <see cref="AgentActivityProvider"/>.
+/// An activity that executes a function of a skilled agent. This is an internal activity that is used by <see cref="ConfigurationAgentActivityProvider"/>.
 /// </summary>
 [Browsable(false)]
 public class ConfiguredAgentActivity : CodeActivity
