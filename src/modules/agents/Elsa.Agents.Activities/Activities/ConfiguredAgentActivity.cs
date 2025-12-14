@@ -49,7 +49,7 @@ public class ConfiguredAgentActivity : CodeActivity
             functionInput[inputDescriptor.Name] = inputValue;
         }
 
-        var agentInvoker = context.GetRequiredService<AgentInvoker>();
+        var agentInvoker = context.GetRequiredService<IAgentInvoker>();
         var agentExecutionResponse = await agentInvoker.InvokeAgentAsync(AgentName, functionInput, context.CancellationToken);
         var responseText = StripCodeFences(agentExecutionResponse.ChatMessageContent.Content!);
         var isJsonResponse = IsJsonResponse(responseText);

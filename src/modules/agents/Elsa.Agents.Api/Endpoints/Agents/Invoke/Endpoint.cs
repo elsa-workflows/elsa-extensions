@@ -8,7 +8,7 @@ namespace Elsa.Agents.Api.Endpoints.Agents.Invoke;
 /// Invokes an agent.
 /// </summary>
 [UsedImplicitly]
-public class Execute(AgentInvoker agentInvoker) : ElsaEndpoint<Request, JsonElement>
+public class Execute(IAgentInvoker agentInvoker) : ElsaEndpoint<Request, JsonElement>
 {
     /// <inheritdoc />
     public override void Configure()

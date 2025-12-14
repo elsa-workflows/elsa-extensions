@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Elsa.Agents;
 
-public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, AgentFactory agentFactory)
+public class AgentInvoker(IKernelConfigProvider kernelConfigProvider, IAgentFactory agentFactory) : IAgentInvoker
 {
     /// <summary>
     /// Invokes an agent using the Microsoft Agent Framework (new approach).

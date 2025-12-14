@@ -28,8 +28,8 @@ public class AgentsCoreFeature(IModule module) : FeatureBase(module)
         Services.AddOptions<CodeFirstAgentOptions>();
 
         Services
-            .AddScoped<AgentInvoker>()
-            .AddScoped<AgentFactory>()
+            .AddScoped<IAgentInvoker, AgentInvoker>()
+            .AddScoped<IAgentFactory, AgentFactory>()
             .AddScoped<ISkillDiscoverer, SkillDiscoverer>()
             .AddScoped(_kernelConfigProviderFactory)
             .AddScoped<ConfigurationKernelConfigProvider>()

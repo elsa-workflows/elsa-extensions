@@ -17,7 +17,7 @@ public class AgentFactory(
     ISkillDiscoverer skillDiscoverer,
     IServiceProvider serviceProvider,
     IOptions<ConfiguredAgentOptions> options,
-    ILogger<AgentFactory> logger)
+    ILogger<AgentFactory> logger) : IAgentFactory
 {
     /// <summary>
     /// Creates a ChatCompletionAgent from an Elsa agent configuration.
