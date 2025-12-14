@@ -11,12 +11,13 @@
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Common\Elsa.Common.csproj"/>
-        <ProjectReference Include="..\Elsa.Agents\Elsa.Agents.csproj"/>
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Common"/>
-        <PackageReference Include="Elsa.Agents"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Elsa.Agents\Elsa.Agents.csproj"/>
+    </ItemGroup>
 </Project>
