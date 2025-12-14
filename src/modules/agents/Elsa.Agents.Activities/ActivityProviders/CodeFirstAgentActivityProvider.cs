@@ -46,8 +46,9 @@ public class CodeFirstAgentActivityProvider(
         descriptor.Name = key.Pascalize();
         descriptor.TypeName = activityTypeName;
         descriptor.DisplayName = key.Humanize().Transform(To.TitleCase);
-        descriptor.Category = "Code-First Agents";
+        descriptor.Category = "Agents";
         descriptor.Kind = ActivityKind.Task;
+        descriptor.RunAsynchronously = true;
         descriptor.IsBrowsable = true;
         descriptor.ClrType = typeof(CodeFirstAgentActivity);
 
@@ -56,6 +57,7 @@ public class CodeFirstAgentActivityProvider(
             var activity = context.CreateActivity<CodeFirstAgentActivity>();
             activity.Type = activityTypeName;
             activity.AgentName = key;
+            activity.RunAsynchronously = true;
             return activity;
         };
 

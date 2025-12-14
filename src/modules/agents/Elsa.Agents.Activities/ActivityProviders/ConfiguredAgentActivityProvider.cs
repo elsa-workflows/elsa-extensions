@@ -46,6 +46,7 @@ public class ConfigurationAgentActivityProvider(
         activityDescriptor.IsBrowsable = true;
         activityDescriptor.Category = "Agents";
         activityDescriptor.Kind = ActivityKind.Task;
+        activityDescriptor.RunAsynchronously = true;
         activityDescriptor.ClrType = typeof(ConfiguredAgentActivity);
 
         activityDescriptor.Constructor = context =>
@@ -53,6 +54,7 @@ public class ConfigurationAgentActivityProvider(
             var activity = context.CreateActivity<ConfiguredAgentActivity>();
             activity.Type = activityTypeName;
             activity.AgentName = agentConfig.Name;
+            activity.RunAsynchronously = true;
             return activity;
         };
 
