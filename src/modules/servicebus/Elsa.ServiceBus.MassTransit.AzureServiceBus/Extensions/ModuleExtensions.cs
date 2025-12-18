@@ -30,7 +30,7 @@ public static class ModuleExtensions
 
             void Configure(AzureServiceBusFeature bus)
             {
-                bus.AzureServiceBusOptions = options => options.ConnectionStringOrName = connectionString;
+                bus.AzureServiceBusOptions += options => options.ConnectionStringOrName = connectionString;
                 bus.ConnectionString = connectionString;
                 configure?.Invoke(bus);
             }
@@ -55,7 +55,7 @@ public static class ModuleExtensions
 
             void Configure(AzureServiceBusFeature bus)
             {
-                bus.ServiceBusAdministrationClientFactory = _ => serviceBusAdministrationClient;
+                bus.ServiceBusAdministrationClientFactory += _ => serviceBusAdministrationClient;
                 bus.ConfigureTransportBus +=  (_, configurator) => configurator.Host(hostAddress, serviceBusClient, serviceBusAdministrationClient);
                 configure?.Invoke(bus);
             }
