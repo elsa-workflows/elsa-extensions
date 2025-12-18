@@ -56,7 +56,9 @@ public static class ModuleExtensions
             void Configure(AzureServiceBusFeature bus)
             {
                 bus.ServiceBusAdministrationClientFactory = _ => serviceBusAdministrationClient;
-                bus.ConfigureTransportBus += (_, configurator) => configurator.Host(hostAddress, serviceBusClient, serviceBusAdministrationClient);
+                bus.ConfigureTransportBus = bus.ConfigureTransportBus == null
+                    ? (_, configurator) => configurator.Host(hostAddress, serviceBusClient, serviceBusAdministrationClient)
+                    : bus.ConfigureTransportBus + ((_, configurator) => configurator.Host(hostAddress, serviceBusClient, serviceBusAdministrationClient));
                 configure?.Invoke(bus);
             }
         }
