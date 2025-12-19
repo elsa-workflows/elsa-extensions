@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace Elsa.Agents;
 
-public class AgentResolver(IServiceProvider serviceProvider, IOptions<AgentOptions> options) : IAgentResolver
+public class AgentResolver(IServiceProvider serviceProvider, IOptions<AgentsOptions> options) : IAgentResolver
 {
     public Task<IAgent> ResolveAsync(string agentName, CancellationToken cancellationToken = default)
     {

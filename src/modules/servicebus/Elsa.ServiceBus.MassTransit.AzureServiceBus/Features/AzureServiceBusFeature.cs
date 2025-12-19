@@ -65,7 +65,7 @@ public class AzureServiceBusFeature : FeatureBase
     /// Use this action to configure advanced settings and features for the Azure Service Bus, such as middleware 
     /// or additional endpoints. This action will run in addition to the Elsa required configuration.
     /// </remarks>
-    public Action<IBusRegistrationContext, IServiceBusBusFactoryConfigurator> ConfigureTransportBus { get; set; }
+    public Action<IBusRegistrationContext, IServiceBusBusFactoryConfigurator> ConfigureTransportBus { get; set; } = (_, _) => { };
 
     /// <summary>
     /// A delegate to configure <see cref="AzureServiceBusOptions"/>.
