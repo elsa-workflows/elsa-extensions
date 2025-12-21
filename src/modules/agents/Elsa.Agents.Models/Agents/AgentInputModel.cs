@@ -5,6 +5,7 @@ namespace Elsa.Agents;
 public class AgentInputModel
 {
     [Required] public string Name { get; set; } = "";
+    public string? FunctionName { get; set; }
     [Required] public string Description { get; set; } = "";
     [Required] public string PromptTemplate { get; set; } = "";
     public ICollection<InputVariableConfig> InputVariables { get; set; } = [];

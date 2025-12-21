@@ -38,11 +38,12 @@ public class ConfigurationAgentActivityProvider(
     private async Task<ActivityDescriptor> CreateAgentActivityDescriptor(AgentConfig agentConfig, CancellationToken cancellationToken)
     {
         var activityDescriptor = await activityDescriber.DescribeActivityAsync(typeof(ConfiguredAgentActivity), cancellationToken);
-        var activityTypeName = $"Elsa.Agents.{agentConfig.Name.Pascalize()}";
-        activityDescriptor.Name = agentConfig.Name.Pascalize();
+        var functionName = string.IsNullOrWhiteSpace(agentConfig.FunctionName) ? agentConfig.Name : agentConfig.FunctionName;
+        var activityTypeName = $"Elsa.Agents.{functionName.Pascalize()}";
+        activityDescriptor.Name = functionName.Pascalize();
         activityDescriptor.TypeName = activityTypeName;
         activityDescriptor.Description = agentConfig.Description;
-        activityDescriptor.DisplayName = agentConfig.Name.Humanize().Transform(To.TitleCase);
+        activityDescriptor.DisplayName = functionName.Humanize().Transform(To.TitleCase);
         activityDescriptor.IsBrowsable = true;
         activityDescriptor.Category = "Agents";
         activityDescriptor.Kind = ActivityKind.Task;

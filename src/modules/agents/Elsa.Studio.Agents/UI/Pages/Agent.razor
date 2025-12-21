@@ -25,13 +25,20 @@
                       Variant="Variant.Outlined"
                       HelperText="@Localizer["The name of the agent."]"/>
 
+        <MudTextField @bind-Value="_agent.FunctionName"
+                      For="@(() => _agent.FunctionName)"
+                      Immediate="true"
+                      Label="@Localizer["Function Name"]"
+                      Variant="Variant.Outlined"
+                      HelperText="@Localizer["The function name for the activity (verb form, e.g., 'Write'). If left empty, defaults to the agent name."]"/>
+
         <MudTextField @bind-Value="_agent.Description"
                       For="@(() => _agent.Description)"
                       Immediate="false"
                       Label="@Localizer["Description"]"
                       Variant="Variant.Outlined"
                       HelperText="@Localizer["A description about the role and purpose of this agent."]"/>
-        
+
         <MudTextField @bind-Value="_agent.PromptTemplate"
                       For="@(() => _agent.PromptTemplate)"
                       Immediate="false"
