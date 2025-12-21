@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Dynamic;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Elsa.Expressions.Helpers;
@@ -19,6 +20,7 @@ public class CodeFirstAgentActivity : CodeActivity
     private static JsonSerializerOptions? _serializerOptions;
 
     [JsonIgnore] internal string AgentName { get; set; } = null!;
+    [JsonIgnore] internal string MethodName { get; set; } = null!;
 
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
@@ -53,8 +55,17 @@ public class CodeFirstAgentActivity : CodeActivity
             agentPropertyLookup[inputDescriptor.Name].SetValue(agent, inputValue);
         }
 
+        // Invoke the specified method on the agent using reflection
+        var method = agentType.GetMethod(MethodName, BindingFlags.Instance | BindingFlags.Public);
+        if (method == null)
+            throw new InvalidOperationException($"Method '{MethodName}' not found on agent type '{agentType.Name}'.");
+
         var agentExecutionContext = new AgentExecutionContext { CancellationToken = context.CancellationToken };
-        var agentExecutionResponse = await agent.RunAsync(agentExecutionContext);
+        var task = method.Invoke(agent, new object[] { agentExecutionContext }) as Task<Microsoft.Agents.AI.AgentRunResponse>;
+        if (task == null)
+            throw new InvalidOperationException($"Method '{MethodName}' did not return a Task<AgentRunResponse>.");
+
+        var agentExecutionResponse = await task;
         var responseText = StripCodeFences(agentExecutionResponse.Text);
         var isJsonResponse = IsJsonResponse(responseText);
         var outputType = context.ActivityDescriptor.Outputs.Single().Type;

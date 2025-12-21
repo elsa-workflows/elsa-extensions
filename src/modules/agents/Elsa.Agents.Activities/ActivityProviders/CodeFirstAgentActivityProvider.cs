@@ -31,21 +31,41 @@ public class CodeFirstAgentActivityProvider(
         {
             var key = kvp.Key;
             var type = kvp.Value;
-            var descriptor = await CreateDescriptorForAgentAsync(key, type, cancellationToken);
+            var agentDescriptors = await CreateDescriptorsForAgentAsync(key, type, cancellationToken);
+            descriptors.AddRange(agentDescriptors);
+        }
+
+        return descriptors;
+    }
+
+    private async Task<IEnumerable<ActivityDescriptor>> CreateDescriptorsForAgentAsync(string key, Type agentType, CancellationToken cancellationToken)
+    {
+        var descriptors = new List<ActivityDescriptor>();
+
+        // Discover all public methods that match the signature: async Task MethodName(AgentExecutionContext)
+        var methods = agentType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+            .Where(IsAgentActionMethod)
+            .ToList();
+
+        foreach (var method in methods)
+        {
+            var descriptor = await CreateDescriptorForAgentMethodAsync(key, agentType, method, cancellationToken);
             descriptors.Add(descriptor);
         }
 
         return descriptors;
     }
 
-    private async Task<ActivityDescriptor> CreateDescriptorForAgentAsync(string key, Type agentType, CancellationToken cancellationToken)
+    private async Task<ActivityDescriptor> CreateDescriptorForAgentMethodAsync(string agentKey, Type agentType, MethodInfo method, CancellationToken cancellationToken)
     {
         var descriptor = await activityDescriber.DescribeActivityAsync(typeof(CodeFirstAgentActivity), cancellationToken);
-        var activityTypeName = $"Elsa.Agents.CodeFirst.{key.Pascalize()}";
+        var methodName = method.Name;
+        var activityTypeName = $"Elsa.Agents.CodeFirst.{agentKey.Pascalize()}.{methodName}";
 
-        descriptor.Name = key.Pascalize();
+        descriptor.Name = methodName;
         descriptor.TypeName = activityTypeName;
-        descriptor.DisplayName = key.Humanize().Transform(To.TitleCase);
+        descriptor.DisplayName = methodName.Humanize().Transform(To.TitleCase);
+        descriptor.Description = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
         descriptor.Category = "Agents";
         descriptor.Kind = ActivityKind.Task;
         descriptor.RunAsynchronously = true;
@@ -56,7 +76,8 @@ public class CodeFirstAgentActivityProvider(
         {
             var activity = context.CreateActivity<CodeFirstAgentActivity>();
             activity.Type = activityTypeName;
-            activity.AgentName = key;
+            activity.AgentName = agentKey;
+            activity.MethodName = methodName;
             activity.RunAsynchronously = true;
             return activity;
         };
@@ -105,6 +126,23 @@ public class CodeFirstAgentActivityProvider(
         descriptor.Outputs.Add(outputDescriptor);
 
         return descriptor;
+    }
+
+    private static bool IsAgentActionMethod(MethodInfo method)
+    {
+        // Must return Task<AgentRunResponse>
+        if (method.ReturnType != typeof(Task<Microsoft.Agents.AI.AgentRunResponse>))
+            return false;
+
+        // Must have exactly one parameter of type AgentExecutionContext
+        var parameters = method.GetParameters();
+        if (parameters.Length != 1)
+            return false;
+
+        if (parameters[0].ParameterType != typeof(AgentExecutionContext))
+            return false;
+
+        return true;
     }
 
     private static bool IsInputProperty(PropertyInfo prop)

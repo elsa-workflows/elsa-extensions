@@ -281,6 +281,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Agents", "src\modules\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Agents.OpenAI", "src\modules\agents\Elsa.Agents.OpenAI\Elsa.Agents.OpenAI.csproj", "{7055576E-1144-4726-BA88-DF89F2A13FA8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{A33667E6-6A59-4E46-AF05-AAD335A36078}"
+	ProjectSection(SolutionItems) = preProject
+		doc\release-notes\3.6.0-rc1.md = doc\release-notes\3.6.0-rc1.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
