@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Elsa.Expressions.Contracts;
 using Elsa.Expressions.Extensions;
@@ -62,9 +63,18 @@ public class CodeFirstAgentActivityProvider(
         var methodName = method.Name;
         var activityTypeName = $"Elsa.Agents.CodeFirst.{agentKey.Pascalize()}.{methodName}";
 
+        // Strip "Async" suffix for display purposes
+        var displayMethodName = methodName.EndsWith("Async", StringComparison.Ordinal)
+            ? methodName[..^5]
+            : methodName;
+
+        // Check for DisplayAttribute
+        var displayAttribute = method.GetCustomAttribute<DisplayAttribute>();
+        var displayName = displayAttribute?.Name ?? displayMethodName.Humanize().Transform(To.TitleCase);
+
         descriptor.Name = methodName;
         descriptor.TypeName = activityTypeName;
-        descriptor.DisplayName = methodName.Humanize().Transform(To.TitleCase);
+        descriptor.DisplayName = displayName;
         descriptor.Description = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
         descriptor.Category = "Agents";
         descriptor.Kind = ActivityKind.Task;
