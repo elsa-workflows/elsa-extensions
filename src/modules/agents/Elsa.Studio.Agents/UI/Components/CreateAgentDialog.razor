@@ -13,9 +13,9 @@
                 <MudTextField Label="@Localizer["Prompt Template"]" @bind-Value="_agentInputModel.PromptTemplate" For="@(() => _agentInputModel.PromptTemplate)" HelperText="@Localizer["The system prompt template that the agent will use."]" Variant="Variant.Outlined" Lines="4"/>
                 <MudField Label="@Localizer["Skills"]" HelperText="@Localizer["The skills that the agent can use."]">
                     <MudList T="string" @bind-SelectedValues="SelectedSkills" SelectionMode="SelectionMode.MultiSelection">
-                        @foreach (var plugin in AvailableSkills)
+                        @foreach (var skill in AvailableSkills)
                         {
-                            <MudListItem Text="@plugin.Name" Value="@plugin.Name"/>
+                            <MudListItem Text="@skill.Name" Value="@skill.Name"/>
                         }
                     </MudList>
                 </MudField>
