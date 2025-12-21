@@ -39,7 +39,7 @@ public class ConfigurationAgentActivityProvider(
     {
         var activityDescriptor = await activityDescriber.DescribeActivityAsync(typeof(ConfiguredAgentActivity), cancellationToken);
         var functionName = string.IsNullOrWhiteSpace(agentConfig.FunctionName) ? agentConfig.Name : agentConfig.FunctionName;
-        var activityTypeName = $"Elsa.Agents.{functionName.Pascalize()}";
+        var activityTypeName = $"Elsa.Agents.{activityDescriptor.Name.Pascalize()}.{functionName.Pascalize()}";
         activityDescriptor.Name = functionName.Pascalize();
         activityDescriptor.TypeName = activityTypeName;
         activityDescriptor.Description = agentConfig.Description;
