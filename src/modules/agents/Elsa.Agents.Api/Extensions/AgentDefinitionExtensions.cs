@@ -12,6 +12,7 @@ public static class AgentDefinitionExtensions
         {
             Id = agentDefinition.Id,
             Name = agentDefinition.Name,
+            FunctionName = agentDefinition.AgentConfig.FunctionName,
             Description = agentDefinition.Description,
             Agents = agentDefinition.AgentConfig.Agents,
             ExecutionSettings = agentDefinition.AgentConfig.ExecutionSettings,

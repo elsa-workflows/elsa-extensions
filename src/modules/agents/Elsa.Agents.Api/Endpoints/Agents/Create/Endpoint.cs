@@ -42,6 +42,7 @@ public class Endpoint(IAgentManager agentManager, IIdentityGenerator identityGen
             {
                 Description = req.Description.Trim(),
                 Name = req.Name.Trim(),
+                FunctionName = req.FunctionName?.Trim(),
                 Agents = req.Agents,
                 ExecutionSettings = req.ExecutionSettings,
                 InputVariables = req.InputVariables,

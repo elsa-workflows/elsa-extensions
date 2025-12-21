@@ -44,6 +44,7 @@ public class Endpoint(IAgentManager agentManager) : ElsaEndpoint<AgentInputModel
         entity.AgentConfig = new()
         {
             Name = req.Name.Trim(),
+            FunctionName = req.FunctionName?.Trim(),
             Description = req.Description.Trim(),
             PromptTemplate = req.PromptTemplate.Trim(),
             InputVariables = req.InputVariables,
