@@ -1,9 +1,13 @@
 using Elsa.Common.Multitenancy;
 using Elsa.Extensions;
+using Elsa.Scheduling.Quartz.Contracts;
+using Elsa.Scheduling.Quartz.Extensions;
+using Elsa.Scheduling.Quartz.Options;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Exceptions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Quartz;
 
 namespace Elsa.Scheduling.Quartz.Jobs;
@@ -15,6 +19,8 @@ public class RunWorkflowJob(
     ITenantAccessor tenantAccessor,
     ITenantFinder tenantFinder,
     IWorkflowStarter workflowStarter,
+    IEnumerable<ITransientExceptionDetector> transientExceptionDetectors,
+    IOptions<QuartzJobOptions> options,
     ILogger<RunWorkflowJob> logger) : IJob
 {
     /// <inheritdoc />
@@ -56,8 +62,16 @@ public class RunWorkflowJob(
             }
             catch (Exception e)
             {
-                logger.LogError(e, "An error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
-                await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
+                if (e.IsTransient(transientExceptionDetectors))
+                {
+                    logger.LogWarning(e, "A transient error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}. Rescheduling job for retry", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
+                    await context.RescheduleForTransientRetryAsync(options, cancellationToken);
+                }
+                else
+                {
+                    logger.LogError(e, "An error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
+                    await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
+                }
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿using Elsa.Scheduling.Quartz.EFCore.SqlServer;
+﻿using Elsa.Scheduling.Quartz.Contracts;
+using Elsa.Scheduling.Quartz.EFCore.SqlServer;
+using Elsa.Scheduling.Quartz.EFCore.SqlServer.Services;
 using Elsa.Scheduling.Quartz.Features;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +25,9 @@ public static class SqlServerQuartzExtensions
             feature.Services.AddPooledDbContextFactory<SqlServerQuartzDbContext>(options => UseSqlServer(connectionString, options));
         else
             feature.Services.AddDbContextFactory<SqlServerQuartzDbContext>(options => UseSqlServer(connectionString, options));
+
+        // Register SQL Server-specific transient exception detector
+        feature.Services.AddSingleton<ITransientExceptionDetector, SqlServerTransientExceptionDetector>();
 
         feature.ConfigureQuartz += quartz =>
         {

@@ -1,4 +1,6 @@
-﻿using Elsa.Scheduling.Quartz.EFCore.Sqlite;
+﻿using Elsa.Scheduling.Quartz.Contracts;
+using Elsa.Scheduling.Quartz.EFCore.Sqlite;
+using Elsa.Scheduling.Quartz.EFCore.Sqlite.Services;
 using Elsa.Scheduling.Quartz.Features;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +25,9 @@ public static class SqliteQuartzExtensions
             feature.Services.AddPooledDbContextFactory<SqliteQuartzDbContext>(options => UseSqlite(connectionString, options));
         else
             feature.Services.AddDbContextFactory<SqliteQuartzDbContext>(options => UseSqlite(connectionString, options));
+
+        // Register SQLite-specific transient exception detector
+        feature.Services.AddSingleton<ITransientExceptionDetector, SqliteTransientExceptionDetector>();
 
         feature.ConfigureQuartz += quartz =>
         {

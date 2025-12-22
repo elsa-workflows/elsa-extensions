@@ -1,4 +1,6 @@
-﻿using Elsa.Scheduling.Quartz.EFCore.MySql;
+﻿using Elsa.Scheduling.Quartz.Contracts;
+using Elsa.Scheduling.Quartz.EFCore.MySql;
+using Elsa.Scheduling.Quartz.EFCore.MySql.Services;
 using Elsa.Scheduling.Quartz.Features;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +26,9 @@ public static class MySqlQuartzExtensions
         else
             feature.Services.AddDbContextFactory<MySqlQuartzDbContext>(options => UseMySql(connectionString, options));
 
+        // Register MySQL-specific transient exception detector
+        feature.Services.AddSingleton<ITransientExceptionDetector, MySqlTransientExceptionDetector>();
+
         feature.ConfigureQuartz += quartz =>
         {
             quartz.UsePersistentStore(store =>
@@ -35,7 +40,7 @@ public static class MySqlQuartzExtensions
                     store.UseClustering();
             });
         };
-        
+
         feature.Module.ConfigureHostedService<RunMigrationsHostedService<MySqlQuartzDbContext>>(-100);
 
         return feature;
