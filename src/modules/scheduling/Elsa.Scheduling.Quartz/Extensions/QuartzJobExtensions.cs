@@ -2,7 +2,7 @@ using Elsa.Scheduling.Quartz.Options;
 using Microsoft.Extensions.Options;
 using Quartz;
 
-namespace Elsa.Scheduling.Quartz.Extensions;
+namespace Elsa.Scheduling.Quartz;
 
 /// <summary>
 /// Extension methods for Quartz job execution context.

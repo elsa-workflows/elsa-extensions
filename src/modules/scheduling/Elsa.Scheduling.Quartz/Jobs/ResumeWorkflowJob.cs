@@ -51,18 +51,15 @@ public class ResumeWorkflowJob(
 
                 logger.LogInformation("Resumed workflow instance {WorkflowInstanceId}", workflowInstanceId);
             }
+            catch (Exception e) when (e.IsTransient(transientExceptionDetectors))
+            {
+                logger.LogWarning(e, "A transient error occurred while resuming workflow instance {WorkflowInstanceId}. Rescheduling job for retry", workflowInstanceId);
+                await context.RescheduleForTransientRetryAsync(options, cancellationToken);
+            }
             catch (Exception e)
             {
-                if (e.IsTransient(transientExceptionDetectors))
-                {
-                    logger.LogWarning(e, "A transient error occurred while resuming workflow instance {WorkflowInstanceId}. Rescheduling job for retry", workflowInstanceId);
-                    await context.RescheduleForTransientRetryAsync(options, cancellationToken);
-                }
-                else
-                {
-                    logger.LogError(e, "An error occurred while resuming workflow instance {WorkflowInstanceId}", workflowInstanceId);
-                    await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
-                }
+                logger.LogError(e, "An error occurred while resuming workflow instance {WorkflowInstanceId}", workflowInstanceId);
+                await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
             }
         }
     }
