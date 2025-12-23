@@ -1,4 +1,4 @@
-using Elsa.Scheduling.Quartz.Contracts;
+using Elsa.Resilience.Contracts;
 using Npgsql;
 
 namespace Elsa.Scheduling.Quartz.EFCore.PostgreSql.Services;

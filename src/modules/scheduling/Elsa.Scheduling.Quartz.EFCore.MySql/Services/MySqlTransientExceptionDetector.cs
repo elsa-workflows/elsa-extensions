@@ -1,4 +1,4 @@
-using Elsa.Scheduling.Quartz.Contracts;
+using Elsa.Resilience.Contracts;
 using MySqlConnector;
 
 namespace Elsa.Scheduling.Quartz.EFCore.MySql.Services;
