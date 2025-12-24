@@ -1,13 +1,12 @@
 using Elsa.Common.Multitenancy;
 using Elsa.Extensions;
 using Elsa.Resilience;
-using Elsa.Scheduling.Quartz.Options;
+using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Exceptions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Quartz;
 
 namespace Elsa.Scheduling.Quartz.Jobs;
@@ -21,7 +20,7 @@ public class RunWorkflowJob(
     ITenantFinder tenantFinder,
     IWorkflowStarter workflowStarter,
     ITransientExceptionDetector transientExceptionDetector,
-    IOptions<QuartzJobOptions> options,
+    IQuartzJobRetryScheduler retryScheduler,
     ILogger<RunWorkflowJob> logger) : IJob
 {
     /// <inheritdoc />
@@ -64,7 +63,7 @@ public class RunWorkflowJob(
             catch (Exception e) when (transientExceptionDetector.IsTransient(e))
             {
                 logger.LogWarning(e, "A transient error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}. Rescheduling job for retry", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
-                await context.ScheduleRetryAsync(options, cancellationToken);
+                await retryScheduler.ScheduleRetryAsync(context, cancellationToken);
             }
             catch (Exception e)
             {
