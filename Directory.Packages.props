@@ -28,6 +28,7 @@
         <PackageVersion Include="Elsa.Persistence.EFCore.Common" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Persistence.EFCore" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Resilience" Version="$(ElsaVersion)"/>
+        <PackageVersion Include="Elsa.Resilience.Core" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Tenants" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Tenants.AspNetCore" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Testing.Shared" Version="$(ElsaVersion)"/>

@@ -1,8 +1,11 @@
 using Elsa.Common.Multitenancy;
 using Elsa.Extensions;
+using Elsa.Resilience;
+using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Exceptions;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Quartz;
 
@@ -11,10 +14,13 @@ namespace Elsa.Scheduling.Quartz.Jobs;
 /// <summary>
 /// A job that runs a workflow.
 /// </summary>
+[UsedImplicitly]
 public class RunWorkflowJob(
     ITenantAccessor tenantAccessor,
     ITenantFinder tenantFinder,
     IWorkflowStarter workflowStarter,
+    ITransientExceptionDetector transientExceptionDetector,
+    IQuartzJobRetryScheduler retryScheduler,
     ILogger<RunWorkflowJob> logger) : IJob
 {
     /// <inheritdoc />
@@ -53,6 +59,11 @@ public class RunWorkflowJob(
             {
                 logger.LogWarning(e, "Could not find workflow graph for workflow definition handle {WorkflowDefinitionHandle}", startRequest.WorkflowDefinitionHandle);
                 await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
+            }
+            catch (Exception e) when (transientExceptionDetector.IsTransient(e))
+            {
+                logger.LogWarning(e, "A transient error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}. Rescheduling job for retry", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
+                await retryScheduler.ScheduleRetryAsync(context, cancellationToken);
             }
             catch (Exception e)
             {

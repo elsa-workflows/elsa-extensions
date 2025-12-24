@@ -35,7 +35,7 @@ public static class MySqlQuartzExtensions
                     store.UseClustering();
             });
         };
-        
+
         feature.Module.ConfigureHostedService<RunMigrationsHostedService<MySqlQuartzDbContext>>(-100);
 
         return feature;
