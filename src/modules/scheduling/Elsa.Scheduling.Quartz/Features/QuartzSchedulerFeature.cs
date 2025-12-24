@@ -2,8 +2,6 @@ using Elsa.Extensions;
 using Elsa.Features.Abstractions;
 using Elsa.Features.Attributes;
 using Elsa.Features.Services;
-using Elsa.Resilience.Contracts;
-using Elsa.Resilience.Services;
 using Elsa.Scheduling.Quartz.Handlers;
 using Elsa.Scheduling.Quartz.Options;
 using Elsa.Scheduling.Quartz.Services;

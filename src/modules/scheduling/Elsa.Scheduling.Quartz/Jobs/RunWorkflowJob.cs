@@ -1,7 +1,6 @@
 using Elsa.Common.Multitenancy;
 using Elsa.Extensions;
-using Elsa.Resilience.Contracts;
-using Elsa.Scheduling.Quartz.Extensions;
+using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Options;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
@@ -21,7 +20,7 @@ public class RunWorkflowJob(
     ITenantAccessor tenantAccessor,
     ITenantFinder tenantFinder,
     IWorkflowStarter workflowStarter,
-    ITransientExceptionDetectionService transientExceptionDetectionService,
+    ITransientExceptionDetector transientExceptionDetector,
     IOptions<QuartzJobOptions> options,
     ILogger<RunWorkflowJob> logger) : IJob
 {
@@ -62,23 +61,15 @@ public class RunWorkflowJob(
                 logger.LogWarning(e, "Could not find workflow graph for workflow definition handle {WorkflowDefinitionHandle}", startRequest.WorkflowDefinitionHandle);
                 await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
             }
-            catch (Exception e) when (e.IsTransient(transientExceptionDetectors))
+            catch (Exception e) when (transientExceptionDetector.IsTransient(e))
             {
                 logger.LogWarning(e, "A transient error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}. Rescheduling job for retry", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
                 await context.RescheduleForTransientRetryAsync(options, cancellationToken);
             }
             catch (Exception e)
             {
-                if (transientExceptionDetectionService.IsTransient(e))
-                {
-                    logger.LogWarning(e, "A transient error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}. Rescheduling job for retry", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
-                    await context.RescheduleForTransientRetryAsync(options, cancellationToken);
-                }
-                else
-                {
-                    logger.LogError(e, "An error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
-                    await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
-                }
+                logger.LogError(e, "An error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
+                await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
             }
         }
     }
