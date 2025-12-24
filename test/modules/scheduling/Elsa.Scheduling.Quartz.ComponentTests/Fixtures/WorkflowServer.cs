@@ -25,6 +25,7 @@ public class WorkflowServer(string url) : WebApplicationFactory<Program>
         TestServer.Web.Program.ConfigureForTest ??= elsa =>
         {
             elsa.UseQuartz();
+            elsa.UseScheduling(scheduling => scheduling.UseQuartzScheduler());
             elsa.UseWorkflowRuntime();
         };
 
