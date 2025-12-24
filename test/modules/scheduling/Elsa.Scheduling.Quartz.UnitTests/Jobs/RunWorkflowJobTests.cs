@@ -2,13 +2,11 @@ using Elsa.Common.Multitenancy;
 using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Jobs;
-using Elsa.Scheduling.Quartz.Options;
 using Elsa.Scheduling.Quartz.UnitTests.Helpers;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Exceptions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using Quartz;
 using QuartzScheduler = Quartz.IScheduler;
@@ -21,18 +19,18 @@ public class RunWorkflowJobTests
     private readonly Mock<ITenantFinder> _tenantFinder = new();
     private readonly Mock<IWorkflowStarter> _workflowStarter = new();
     private readonly Mock<ITransientExceptionDetector> _transientDetector = new();
-    private readonly Mock<IOptions<QuartzJobOptions>> _options = QuartzJobTestHelper.CreateQuartzJobOptions();
+    private readonly Mock<IQuartzJobRetryScheduler> _retryScheduler = new();
     private readonly Mock<ILogger<RunWorkflowJob>> _logger = new();
     private readonly RunWorkflowJob _job;
 
     public RunWorkflowJobTests()
     {
-        _job = new RunWorkflowJob(
+        _job = new(
             _tenantAccessor.Object,
             _tenantFinder.Object,
             _workflowStarter.Object,
             _transientDetector.Object,
-            _options.Object,
+            _retryScheduler.Object,
             _logger.Object);
     }
 
@@ -40,7 +38,7 @@ public class RunWorkflowJobTests
     public async Task Execute_SuccessfulStart_CallsWorkflowStarter()
     {
         var (context, _) = CreateJobExecutionContext();
-        _workflowStarter.SetupStartWorkflow(new StartWorkflowResponse { WorkflowInstanceId = "workflow-123" });
+        _workflowStarter.SetupStartWorkflow(new() { WorkflowInstanceId = "workflow-123" });
 
         await _job.Execute(context);
 
@@ -51,7 +49,7 @@ public class RunWorkflowJobTests
     public async Task Execute_CannotStart_LogsWarningAndReturns()
     {
         var (context, _) = CreateJobExecutionContext();
-        _workflowStarter.SetupStartWorkflow(new StartWorkflowResponse { CannotStart = true });
+        _workflowStarter.SetupStartWorkflow(new() { CannotStart = true });
 
         await _job.Execute(context);
 
@@ -70,24 +68,28 @@ public class RunWorkflowJobTests
         scheduler.VerifyDeleted();
     }
 
-    [Fact]
-    public async Task Execute_TransientException_ReschedulesJob()
+    [Theory]
+    [InlineData(typeof(TimeoutException), true)]
+    [InlineData(typeof(HttpRequestException), true)]
+    public async Task Execute_TransientException_ReschedulesJob(Type exceptionType, bool isTransient)
     {
-        var (context, scheduler) = CreateJobExecutionContext();
-        _transientDetector.SetupIsTransient(true);
-        _workflowStarter.SetupStartWorkflowThrows(new TimeoutException());
+        var (context, _) = CreateJobExecutionContext();
+        _transientDetector.SetupIsTransient(isTransient);
+        _workflowStarter.SetupStartWorkflowThrows((Exception)Activator.CreateInstance(exceptionType)!);
 
         await _job.Execute(context);
 
-        scheduler.VerifyRescheduled();
+        _retryScheduler.Verify(x => x.ScheduleRetryAsync(context, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Fact]
-    public async Task Execute_NonTransientException_DeletesJob()
+    [Theory]
+    [InlineData(typeof(InvalidOperationException))]
+    [InlineData(typeof(ArgumentException))]
+    public async Task Execute_NonTransientException_DeletesJob(Type exceptionType)
     {
         var (context, scheduler) = CreateJobExecutionContext();
         _transientDetector.SetupIsTransient(false);
-        _workflowStarter.SetupStartWorkflowThrows(new InvalidOperationException());
+        _workflowStarter.SetupStartWorkflowThrows((Exception)Activator.CreateInstance(exceptionType)!);
 
         await _job.Execute(context);
 
