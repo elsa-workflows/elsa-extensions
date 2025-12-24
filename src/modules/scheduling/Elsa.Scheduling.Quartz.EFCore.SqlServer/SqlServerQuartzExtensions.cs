@@ -1,4 +1,4 @@
-﻿using Elsa.Scheduling.Quartz.Contracts;
+﻿using Elsa.Resilience.Contracts;
 using Elsa.Scheduling.Quartz.EFCore.SqlServer;
 using Elsa.Scheduling.Quartz.EFCore.SqlServer.Services;
 using Elsa.Scheduling.Quartz.Features;

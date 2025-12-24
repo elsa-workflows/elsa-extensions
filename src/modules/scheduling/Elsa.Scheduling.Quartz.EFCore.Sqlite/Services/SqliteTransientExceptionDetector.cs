@@ -1,4 +1,4 @@
-using Elsa.Scheduling.Quartz.Contracts;
+using Elsa.Resilience.Contracts;
 using Microsoft.Data.Sqlite;
 
 namespace Elsa.Scheduling.Quartz.EFCore.Sqlite.Services;

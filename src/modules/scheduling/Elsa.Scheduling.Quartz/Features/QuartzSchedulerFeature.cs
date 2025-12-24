@@ -2,12 +2,14 @@ using Elsa.Extensions;
 using Elsa.Features.Abstractions;
 using Elsa.Features.Attributes;
 using Elsa.Features.Services;
-using Elsa.Scheduling.Quartz.Contracts;
+using Elsa.Resilience.Contracts;
+using Elsa.Resilience.Services;
 using Elsa.Scheduling.Quartz.Handlers;
 using Elsa.Scheduling.Quartz.Options;
 using Elsa.Scheduling.Quartz.Services;
 using Elsa.Scheduling.Quartz.Tasks;
 using Elsa.Scheduling.Features;
+using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Workflows;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,7 +54,6 @@ public class QuartzSchedulerFeature(IModule module) : FeatureBase(module)
             .AddSingleton<QuartzCronParser>()
             .AddScoped<QuartzWorkflowScheduler>()
             .AddScoped<IJobKeyProvider, JobKeyProvider>()
-            .AddSingleton<ITransientExceptionDetector, DefaultTransientExceptionDetector>()
             .AddStartupTask<RegisterJobsTask>()
             .AddQuartz();
 
