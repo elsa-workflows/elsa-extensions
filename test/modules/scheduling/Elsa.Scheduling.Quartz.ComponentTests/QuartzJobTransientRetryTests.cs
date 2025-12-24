@@ -24,8 +24,8 @@ public class QuartzJobTransientRetryTests(SchedulingApp app) : AppComponentTest(
         Type exceptionType,
         string exceptionMessage)
     {
-        // Arrange
-        var (job, failingStarter, context) = await CreateTestJobSetup(
+        // Arrange - Create job manually with test double for controlled testing
+        var (job, failingStarter, context) = await CreateTestJobSetupWithoutScheduling(
             failuresBeforeSuccess,
             (Exception)Activator.CreateInstance(exceptionType, exceptionMessage)!,
             $"test-transient-{failuresBeforeSuccess}"
@@ -48,8 +48,8 @@ public class QuartzJobTransientRetryTests(SchedulingApp app) : AppComponentTest(
     [Fact]
     public async Task RunWorkflowJob_NonTransientException_DoesNotRetry()
     {
-        // Arrange
-        var (job, failingStarter, context) = await CreateTestJobSetup(
+        // Arrange - Schedule job with Quartz so we can verify it gets deleted
+        var (job, failingStarter, context) = await CreateTestJobSetupWithScheduling(
             10, // Would retry many times if transient
             new InvalidOperationException("Non-transient error"),
             "test-nontransient"
@@ -68,8 +68,37 @@ public class QuartzJobTransientRetryTests(SchedulingApp app) : AppComponentTest(
         Assert.False(jobExists);
     }
 
+    /// <summary>
+    /// Creates a test setup without scheduling the job with Quartz.
+    /// Use when testing job execution logic directly without needing scheduler interaction.
+    /// </summary>
     private async Task<(RunWorkflowJob job, FailingWorkflowStarter failingStarter, IJobExecutionContext context)>
-        CreateTestJobSetup(int failuresBeforeSuccess, Exception exception, string jobIdentifier)
+        CreateTestJobSetupWithoutScheduling(int failuresBeforeSuccess, Exception exception, string jobIdentifier)
+    {
+        var scheduler = await WorkflowServer.GetSchedulerAsync();
+        var workflowStarter = Scope.ServiceProvider.GetRequiredService<IWorkflowStarter>();
+
+        var failingStarter = new FailingWorkflowStarter(workflowStarter)
+        {
+            FailuresBeforeSuccess = failuresBeforeSuccess,
+            ExceptionToThrow = exception
+        };
+
+        var job = CreateRunWorkflowJob(failingStarter);
+        var (jobDetail, trigger) = CreateJobDetailAndTrigger(jobIdentifier);
+        
+        // Don't schedule with Quartz - we're testing the Execute method directly
+        var context = CreateTestContext(scheduler, jobDetail, trigger);
+
+        return (job, failingStarter, context);
+    }
+
+    /// <summary>
+    /// Creates a test setup and schedules the job with Quartz.
+    /// Use when testing behavior that involves scheduler operations (e.g., job deletion).
+    /// </summary>
+    private async Task<(RunWorkflowJob job, FailingWorkflowStarter failingStarter, IJobExecutionContext context)>
+        CreateTestJobSetupWithScheduling(int failuresBeforeSuccess, Exception exception, string jobIdentifier)
     {
         var scheduler = await WorkflowServer.GetSchedulerAsync();
         var workflowStarter = Scope.ServiceProvider.GetRequiredService<IWorkflowStarter>();
@@ -83,6 +112,8 @@ public class QuartzJobTransientRetryTests(SchedulingApp app) : AppComponentTest(
         var job = CreateRunWorkflowJob(failingStarter);
         var (jobDetail, trigger) = CreateJobDetailAndTrigger(jobIdentifier);
 
+        // Schedule the job with Quartz so the job can interact with the scheduler
+        // (e.g., delete itself on non-transient exceptions)
         await scheduler.ScheduleJob(jobDetail, trigger);
         var context = CreateTestContext(scheduler, jobDetail, trigger);
 
