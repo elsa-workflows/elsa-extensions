@@ -64,7 +64,7 @@ public class RunWorkflowJob(
             catch (Exception e) when (transientExceptionDetector.IsTransient(e))
             {
                 logger.LogWarning(e, "A transient error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}. Rescheduling job for retry", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
-                await context.RescheduleForTransientRetryAsync(options, cancellationToken);
+                await context.ScheduleRetryAsync(options, cancellationToken);
             }
             catch (Exception e)
             {

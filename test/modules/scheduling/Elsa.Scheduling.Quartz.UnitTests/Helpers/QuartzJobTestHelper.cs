@@ -53,10 +53,10 @@ public static class QuartzJobTestHelper
     /// <summary>
     /// Creates a mock for QuartzJobOptions with the specified retry delay.
     /// </summary>
-    public static Mock<IOptions<QuartzJobOptions>> CreateQuartzJobOptions(int retryDelaySeconds = 10)
+    public static Mock<IOptions<QuartzJobOptions>> CreateQuartzJobOptions(TimeSpan? retryDelay = null)
     {
         var options = new Mock<IOptions<QuartzJobOptions>>();
-        options.Setup(o => o.Value).Returns(new QuartzJobOptions { TransientRetryDelaySeconds = retryDelaySeconds });
+        options.Setup(o => o.Value).Returns(new QuartzJobOptions { TransientExceptionRetryDelay = retryDelay ?? TimeSpan.FromSeconds(1) });
         return options;
     }
 
@@ -70,19 +70,22 @@ public static class QuartzJobTestHelper
         return tenantAccessor;
     }
 
-    /// <summary>
-    /// Sets up a workflow starter to return the specified response.
-    /// </summary>
-    public static void SetupStartWorkflow(this Mock<IWorkflowStarter> workflowStarter, StartWorkflowResponse response) =>
-        workflowStarter.Setup(w => w.StartWorkflowAsync(It.IsAny<StartWorkflowRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+    extension(Mock<IWorkflowStarter> workflowStarter)
+    {
+        /// <summary>
+        /// Sets up a workflow starter to return the specified response.
+        /// </summary>
+        public void SetupStartWorkflow(StartWorkflowResponse response) =>
+            workflowStarter.Setup(w => w.StartWorkflowAsync(It.IsAny<StartWorkflowRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(response);
 
-    /// <summary>
-    /// Sets up a workflow starter to throw the specified exception.
-    /// </summary>
-    public static void SetupStartWorkflowThrows(this Mock<IWorkflowStarter> workflowStarter, Exception exception) =>
-        workflowStarter.Setup(w => w.StartWorkflowAsync(It.IsAny<StartWorkflowRequest>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(exception);
+        /// <summary>
+        /// Sets up a workflow starter to throw the specified exception.
+        /// </summary>
+        public void SetupStartWorkflowThrows(Exception exception) =>
+            workflowStarter.Setup(w => w.StartWorkflowAsync(It.IsAny<StartWorkflowRequest>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(exception);
+    }
 
     /// <summary>
     /// Sets up a transient exception detector to return the specified value for any exception.
@@ -90,19 +93,22 @@ public static class QuartzJobTestHelper
     public static void SetupIsTransient(this Mock<ITransientExceptionDetector> detector, bool isTransient) =>
         detector.Setup(d => d.IsTransient(It.IsAny<Exception>())).Returns(isTransient);
 
-    /// <summary>
-    /// Sets up a workflow runtime to return the specified workflow client.
-    /// </summary>
-    public static void SetupCreateClient(this Mock<IWorkflowRuntime> workflowRuntime, Mock<IWorkflowClient> workflowClient) =>
-        workflowRuntime.Setup(r => r.CreateClientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(workflowClient.Object);
+    extension(Mock<IWorkflowRuntime> workflowRuntime)
+    {
+        /// <summary>
+        /// Sets up a workflow runtime to return the specified workflow client.
+        /// </summary>
+        public void SetupCreateClient(Mock<IWorkflowClient> workflowClient) =>
+            workflowRuntime.Setup(r => r.CreateClientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(workflowClient.Object);
 
-    /// <summary>
-    /// Sets up a workflow runtime to throw the specified exception.
-    /// </summary>
-    public static void SetupCreateClientThrows(this Mock<IWorkflowRuntime> workflowRuntime, Exception exception) =>
-        workflowRuntime.Setup(r => r.CreateClientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(exception);
+        /// <summary>
+        /// Sets up a workflow runtime to throw the specified exception.
+        /// </summary>
+        public void SetupCreateClientThrows(Exception exception) =>
+            workflowRuntime.Setup(r => r.CreateClientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(exception);
+    }
 
     /// <summary>
     /// Sets up a workflow client to return the specified response.
@@ -111,17 +117,20 @@ public static class QuartzJobTestHelper
         workflowClient.Setup(c => c.RunInstanceAsync(It.IsAny<RunWorkflowInstanceRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(response ?? new RunWorkflowInstanceResponse());
 
-    /// <summary>
-    /// Verifies that the scheduler rescheduled a job exactly once.
-    /// </summary>
-    public static void VerifyRescheduled(this Mock<QuartzScheduler> scheduler) =>
-        scheduler.Verify(s => s.RescheduleJob(It.IsAny<TriggerKey>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()), Times.Once);
+    extension(Mock<QuartzScheduler> scheduler)
+    {
+        /// <summary>
+        /// Verifies that the scheduler rescheduled a job exactly once.
+        /// </summary>
+        public void VerifyRescheduled() =>
+            scheduler.Verify(s => s.RescheduleJob(It.IsAny<TriggerKey>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()), Times.Once);
 
-    /// <summary>
-    /// Verifies that the scheduler deleted a job exactly once.
-    /// </summary>
-    public static void VerifyDeleted(this Mock<QuartzScheduler> scheduler) =>
-        scheduler.Verify(s => s.DeleteJob(It.IsAny<JobKey>(), It.IsAny<CancellationToken>()), Times.Once);
+        /// <summary>
+        /// Verifies that the scheduler deleted a job exactly once.
+        /// </summary>
+        public void VerifyDeleted() =>
+            scheduler.Verify(s => s.DeleteJob(It.IsAny<JobKey>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
 
     /// <summary>
     /// Verifies that the workflow starter was called exactly once.

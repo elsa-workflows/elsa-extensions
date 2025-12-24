@@ -8,5 +8,5 @@ public class QuartzJobOptions
     /// <summary>
     /// The delay in seconds before rescheduling a job after a transient failure.
     /// </summary>
-    public int TransientRetryDelaySeconds { get; set; } = 10;
+    public TimeSpan TransientExceptionRetryDelay { get; set; } = TimeSpan.FromSeconds(10);
 }

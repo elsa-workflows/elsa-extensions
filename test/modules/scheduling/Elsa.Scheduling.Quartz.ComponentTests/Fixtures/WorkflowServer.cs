@@ -31,7 +31,7 @@ public class WorkflowServer(string url) : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             // Configure Quartz job options for fast retries in tests
-            services.Configure<QuartzJobOptions>(options => options.TransientRetryDelaySeconds = 1);
+            services.Configure<QuartzJobOptions>(options => options.TransientExceptionRetryDelay = TimeSpan.FromSeconds(1));
         });
     }
 }

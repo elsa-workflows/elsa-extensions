@@ -10,17 +10,23 @@ namespace Elsa.Scheduling.Quartz;
 public static class QuartzJobExtensions
 {
     /// <summary>
-    /// Reschedules the current job to run after a configured delay for transient retry.
+    /// Schedules a retry for the current job after a delay specified in the provided Quartz job options.
     /// </summary>
-    /// <param name="context">The job execution context.</param>
-    /// <param name="options">The Quartz job options.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    public static async Task RescheduleForTransientRetryAsync(this IJobExecutionContext context, IOptions<QuartzJobOptions> options, CancellationToken cancellationToken = default)
+    /// <param name="context">
+    /// The Quartz job execution context, which provides information about the job and the current trigger.
+    /// </param>
+    /// <param name="options">
+    /// The options object containing configuration values that determine the delay duration for the retry.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// An optional token to cancel the operation.
+    /// </param>
+    public static async Task ScheduleRetryAsync(this IJobExecutionContext context, IOptions<QuartzJobOptions> options, CancellationToken cancellationToken = default)
     {
-        var delaySeconds = options.Value.TransientRetryDelaySeconds;
+        var delaySeconds = options.Value.TransientExceptionRetryDelay;
         var trigger = TriggerBuilder.Create()
             .ForJob(context.JobDetail.Key)
-            .StartAt(DateTimeOffset.UtcNow.AddSeconds(delaySeconds))
+            .StartAt(DateTimeOffset.UtcNow.Add(delaySeconds))
             .Build();
 
         await context.Scheduler.RescheduleJob(context.Trigger.Key, trigger, cancellationToken);

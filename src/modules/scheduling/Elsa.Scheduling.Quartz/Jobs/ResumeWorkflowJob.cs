@@ -53,7 +53,7 @@ public class ResumeWorkflowJob(
             catch (Exception e) when (transientExceptionDetector.IsTransient(e))
             {
                 logger.LogWarning(e, "A transient error occurred while resuming workflow instance {WorkflowInstanceId}. Rescheduling job for retry", workflowInstanceId);
-                await context.RescheduleForTransientRetryAsync(options, cancellationToken);
+                await context.ScheduleRetryAsync(options, cancellationToken);
             }
             catch (Exception e)
             {
