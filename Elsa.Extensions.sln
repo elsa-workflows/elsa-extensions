@@ -290,8 +290,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scheduling", "scheduling", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Scheduling.Quartz.UnitTests", "test\modules\scheduling\Elsa.Scheduling.Quartz.UnitTests\Elsa.Scheduling.Quartz.UnitTests.csproj", "{65B9F528-568B-4E0E-894E-F22E0B7C64BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Scheduling.Quartz.IntegrationTests", "test\modules\scheduling\Elsa.Scheduling.Quartz.IntegrationTests\Elsa.Scheduling.Quartz.IntegrationTests.csproj", "{6E196027-6420-424F-B38D-8FF5AA719443}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Scheduling.Quartz.ComponentTests", "test\modules\scheduling\Elsa.Scheduling.Quartz.ComponentTests\Elsa.Scheduling.Quartz.ComponentTests.csproj", "{50798373-8A89-4159-BFD9-830D259538D6}"
 EndProject
 Global
@@ -1432,18 +1430,6 @@ Global
 		{65B9F528-568B-4E0E-894E-F22E0B7C64BB}.Release|x64.Build.0 = Release|Any CPU
 		{65B9F528-568B-4E0E-894E-F22E0B7C64BB}.Release|x86.ActiveCfg = Release|Any CPU
 		{65B9F528-568B-4E0E-894E-F22E0B7C64BB}.Release|x86.Build.0 = Release|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Debug|x64.Build.0 = Debug|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Debug|x86.Build.0 = Debug|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Release|x64.ActiveCfg = Release|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Release|x64.Build.0 = Release|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Release|x86.ActiveCfg = Release|Any CPU
-		{6E196027-6420-424F-B38D-8FF5AA719443}.Release|x86.Build.0 = Release|Any CPU
 		{50798373-8A89-4159-BFD9-830D259538D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{50798373-8A89-4159-BFD9-830D259538D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50798373-8A89-4159-BFD9-830D259538D6}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -1584,7 +1570,6 @@ Global
 		{7055576E-1144-4726-BA88-DF89F2A13FA8} = {5220DB25-20E9-4D07-801C-A970E71FB21C}
 		{6E46B8AD-FA47-474F-B959-0B530771C28C} = {3DDE6F89-531C-47F8-9CD7-7A4E6984FA48}
 		{65B9F528-568B-4E0E-894E-F22E0B7C64BB} = {6E46B8AD-FA47-474F-B959-0B530771C28C}
-		{6E196027-6420-424F-B38D-8FF5AA719443} = {6E46B8AD-FA47-474F-B959-0B530771C28C}
 		{50798373-8A89-4159-BFD9-830D259538D6} = {6E46B8AD-FA47-474F-B959-0B530771C28C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

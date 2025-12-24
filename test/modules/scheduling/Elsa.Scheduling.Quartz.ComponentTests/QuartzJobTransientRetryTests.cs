@@ -1,3 +1,4 @@
+using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.ComponentTests.Abstractions;
 using Elsa.Scheduling.Quartz.ComponentTests.Fixtures;
 using Elsa.Scheduling.Quartz.ComponentTests.Helpers;
@@ -31,7 +32,7 @@ public class QuartzJobTransientRetryTests(SchedulingApp app) : AppComponentTest(
             Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantAccessor>(),
             Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantFinder>(),
             failingStarter,
-            Scope.ServiceProvider.GetRequiredService<IEnumerable<Contracts.ITransientExceptionDetector>>(),
+            Scope.ServiceProvider.GetRequiredService<ITransientExceptionDetector>(),
             Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Options.QuartzJobOptions>>(),
             Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RunWorkflowJob>>()
         );
@@ -92,7 +93,7 @@ public class QuartzJobTransientRetryTests(SchedulingApp app) : AppComponentTest(
             Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantAccessor>(),
             Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantFinder>(),
             failingStarter,
-            Scope.ServiceProvider.GetRequiredService<IEnumerable<Contracts.ITransientExceptionDetector>>(),
+            Scope.ServiceProvider.GetRequiredService<ITransientExceptionDetector>(),
             Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Options.QuartzJobOptions>>(),
             Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RunWorkflowJob>>()
         );
@@ -144,7 +145,7 @@ public class QuartzJobTransientRetryTests(SchedulingApp app) : AppComponentTest(
             Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantAccessor>(),
             Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantFinder>(),
             failingStarter,
-            Scope.ServiceProvider.GetRequiredService<IEnumerable<Contracts.ITransientExceptionDetector>>(),
+            Scope.ServiceProvider.GetRequiredService<ITransientExceptionDetector>(),
             Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Options.QuartzJobOptions>>(),
             Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RunWorkflowJob>>()
         );

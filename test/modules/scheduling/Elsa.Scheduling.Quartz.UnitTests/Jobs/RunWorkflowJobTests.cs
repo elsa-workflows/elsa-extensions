@@ -1,4 +1,5 @@
 using Elsa.Common.Multitenancy;
+using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Jobs;
 using Elsa.Scheduling.Quartz.Options;
@@ -30,7 +31,7 @@ public class RunWorkflowJobTests
             _tenantAccessor.Object,
             _tenantFinder.Object,
             _workflowStarter.Object,
-            [_transientDetector.Object],
+            _transientDetector.Object,
             _options.Object,
             _logger.Object);
     }

@@ -1,4 +1,5 @@
 using Elsa.Common.Multitenancy;
+using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Options;
 using Elsa.Workflows.Runtime;

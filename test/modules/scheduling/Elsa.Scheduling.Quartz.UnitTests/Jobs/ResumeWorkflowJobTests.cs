@@ -1,5 +1,6 @@
 using Elsa.Common;
 using Elsa.Common.Multitenancy;
+using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Jobs;
 using Elsa.Scheduling.Quartz.Options;
@@ -33,7 +34,7 @@ public class ResumeWorkflowJobTests
             _jsonSerializer.Object,
             _tenantFinder.Object,
             _tenantAccessor.Object,
-            [_transientDetector.Object],
+            _transientDetector.Object,
             _options.Object,
             _logger.Object);
     }
