@@ -3,13 +3,11 @@ using Elsa.Common.Multitenancy;
 using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Jobs;
-using Elsa.Scheduling.Quartz.Options;
 using Elsa.Scheduling.Quartz.UnitTests.Helpers;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Messages;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using Quartz;
 using QuartzScheduler = Quartz.IScheduler;
@@ -23,19 +21,19 @@ public class ResumeWorkflowJobTests
     private readonly Mock<ITenantFinder> _tenantFinder = new();
     private readonly Mock<ITenantAccessor> _tenantAccessor = QuartzJobTestHelper.CreateTenantAccessor();
     private readonly Mock<ITransientExceptionDetector> _transientDetector = new();
-    private readonly Mock<IOptions<QuartzJobOptions>> _options = QuartzJobTestHelper.CreateQuartzJobOptions();
+    private readonly Mock<IQuartzJobRetryScheduler> _retryScheduler = new();
     private readonly Mock<ILogger<ResumeWorkflowJob>> _logger = new();
     private readonly ResumeWorkflowJob _job;
 
     public ResumeWorkflowJobTests()
     {
-        _job = new ResumeWorkflowJob(
+        _job = new(
             _workflowRuntime.Object,
             _jsonSerializer.Object,
             _tenantFinder.Object,
             _tenantAccessor.Object,
             _transientDetector.Object,
-            _options.Object,
+            _retryScheduler.Object,
             _logger.Object);
     }
 
@@ -52,24 +50,28 @@ public class ResumeWorkflowJobTests
         workflowClient.VerifyRunInstanceCalled();
     }
 
-    [Fact]
-    public async Task Execute_TransientException_ReschedulesJob()
+    [Theory]
+    [InlineData(typeof(HttpRequestException), true)]
+    [InlineData(typeof(TimeoutException), true)]
+    public async Task Execute_TransientException_ReschedulesJob(Type exceptionType, bool isTransient)
     {
-        var (context, scheduler) = CreateJobExecutionContext();
-        _transientDetector.SetupIsTransient(true);
-        _workflowRuntime.SetupCreateClientThrows(new HttpRequestException());
+        var (context, _) = CreateJobExecutionContext();
+        _transientDetector.SetupIsTransient(isTransient);
+        _workflowRuntime.SetupCreateClientThrows((Exception)Activator.CreateInstance(exceptionType)!);
 
         await _job.Execute(context);
 
-        scheduler.VerifyRescheduled();
+        _retryScheduler.Verify(x => x.ScheduleRetryAsync(context, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Fact]
-    public async Task Execute_NonTransientException_DeletesJob()
+    [Theory]
+    [InlineData(typeof(InvalidOperationException))]
+    [InlineData(typeof(ArgumentException))]
+    public async Task Execute_NonTransientException_DeletesJob(Type exceptionType)
     {
         var (context, scheduler) = CreateJobExecutionContext();
         _transientDetector.SetupIsTransient(false);
-        _workflowRuntime.SetupCreateClientThrows(new InvalidOperationException());
+        _workflowRuntime.SetupCreateClientThrows((Exception)Activator.CreateInstance(exceptionType)!);
 
         await _job.Execute(context);
 
