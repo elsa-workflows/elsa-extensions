@@ -12,6 +12,7 @@ public abstract class AppComponentTest(SchedulingApp app) : IDisposable
     public void Dispose()
     {
         OnDispose();
+        Scope.Dispose();
         GC.SuppressFinalize(this);
     }
 
