@@ -2,6 +2,7 @@ using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.ComponentTests.Abstractions;
 using Elsa.Scheduling.Quartz.ComponentTests.Fixtures;
 using Elsa.Scheduling.Quartz.ComponentTests.Helpers;
+using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Jobs;
 using Elsa.Workflows.Runtime;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,166 +16,111 @@ namespace Elsa.Scheduling.Quartz.ComponentTests;
 /// </summary>
 public class QuartzJobTransientRetryTests(SchedulingApp app) : AppComponentTest(app)
 {
-    [Fact]
-    public async Task RunWorkflowJob_TransientException_RetriesAndEventuallySucceeds()
+    [Theory]
+    [InlineData(2, typeof(TimeoutException), "Simulated transient timeout")]
+    [InlineData(1, typeof(HttpRequestException), "Simulated network error")]
+    public async Task RunWorkflowJob_TransientException_RetriesAndEventuallySucceeds(
+        int failuresBeforeSuccess,
+        Type exceptionType,
+        string exceptionMessage)
     {
-        // Arrange - Create a workflow starter that fails with transient exceptions
-        var scheduler = await WorkflowServer.GetSchedulerAsync();
-        var workflowStarter = Scope.ServiceProvider.GetRequiredService<IWorkflowStarter>();
-        var failingStarter = new FailingWorkflowStarter(workflowStarter)
-        {
-            FailuresBeforeSuccess = 2, // Fail twice before succeeding
-            ExceptionToThrow = new TimeoutException("Simulated transient timeout")
-        };
-
-        // Create job manually with our failing starter
-        var job = new RunWorkflowJob(
-            Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantAccessor>(),
-            Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantFinder>(),
-            failingStarter,
-            Scope.ServiceProvider.GetRequiredService<ITransientExceptionDetector>(),
-            Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Options.QuartzJobOptions>>(),
-            Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RunWorkflowJob>>()
+        // Arrange
+        var (job, failingStarter, context) = await CreateTestJobSetup(
+            failuresBeforeSuccess,
+            (Exception)Activator.CreateInstance(exceptionType, exceptionMessage)!,
+            $"test-transient-{failuresBeforeSuccess}"
         );
 
-        // Create job data and schedule it
-        var jobDataMap = new JobDataMap
-        {
-            { "DefinitionVersionId", "test-workflow-def" },
-            { "CorrelationId", "test-correlation" }
-        };
-
-        var jobDetail = JobBuilder.Create<RunWorkflowJob>()
-            .WithIdentity("test-transient-job", "test-group")
-            .UsingJobData(jobDataMap)
-            .StoreDurably()
-            .Build();
-
-        var trigger = TriggerBuilder.Create()
-            .WithIdentity("test-transient-trigger", "test-group")
-            .ForJob(jobDetail)
-            .StartNow()
-            .Build();
-
-        await scheduler.ScheduleJob(jobDetail, trigger);
-
         // Act - Execute the job multiple times to simulate retries
-        var context = CreateTestContext(scheduler, jobDetail, trigger);
+        for (var i = 0; i < failuresBeforeSuccess; i++)
+        {
+            await job.Execute(context);
+            Assert.Equal(i + 1, failingStarter.CallCount);
+        }
 
-        // First attempt - should fail with transient exception
+        // Final attempt - should succeed
         await job.Execute(context);
-        Assert.Equal(1, failingStarter.CallCount);
 
-        // Second attempt - should fail again
-        await job.Execute(context);
-        Assert.Equal(2, failingStarter.CallCount);
-
-        // Third attempt - should succeed
-        await job.Execute(context);
-        Assert.Equal(3, failingStarter.CallCount);
-
-        // Assert - Verify the job was retried the expected number of times
-        Assert.Equal(3, failingStarter.CallCount);
+        // Assert
+        Assert.Equal(failuresBeforeSuccess + 1, failingStarter.CallCount);
     }
 
     [Fact]
     public async Task RunWorkflowJob_NonTransientException_DoesNotRetry()
     {
         // Arrange
-        var scheduler = await WorkflowServer.GetSchedulerAsync();
-        var workflowStarter = Scope.ServiceProvider.GetRequiredService<IWorkflowStarter>();
-        var failingStarter = new FailingWorkflowStarter(workflowStarter)
-        {
-            FailuresBeforeSuccess = 10, // Would retry many times if transient
-            ExceptionToThrow = new InvalidOperationException("Non-transient error")
-        };
-
-        var job = new RunWorkflowJob(
-            Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantAccessor>(),
-            Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantFinder>(),
-            failingStarter,
-            Scope.ServiceProvider.GetRequiredService<ITransientExceptionDetector>(),
-            Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Options.QuartzJobOptions>>(),
-            Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RunWorkflowJob>>()
+        var (job, failingStarter, context) = await CreateTestJobSetup(
+            10, // Would retry many times if transient
+            new InvalidOperationException("Non-transient error"),
+            "test-nontransient"
         );
 
-        var jobDataMap = new JobDataMap
-        {
-            { "DefinitionVersionId", "test-workflow-def" }
-        };
-
-        var jobDetail = JobBuilder.Create<RunWorkflowJob>()
-            .WithIdentity("test-nontransient-job", "test-group")
-            .UsingJobData(jobDataMap)
-            .StoreDurably()
-            .Build();
-
-        var trigger = TriggerBuilder.Create()
-            .WithIdentity("test-nontransient-trigger", "test-group")
-            .ForJob(jobDetail)
-            .StartNow()
-            .Build();
-
-        await scheduler.ScheduleJob(jobDetail, trigger);
+        var scheduler = await WorkflowServer.GetSchedulerAsync();
 
         // Act
-        var context = CreateTestContext(scheduler, jobDetail, trigger);
         await job.Execute(context);
 
         // Assert - Job should be called once, then deleted (not retried)
         Assert.Equal(1, failingStarter.CallCount);
 
         // Verify job was deleted from scheduler
-        var jobExists = await scheduler.CheckExists(jobDetail.Key);
+        var jobExists = await scheduler.CheckExists(context.JobDetail.Key);
         Assert.False(jobExists);
     }
 
-    [Fact]
-    public async Task RunWorkflowJob_TransientException_IsDetectedCorrectly()
+    private async Task<(RunWorkflowJob job, FailingWorkflowStarter failingStarter, IJobExecutionContext context)>
+        CreateTestJobSetup(int failuresBeforeSuccess, Exception exception, string jobIdentifier)
     {
-        // Arrange
         var scheduler = await WorkflowServer.GetSchedulerAsync();
         var workflowStarter = Scope.ServiceProvider.GetRequiredService<IWorkflowStarter>();
+
         var failingStarter = new FailingWorkflowStarter(workflowStarter)
         {
-            FailuresBeforeSuccess = 1,
-            ExceptionToThrow = new HttpRequestException("Simulated network error")
+            FailuresBeforeSuccess = failuresBeforeSuccess,
+            ExceptionToThrow = exception
         };
 
-        var job = new RunWorkflowJob(
+        var job = CreateRunWorkflowJob(failingStarter);
+        var (jobDetail, trigger) = CreateJobDetailAndTrigger(jobIdentifier);
+
+        await scheduler.ScheduleJob(jobDetail, trigger);
+        var context = CreateTestContext(scheduler, jobDetail, trigger);
+
+        return (job, failingStarter, context);
+    }
+
+    private RunWorkflowJob CreateRunWorkflowJob(IWorkflowStarter workflowStarter)
+    {
+        return new RunWorkflowJob(
             Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantAccessor>(),
             Scope.ServiceProvider.GetRequiredService<Common.Multitenancy.ITenantFinder>(),
-            failingStarter,
+            workflowStarter,
             Scope.ServiceProvider.GetRequiredService<ITransientExceptionDetector>(),
-            Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Options.QuartzJobOptions>>(),
+            Scope.ServiceProvider.GetRequiredService<IQuartzJobRetryScheduler>(),
             Scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RunWorkflowJob>>()
         );
+    }
 
+    private static (IJobDetail jobDetail, ITrigger trigger) CreateJobDetailAndTrigger(string identifier)
+    {
         var jobDataMap = new JobDataMap
         {
             { "DefinitionVersionId", "test-workflow-def" }
         };
 
         var jobDetail = JobBuilder.Create<RunWorkflowJob>()
-            .WithIdentity("test-delay-job", "test-group")
+            .WithIdentity($"{identifier}-job", "test-group")
             .UsingJobData(jobDataMap)
             .StoreDurably()
             .Build();
 
         var trigger = TriggerBuilder.Create()
-            .WithIdentity("test-delay-trigger", "test-group")
+            .WithIdentity($"{identifier}-trigger", "test-group")
             .ForJob(jobDetail)
             .StartNow()
             .Build();
 
-        await scheduler.ScheduleJob(jobDetail, trigger);
-
-        // Act - Execute the job, which will throw a transient exception
-        var context = CreateTestContext(scheduler, jobDetail, trigger);
-        await job.Execute(context);
-
-        // Assert - Verify the transient exception was caught and handled
-        Assert.Equal(1, failingStarter.CallCount);
+        return (jobDetail, trigger);
     }
 
     private static IJobExecutionContext CreateTestContext(global::Quartz.IScheduler scheduler, IJobDetail jobDetail, ITrigger trigger)
