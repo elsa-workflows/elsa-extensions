@@ -1,6 +1,4 @@
-﻿using Elsa.Resilience.Contracts;
-using Elsa.Scheduling.Quartz.EFCore.PostgreSql;
-using Elsa.Scheduling.Quartz.EFCore.PostgreSql.Services;
+﻿using Elsa.Scheduling.Quartz.EFCore.PostgreSql;
 using Elsa.Scheduling.Quartz.Features;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -25,9 +23,6 @@ public static class PostgreSqlQuartzExtensions
             feature.Services.AddPooledDbContextFactory<PostgreSqlQuartzDbContext>(options => UseNpgsql(connectionString, options));
         else
             feature.Services.AddDbContextFactory<PostgreSqlQuartzDbContext>(options => UseNpgsql(connectionString, options));
-
-        // Register PostgreSQL-specific transient exception detector
-        feature.Services.AddSingleton<ITransientExceptionDetector, PostgreSqlTransientExceptionDetector>();
 
         feature.ConfigureQuartz += quartz =>
         {
