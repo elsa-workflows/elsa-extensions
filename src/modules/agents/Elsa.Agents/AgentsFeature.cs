@@ -11,7 +11,7 @@ namespace Elsa.Agents;
 [DependsOn(typeof(AgentActivitiesFeature))]
 public class AgentsFeature(IModule module) : FeatureBase(module)
 {
-    public AgentsFeature AddAgent<TAgent>(string? key = null) where TAgent : class, IAgent
+    public AgentsFeature AddAgent<TAgent>(string? key = null) where TAgent : class
     {
         Module.Services.Configure<AgentsOptions>(options => options.AddAgentType<TAgent>(key));
         return this;

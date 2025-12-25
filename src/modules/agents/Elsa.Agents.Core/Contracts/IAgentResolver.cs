@@ -11,5 +11,5 @@ public interface IAgentResolver
     /// <param name="agentName">The name of the agent to resolve.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>The resolved agent instance.</returns>
-    Task<IAgent> ResolveAsync(string agentName, CancellationToken cancellationToken = default);
+    Task<object> ResolveAsync(string agentName, CancellationToken cancellationToken = default);
 }

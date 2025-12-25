@@ -28,55 +28,104 @@ public class CodeFirstAgentActivity : CodeActivity
         var cancellationToken = context.CancellationToken;
         var activityDescriptor = context.ActivityDescriptor;
         var inputDescriptors = activityDescriptor.Inputs;
-        var functionInput = new Dictionary<string, object?>();
 
-        foreach (var inputDescriptor in inputDescriptors)
-        {
-            var input = (Input?)inputDescriptor.ValueGetter(this);
-            var inputValue = input != null ? context.Get(input.MemoryBlockReference()) : null;
-
-            if (inputValue is ExpandoObject expandoObject)
-                inputValue = expandoObject.ConvertTo<string>();
-
-            functionInput[inputDescriptor.Name] = inputValue;
-        }
-
-        // Resolve the agent via the unified abstraction.
         var agentResolver = context.GetRequiredService<IAgentResolver>();
         var agent = await agentResolver.ResolveAsync(AgentName, cancellationToken);
         var agentType = agent.GetType();
-        var agentPropertyLookup = agentType.GetProperties().ToDictionary(x => x.Name, x => x);
 
-        // Copy activity input descriptor values into the agent public properties:
-        foreach (var inputDescriptor in inputDescriptors)
-        {
-            var input = (Input?)inputDescriptor.ValueGetter(this);
-            var inputValue = input != null ? context.Get(input.MemoryBlockReference()) : null;
-            agentPropertyLookup[inputDescriptor.Name].SetValue(agent, inputValue);
-        }
-
-        // Invoke the specified method on the agent using reflection
         var method = agentType.GetMethod(MethodName, BindingFlags.Instance | BindingFlags.Public);
         if (method == null)
             throw new InvalidOperationException($"Method '{MethodName}' not found on agent type '{agentType.Name}'.");
 
-        var agentExecutionContext = new AgentExecutionContext { CancellationToken = context.CancellationToken };
-        var task = method.Invoke(agent, new object[] { agentExecutionContext }) as Task<Microsoft.Agents.AI.AgentRunResponse>;
-        if (task == null)
-            throw new InvalidOperationException($"Method '{MethodName}' did not return a Task<AgentRunResponse>.");
+        // Build argument list from parameters and inputs.
+        var parameters = method.GetParameters();
+        var args = new object?[parameters.Length];
 
-        var agentExecutionResponse = await task;
-        var responseText = StripCodeFences(agentExecutionResponse.Text);
-        var isJsonResponse = IsJsonResponse(responseText);
-        var outputType = context.ActivityDescriptor.Outputs.Single().Type;
+        for (var i = 0; i < parameters.Length; i++)
+        {
+            var parameter = parameters[i];
+            if (parameter.ParameterType == typeof(AgentExecutionContext))
+            {
+                args[i] = new AgentExecutionContext { CancellationToken = cancellationToken };
+                continue;
+            }
 
-        // If the target type is object and the response is in JSON format, we want it to be deserialized into an ExpandoObject for dynamic field access. 
-        if (outputType == typeof(object) && isJsonResponse)
-            outputType = typeof(ExpandoObject);
-        
-        var outputValue = isJsonResponse ? responseText.ConvertTo(outputType) : responseText;
-        var outputDescriptor = activityDescriptor.Outputs.Single();
-        var output = (Output?)outputDescriptor.ValueGetter(this);
-        context.Set(output, outputValue, "Output");
+            if (parameter.ParameterType == typeof(CancellationToken))
+            {
+                args[i] = cancellationToken;
+                continue;
+            }
+
+            // Find matching input descriptor by name
+            var inputDescriptor = inputDescriptors.FirstOrDefault(x => string.Equals(x.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
+            if (inputDescriptor == null)
+            {
+                args[i] = parameter.HasDefaultValue ? parameter.DefaultValue : null;
+                continue;
+            }
+
+            var input = (Input?)inputDescriptor.ValueGetter(this);
+            var inputValue = input != null ? context.Get(input.MemoryBlockReference()) : null;
+
+            if (inputValue is ExpandoObject expandoObject)
+                inputValue = expandoObject.ConvertTo(parameter.ParameterType);
+
+            args[i] = inputValue;
+        }
+
+        // Copy property-based inputs to the agent instance when the property exists.
+        var agentPropertyLookup = agentType.GetProperties().ToDictionary(x => x.Name, x => x);
+        foreach (var inputDescriptor in inputDescriptors)
+        {
+            if (!agentPropertyLookup.TryGetValue(inputDescriptor.Name, out var prop) || !prop.CanWrite)
+                continue;
+
+            var input = (Input?)inputDescriptor.ValueGetter(this);
+            var inputValue = input != null ? context.Get(input.MemoryBlockReference()) : null;
+            if (inputValue is ExpandoObject expandoObject)
+                inputValue = expandoObject.ConvertTo(prop.PropertyType);
+
+            prop.SetValue(agent, inputValue);
+        }
+
+        var invocationResult = method.Invoke(agent, args);
+        if (invocationResult is not Task task)
+            throw new InvalidOperationException($"Method '{MethodName}' did not return a Task.");
+
+        await task.ConfigureAwait(false);
+
+        object? resultValue = null;
+        var returnType = method.ReturnType;
+
+        if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
+        {
+            var resultProperty = task.GetType().GetProperty("Result");
+            resultValue = resultProperty?.GetValue(task);
+        }
+
+        // Map result to output if descriptor exists.
+        var outputDescriptor = activityDescriptor.Outputs.SingleOrDefault();
+        if (outputDescriptor != null)
+        {
+            var output = (Output?)outputDescriptor.ValueGetter(this);
+
+            if (resultValue is Microsoft.Agents.AI.AgentRunResponse agentResponse)
+            {
+                var responseText = StripCodeFences(agentResponse.Text);
+                var isJsonResponse = IsJsonResponse(responseText);
+                var targetType = outputDescriptor.Type;
+
+                if (targetType == typeof(object) && isJsonResponse)
+                    targetType = typeof(ExpandoObject);
+
+                var outputValue = isJsonResponse ? responseText.ConvertTo(targetType) : responseText;
+                context.Set(output, outputValue, outputDescriptor.Name);
+            }
+            else
+            {
+                // string/object passthrough
+                context.Set(output, resultValue, outputDescriptor.Name);
+            }
+        }
     }
 }

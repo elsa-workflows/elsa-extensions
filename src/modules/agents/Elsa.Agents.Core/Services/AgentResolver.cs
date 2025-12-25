@@ -5,10 +5,10 @@ namespace Elsa.Agents;
 
 public class AgentResolver(IServiceProvider serviceProvider, IOptions<AgentsOptions> options) : IAgentResolver
 {
-    public Task<IAgent> ResolveAsync(string agentName, CancellationToken cancellationToken = default)
+    public Task<object> ResolveAsync(string agentName, CancellationToken cancellationToken = default)
     {
         var agentType = options.Value.AgentTypes[agentName] ?? throw new InvalidOperationException($"No agent with name '{agentName}' was found.");
-        var agent = (IAgent)ActivatorUtilities.CreateInstance(serviceProvider, agentType)!;
+        var agent = ActivatorUtilities.CreateInstance(serviceProvider, agentType)!;
         return Task.FromResult(agent);
     }
 }
