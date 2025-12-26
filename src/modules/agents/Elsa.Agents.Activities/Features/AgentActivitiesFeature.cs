@@ -22,6 +22,7 @@ public class AgentActivitiesFeature(IModule module) : FeatureBase(module)
     public override void Apply()
     {
         Services
+            .AddActivityProvider<AgentActivityProvider>()
             .AddNotificationHandler<RefreshActivityRegistry>()
             ;
     }

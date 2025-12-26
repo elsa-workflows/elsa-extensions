@@ -12,7 +12,7 @@ namespace Elsa.Agents.Activities.ActivityProviders;
 /// Provides activities for each registered agent.
 /// </summary>
 [UsedImplicitly]
-public class ConfigurationAgentActivityProvider(
+public class AgentActivityProvider(
     IKernelConfigProvider kernelConfigProvider,
     IActivityDescriber activityDescriber,
     IWellKnownTypeRegistry wellKnownTypeRegistry
@@ -37,7 +37,7 @@ public class ConfigurationAgentActivityProvider(
 
     private async Task<ActivityDescriptor> CreateAgentActivityDescriptor(AgentConfig agentConfig, CancellationToken cancellationToken)
     {
-        var activityDescriptor = await activityDescriber.DescribeActivityAsync(typeof(ConfiguredAgentActivity), cancellationToken);
+        var activityDescriptor = await activityDescriber.DescribeActivityAsync(typeof(AgentActivity), cancellationToken);
         var functionName = string.IsNullOrWhiteSpace(agentConfig.FunctionName) ? agentConfig.Name : agentConfig.FunctionName;
         var activityTypeName = $"Elsa.Agents.{activityDescriptor.Name.Pascalize()}.{functionName.Pascalize()}";
         activityDescriptor.Name = functionName.Pascalize();
@@ -48,11 +48,11 @@ public class ConfigurationAgentActivityProvider(
         activityDescriptor.Category = "Agents";
         activityDescriptor.Kind = ActivityKind.Task;
         activityDescriptor.RunAsynchronously = true;
-        activityDescriptor.ClrType = typeof(ConfiguredAgentActivity);
+        activityDescriptor.ClrType = typeof(AgentActivity);
 
         activityDescriptor.Constructor = context =>
         {
-            var activity = context.CreateActivity<ConfiguredAgentActivity>();
+            var activity = context.CreateActivity<AgentActivity>();
             activity.Type = activityTypeName;
             activity.AgentName = agentConfig.Name;
             activity.RunAsynchronously = true;

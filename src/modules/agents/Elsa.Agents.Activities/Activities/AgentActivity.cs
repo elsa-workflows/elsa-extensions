@@ -15,10 +15,10 @@ using static Elsa.Agents.Activities.Extensions.ResponseHelpers;
 namespace Elsa.Agents.Activities;
 
 /// <summary>
-/// An activity that executes a function of a skilled agent. This is an internal activity that is used by <see cref="ConfigurationAgentActivityProvider"/>.
+/// An activity that executes a function of a skilled agent. This is an internal activity that is used by <see cref="AgentActivityProvider"/>.
 /// </summary>
 [Browsable(false)]
-public class ConfiguredAgentActivity : CodeActivity
+public class AgentActivity : CodeActivity
 {
     private static JsonSerializerOptions? _serializerOptions;
 

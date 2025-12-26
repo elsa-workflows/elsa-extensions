@@ -7,7 +7,7 @@ namespace Elsa.Agents;
 /// Provides kernel configuration from configuration.
 /// </summary>
 [UsedImplicitly]
-public class ConfigurationKernelConfigProvider(IOptions<AgentsOptions> options) : IKernelConfigProvider
+public class KernelConfigProvider(IOptions<AgentsOptions> options) : IKernelConfigProvider
 {
     public Task<KernelConfig> GetKernelConfigAsync(CancellationToken cancellationToken = default)
     {
