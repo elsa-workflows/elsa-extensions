@@ -30,6 +30,9 @@
         <PackageReference Include="Hangfire.PostgreSql" />
         <PackageReference Include="Hangfire.Storage.SQLite" />
         <PackageReference Include="Hangfire.SqlServer" />
+        <PackageReference Include="DistributedLock"/>
+        <PackageReference Include="DistributedLock.Postgres"/>
+        <PackageReference Include="DistributedLock.Redis"/>
         <PackageReference Include="JetBrains.Annotations" />
 		<PackageReference Include="Proto.Cluster.Kubernetes" />
 		<PackageReference Include="Proto.Persistence.Sqlite" />
