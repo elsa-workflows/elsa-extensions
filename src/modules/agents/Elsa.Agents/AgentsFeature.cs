@@ -11,12 +11,6 @@ namespace Elsa.Agents;
 [DependsOn(typeof(AgentActivitiesFeature))]
 public class AgentsFeature(IModule module) : FeatureBase(module)
 {
-    public AgentsFeature AddAgent<TAgent>(string? key = null) where TAgent : class, IAgent
-    {
-        Module.Services.Configure<AgentsOptions>(options => options.AddAgentType<TAgent>(key));
-        return this;
-    }
-
     public AgentsFeature AddServiceDescriptor(ServiceDescriptor descriptor)
     {
         Module.Services.Configure<AgentsOptions>(options => options.ServiceDescriptors.Add(descriptor));

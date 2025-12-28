@@ -12,7 +12,7 @@ namespace Elsa.Agents.Features;
 [UsedImplicitly]
 public class AgentsCoreFeature(IModule module) : FeatureBase(module)
 {
-    private Func<IServiceProvider, IKernelConfigProvider> _kernelConfigProviderFactory = sp => sp.GetRequiredService<ConfigurationKernelConfigProvider>();
+    private Func<IServiceProvider, IKernelConfigProvider> _kernelConfigProviderFactory = sp => sp.GetRequiredService<KernelConfigProvider>();
     
     public AgentsCoreFeature UseKernelConfigProvider(Func<IServiceProvider, IKernelConfigProvider> factory)
     {
@@ -30,8 +30,7 @@ public class AgentsCoreFeature(IModule module) : FeatureBase(module)
             .AddScoped<IAgentFactory, AgentFactory>()
             .AddScoped<ISkillDiscoverer, SkillDiscoverer>()
             .AddScoped(_kernelConfigProviderFactory)
-            .AddScoped<ConfigurationKernelConfigProvider>()
-            .AddScoped<IAgentResolver, AgentResolver>()
+            .AddScoped<KernelConfigProvider>()
             .AddSkillsProvider<ImageGeneratorSkillsProvider>()
             .AddSkillsProvider<DocumentQuerySkillsProvider>()
             ;
