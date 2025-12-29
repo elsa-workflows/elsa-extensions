@@ -45,8 +45,12 @@ public class QuartzFeature : FeatureBase
     /// When using "AUTO" for the instance ID, Quartz.NET will generate a unique identifier for each scheduler instance.
     /// </para>
     /// <para>
+    /// <strong>Note:</strong> This method is optional. If not called, default values will be automatically applied
+    /// (SchedulerId = "AUTO", SchedulerName = "ElsaScheduler"). Only use this method if you need to customize these values.
+    /// </para>
+    /// <para>
     /// <strong>Important:</strong> This method only configures the scheduler identity settings. To fully enable clustering, you must also:
-    /// 1. Use a persistent job store (e.g., via UseSqlServer, UsePostgreSql, etc.)
+    /// 1. Use a persistent job store (e.g., via UseSqlServer, UsePostgreSql, UseMySql, etc.)
     /// 2. Enable clustering on the persistent store (e.g., useClustering=true parameter)
     /// </para>
     /// <para>
@@ -54,10 +58,16 @@ public class QuartzFeature : FeatureBase
     /// The persistent store provides the shared state required for cluster coordination.
     /// </para>
     /// <para>
-    /// Example usage:
+    /// Example usage with defaults:
+    /// <code>
+    /// .UseQuartz(quartz => quartz.UseSqlServer(connectionString, useClustering: true))
+    /// </code>
+    /// </para>
+    /// <para>
+    /// Example usage with custom identity:
     /// <code>
     /// .UseQuartz(quartz => quartz
-    ///     .ConfigureClusteringIdentity()
+    ///     .ConfigureClusteringIdentity("MyCustomId", "MyScheduler")
     ///     .UseSqlServer(connectionString, useClustering: true))
     /// </code>
     /// </para>
