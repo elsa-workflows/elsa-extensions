@@ -31,8 +31,7 @@ public class QuartzFeature : FeatureBase
     public Action<QuartzHostedServiceOptions>? ConfigureQuartzHostedService { get; set; } = options => options.WaitForJobsToComplete = true;
 
     /// <summary>
-    /// Configures Quartz.NET clustering settings with sensible defaults for distributed deployments.
-    /// This method sets the scheduler instance ID and name, which are required for clustered operation.
+    /// Configures the scheduler instance ID and name for clustered operation.
     /// </summary>
     /// <param name="instanceId">The instance ID to use. Use "AUTO" (default) for automatic generation, or specify a unique identifier.</param>
     /// <param name="schedulerName">The scheduler name. Default is "ElsaScheduler".</param>
@@ -42,12 +41,12 @@ public class QuartzFeature : FeatureBase
     /// When using "AUTO" for the instance ID, Quartz.NET will generate a unique identifier for each scheduler instance.
     /// </para>
     /// <para>
-    /// <strong>Important:</strong> This method must be used in conjunction with:
-    /// 1. A persistent job store (e.g., via UseSqlServer, UsePostgreSql, etc.)
-    /// 2. Clustering enabled on the persistent store (e.g., useClustering=true parameter)
+    /// <strong>Important:</strong> This method only configures the scheduler identity settings. To fully enable clustering, you must also:
+    /// 1. Use a persistent job store (e.g., via UseSqlServer, UsePostgreSql, etc.)
+    /// 2. Enable clustering on the persistent store (e.g., useClustering=true parameter)
     /// </para>
     /// <para>
-    /// Without a persistent job store, clustering cannot function properly and may lead to unexpected behavior.
+    /// Without both a persistent job store and clustering enabled on that store, clustering cannot function properly.
     /// The persistent store provides the shared state required for cluster coordination.
     /// </para>
     /// <para>
