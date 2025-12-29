@@ -30,6 +30,10 @@ public class QuartzFeature : FeatureBase
     /// </summary>
     public Action<QuartzHostedServiceOptions>? ConfigureQuartzHostedService { get; set; } = options => options.WaitForJobsToComplete = true;
 
+    private bool _clusteringIdentityConfigured = false;
+    private string? _schedulerId;
+    private string? _schedulerName;
+
     /// <summary>
     /// Configures the scheduler instance ID and name for clustered operation.
     /// </summary>
@@ -59,9 +63,13 @@ public class QuartzFeature : FeatureBase
     /// </para>
     /// </remarks>
     public QuartzFeature ConfigureClusteringIdentity(
-        string instanceId = "AUTO", 
+        string instanceId = "AUTO",
         string schedulerName = "ElsaScheduler")
     {
+        _clusteringIdentityConfigured = true;
+        _schedulerId = instanceId;
+        _schedulerName = schedulerName;
+
         ConfigureQuartz += quartz =>
         {
             quartz.SchedulerId = instanceId;
@@ -86,6 +94,23 @@ public class QuartzFeature : FeatureBase
     {
         if (ConfigureQuartzOptions != null)
             Services.Configure(ConfigureQuartzOptions);
+
+        // Auto-configure clustering identity with default values if not explicitly configured
+        if (!_clusteringIdentityConfigured)
+        {
+            ConfigureQuartz += quartz =>
+            {
+                if (string.IsNullOrEmpty(_schedulerId))
+                    quartz.SchedulerId = "AUTO";
+                else
+                    quartz.SchedulerId = _schedulerId;
+
+                if (string.IsNullOrEmpty(_schedulerName))
+                    quartz.SchedulerName = "ElsaScheduler";
+                else
+                    quartz.SchedulerName = _schedulerName;
+            };
+        }
 
         Services
             .AddQuartz(configure => { ConfigureQuartzInternal(configure, ConfigureQuartz); });
