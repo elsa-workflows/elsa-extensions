@@ -286,6 +286,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{A33667E6-6A5
 		doc\release-notes\3.6.0-rc1.md = doc\release-notes\3.6.0-rc1.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Http.OpenApi", "src\modules\http\Elsa.Http.OpenApi\Elsa.Http.OpenApi.csproj", "{E9388ADF-B222-44CC-83AF-64BF6F07C808}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -648,6 +650,10 @@ Global
 		{7055576E-1144-4726-BA88-DF89F2A13FA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7055576E-1144-4726-BA88-DF89F2A13FA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7055576E-1144-4726-BA88-DF89F2A13FA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9388ADF-B222-44CC-83AF-64BF6F07C808}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9388ADF-B222-44CC-83AF-64BF6F07C808}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9388ADF-B222-44CC-83AF-64BF6F07C808}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9388ADF-B222-44CC-83AF-64BF6F07C808}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -774,6 +780,7 @@ Global
 		{A639E5C3-1A2D-41F9-A2CE-47DBFCA84347} = {5220DB25-20E9-4D07-801C-A970E71FB21C}
 		{F9C596A4-526A-4B16-9CB8-4D188D810775} = {5220DB25-20E9-4D07-801C-A970E71FB21C}
 		{7055576E-1144-4726-BA88-DF89F2A13FA8} = {5220DB25-20E9-4D07-801C-A970E71FB21C}
+		{E9388ADF-B222-44CC-83AF-64BF6F07C808} = {A130EEF5-7DF0-40CB-BD71-744716F0BCE7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11A771DA-B728-445E-8A88-AE1C84C3B3A6}
