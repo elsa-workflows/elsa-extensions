@@ -109,8 +109,18 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
     
     private async Task ScheduleJobAsync(QuartzIScheduler scheduler, ITrigger trigger, CancellationToken cancellationToken)
     {
-        if (!await scheduler.CheckExists(trigger.Key, cancellationToken))
+        try
+        {
+            // Try to schedule the trigger. In clustered mode, multiple instances may attempt this simultaneously.
+            // If the trigger already exists, this will throw ObjectAlreadyExistsException.
             await scheduler.ScheduleJob(trigger, cancellationToken);
+        }
+        catch (ObjectAlreadyExistsException)
+        {
+            // Trigger already exists. In clustered scenarios, this is an expected race condition
+            // when multiple pods attempt to schedule the same trigger during tenant activation or startup.
+            // We can safely ignore this and continue, as the trigger is already scheduled.
+        }
     }
 
     private JobDataMap CreateJobDataMap(ScheduleNewWorkflowInstanceRequest request)

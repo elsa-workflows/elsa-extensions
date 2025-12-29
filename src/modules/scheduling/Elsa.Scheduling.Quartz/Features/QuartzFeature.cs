@@ -30,6 +30,44 @@ public class QuartzFeature : FeatureBase
     /// </summary>
     public Action<QuartzHostedServiceOptions>? ConfigureQuartzHostedService { get; set; } = options => options.WaitForJobsToComplete = true;
 
+    /// <summary>
+    /// Configures Quartz.NET clustering settings with sensible defaults for distributed deployments.
+    /// This method sets the scheduler instance ID and name, which are required for clustered operation.
+    /// </summary>
+    /// <param name="instanceId">The instance ID to use. Use "AUTO" (default) for automatic generation, or specify a unique identifier.</param>
+    /// <param name="schedulerName">The scheduler name. Default is "ElsaScheduler".</param>
+    /// <remarks>
+    /// <para>
+    /// This method configures the scheduler instance ID and name, which are essential for clustered operation.
+    /// When using "AUTO" for the instance ID, Quartz.NET will generate a unique identifier for each scheduler instance.
+    /// </para>
+    /// <para>
+    /// This method must be used in conjunction with:
+    /// 1. A persistent job store (e.g., via UseSqlServer, UsePostgreSql, etc.)
+    /// 2. Clustering enabled on the persistent store (e.g., useClustering=true parameter)
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// .UseQuartz(quartz => quartz
+    ///     .EnableClustering()
+    ///     .UseSqlServer(connectionString, useClustering: true))
+    /// </code>
+    /// </para>
+    /// </remarks>
+    public QuartzFeature EnableClustering(
+        string instanceId = "AUTO", 
+        string schedulerName = "ElsaScheduler")
+    {
+        ConfigureQuartz += quartz =>
+        {
+            quartz.SchedulerId = instanceId;
+            quartz.SchedulerName = schedulerName;
+        };
+
+        return this;
+    }
+
     /// <inheritdoc />
     public override void ConfigureHostedServices()
     {

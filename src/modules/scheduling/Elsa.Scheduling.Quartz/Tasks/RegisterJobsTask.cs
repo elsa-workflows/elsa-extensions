@@ -30,7 +30,16 @@ internal class RegisterJobsTask(ISchedulerFactory schedulerFactoryFactory, IJobK
             .StoreDurably()
             .Build();
         
-        if (!await scheduler.CheckExists(job.Key, cancellationToken))
+        try
+        {
+            // Try to add the job. In clustered mode, multiple instances may attempt this simultaneously.
+            // Use replace=false to ensure we don't overwrite an existing job definition.
             await scheduler.AddJob(job, false, cancellationToken);
+        }
+        catch (ObjectAlreadyExistsException)
+        {
+            // Job already exists, which is fine in clustered scenarios where multiple pods
+            // may start concurrently. This is an expected race condition and can be safely ignored.
+        }
     }
 }
