@@ -42,9 +42,13 @@ public class QuartzFeature : FeatureBase
     /// When using "AUTO" for the instance ID, Quartz.NET will generate a unique identifier for each scheduler instance.
     /// </para>
     /// <para>
-    /// This method must be used in conjunction with:
+    /// <strong>Important:</strong> This method must be used in conjunction with:
     /// 1. A persistent job store (e.g., via UseSqlServer, UsePostgreSql, etc.)
     /// 2. Clustering enabled on the persistent store (e.g., useClustering=true parameter)
+    /// </para>
+    /// <para>
+    /// Without a persistent job store, clustering cannot function properly and may lead to unexpected behavior.
+    /// The persistent store provides the shared state required for cluster coordination.
     /// </para>
     /// <para>
     /// Example usage:

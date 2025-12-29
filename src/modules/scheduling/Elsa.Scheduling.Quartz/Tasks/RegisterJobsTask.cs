@@ -34,7 +34,8 @@ internal class RegisterJobsTask(ISchedulerFactory schedulerFactoryFactory, IJobK
         {
             // Try to add the job. In clustered mode, multiple instances may attempt this simultaneously.
             // Use replace=false to ensure we don't overwrite an existing job definition.
-            await scheduler.AddJob(job, false, cancellationToken);
+            const bool replaceExisting = false;
+            await scheduler.AddJob(job, replaceExisting, cancellationToken);
         }
         catch (ObjectAlreadyExistsException)
         {

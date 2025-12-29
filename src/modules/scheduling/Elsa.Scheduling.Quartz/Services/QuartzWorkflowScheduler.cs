@@ -112,7 +112,8 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
         try
         {
             // Try to schedule the trigger. In clustered mode, multiple instances may attempt this simultaneously.
-            // If the trigger already exists, this will throw ObjectAlreadyExistsException.
+            // The ScheduleJob method will throw ObjectAlreadyExistsException if a trigger with the same key already exists.
+            // Unlike AddJob, ScheduleJob does not have a 'replace' parameter - it always fails if the trigger exists.
             await scheduler.ScheduleJob(trigger, cancellationToken);
         }
         catch (ObjectAlreadyExistsException)
