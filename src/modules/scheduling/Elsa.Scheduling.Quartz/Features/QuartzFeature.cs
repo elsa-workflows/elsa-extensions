@@ -53,12 +53,12 @@ public class QuartzFeature : FeatureBase
     /// Example usage:
     /// <code>
     /// .UseQuartz(quartz => quartz
-    ///     .EnableClustering()
+    ///     .ConfigureClusteringIdentity()
     ///     .UseSqlServer(connectionString, useClustering: true))
     /// </code>
     /// </para>
     /// </remarks>
-    public QuartzFeature EnableClustering(
+    public QuartzFeature ConfigureClusteringIdentity(
         string instanceId = "AUTO", 
         string schedulerName = "ElsaScheduler")
     {
