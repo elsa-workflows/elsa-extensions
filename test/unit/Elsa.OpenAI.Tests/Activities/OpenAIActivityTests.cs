@@ -141,7 +141,6 @@ public class OpenAIActivityTests
     public void GetAudioClient_Integration_Test()
     {
         // Test that the method exists and has correct signature
-        var activity = new TestOpenAIActivity();
         var methodInfo = typeof(TestOpenAIActivity).GetMethod("GetAudioClient");
         
         Assert.NotNull(methodInfo);
