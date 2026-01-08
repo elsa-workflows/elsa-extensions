@@ -25,7 +25,7 @@
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Runtime\Elsa.Workflows.Runtime.csproj" />
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Management\Elsa.Workflows.Management.csproj" />
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Http\Elsa.Http.csproj" />
-        <ProjectReference Include="..\..\..\..\..\elsa-core\src\common\Elsa.Common\Elsa.Common.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Common\Elsa.Common.csproj" />
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Scheduling\Elsa.Scheduling.csproj" />
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\common\Elsa.Api.Common\Elsa.Api.Common.csproj" />
     </ItemGroup>
