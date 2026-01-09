@@ -130,14 +130,16 @@ services
             {
                 dapper.UseMigrations(feature =>
                 {
-                    if (sqlDatabaseProvider == SqlDatabaseProvider.SqlServer)
-                        feature.ConfigureRunner = builder => builder.AddSqlServer()
+                    feature.ConfigureRunner = builder =>
+                    {
+                        var runnerBuilder = sqlDatabaseProvider == SqlDatabaseProvider.SqlServer
+                            ? builder.AddSqlServer()
+                            : builder.AddSQLite();
+                        
+                        return runnerBuilder
                             .WithGlobalConnectionString(sp => sp.GetRequiredService<IDbConnectionProvider>().GetConnectionString())
                             .WithMigrationsIn(typeof(Elsa.Persistence.Dapper.Migrations.Management.Initial).Assembly);
-                    else
-                        feature.ConfigureRunner = builder => builder.AddSQLite()
-                            .WithGlobalConnectionString(sp => sp.GetRequiredService<IDbConnectionProvider>().GetConnectionString())
-                            .WithMigrationsIn(typeof(Elsa.Persistence.Dapper.Migrations.Management.Initial).Assembly);
+                    };
                 });
                 dapper.DbConnectionProvider = sp =>
                 {
