@@ -136,7 +136,7 @@ services
                             ? builder.AddSqlServer()
                             : builder.AddSQLite();
                         
-                        return runnerBuilder
+                        runnerBuilder
                             .WithGlobalConnectionString(sp => sp.GetRequiredService<IDbConnectionProvider>().GetConnectionString())
                             .WithMigrationsIn(typeof(Elsa.Persistence.Dapper.Migrations.Management.Initial).Assembly);
                     };
