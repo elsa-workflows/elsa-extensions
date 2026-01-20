@@ -12,6 +12,7 @@ using Elsa.Features.Services;
 using Elsa.Identity.Multitenancy;
 using Elsa.OpenTelemetry.Middleware;
 using Elsa.Persistence.Dapper.Extensions;
+using Elsa.Persistence.Dapper.Contracts;
 using Elsa.Persistence.Dapper.Services;
 using Elsa.Persistence.EFCore.Extensions;
 using Elsa.Persistence.EFCore.Modules.Alterations;
@@ -53,6 +54,7 @@ using Elsa.Workflows.Runtime.Distributed.Extensions;
 using Elsa.Workflows.Runtime.Options;
 using Elsa.Workflows.Runtime.Stores;
 using Elsa.Workflows.Runtime.Tasks;
+using FluentMigrator.Runner;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Hangfire.PostgreSql;
@@ -128,10 +130,16 @@ services
             {
                 dapper.UseMigrations(feature =>
                 {
-                    if (sqlDatabaseProvider == SqlDatabaseProvider.SqlServer)
-                        feature.UseSqlServer();
-                    else
-                        feature.UseSqlite();
+                    feature.ConfigureRunner = builder =>
+                    {
+                        var runnerBuilder = sqlDatabaseProvider == SqlDatabaseProvider.SqlServer
+                            ? builder.AddSqlServer()
+                            : builder.AddSQLite();
+                        
+                        runnerBuilder
+                            .WithGlobalConnectionString(sp => sp.GetRequiredService<IDbConnectionProvider>().GetConnectionString())
+                            .WithMigrationsIn(typeof(Elsa.Persistence.Dapper.Migrations.Management.Initial).Assembly);
+                    };
                 });
                 dapper.DbConnectionProvider = sp =>
                 {

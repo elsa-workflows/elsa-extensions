@@ -25,6 +25,8 @@
 		<PackageReference Include="Elsa.Workflows.Api" />
         <PackageReference Include="Elsa.WorkflowProviders.BlobStorage" />
 		<PackageReference Include="Elsa.Workflows.Runtime.Distributed" />
+        <PackageReference Include="FluentMigrator.Runner.SqlServer" />
+        <PackageReference Include="FluentMigrator.Runner.SQLite" />
         <PackageReference Include="Hangfire.Core" />
         <PackageReference Include="Hangfire.MemoryStorage" />
         <PackageReference Include="Hangfire.PostgreSql" />

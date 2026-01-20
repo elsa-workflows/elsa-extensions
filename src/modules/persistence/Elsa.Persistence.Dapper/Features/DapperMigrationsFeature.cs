@@ -15,26 +15,14 @@ namespace Elsa.Persistence.Dapper.Features;
 public class DapperMigrationsFeature(IModule module) : FeatureBase(module)
 {
     /// <summary>
-    /// Configures migrations to use SQLite.
+    /// Gets or sets a delegate used to configure the <see cref="IMigrationRunnerBuilder"/> for Dapper migrations.
     /// </summary>
-    public DapperMigrationsFeature UseSqlite()
-    {
-        ConfigureRunner += runner => runner.AddSQLite();
-        return this;
-    }
-
-    /// <summary>
-    /// Configures migrations to use SQLite.
-    /// </summary>
-    public DapperMigrationsFeature UseSqlServer()
-    {
-        ConfigureRunner += runner => runner.AddSqlServer();
-        return this;
-    }
-
-    /// <summary>
-    /// Gets or sets a delegate to configure migrations.
-    /// </summary>
+    /// <remarks>
+    /// The delegate must configure a database provider on the runner (for example by calling
+    /// <c>AddSqlServer()</c> or <c>AddSQLite()</c>) in addition to any other settings.
+    /// This replaces the removed <c>UseSqlServer()</c> and <c>UseSqlite()</c> convenience methods;
+    /// consumers migrating from those APIs should move their provider configuration into this delegate.
+    /// </remarks>
     public Action<IMigrationRunnerBuilder> ConfigureRunner { get; set; } = runner => runner
         .WithGlobalConnectionString(sp => sp.GetRequiredService<IDbConnectionProvider>().GetConnectionString())
         .WithMigrationsIn(typeof(Initial).Assembly);
