@@ -1,3 +1,4 @@
+using Elsa.Common.Models;
 using Elsa.Persistence.Dapper.Extensions;
 using Elsa.Persistence.Dapper.Models;
 using Elsa.Persistence.Dapper.Modules.Runtime.Records;
@@ -88,6 +89,49 @@ internal class DapperActivityExecutionRecordStore(Store<ActivityExecutionRecordR
         return await store.DeleteAsync(q => ApplyFilter(q, filter), cancellationToken);
     }
 
+    public async Task<Page<ActivityExecutionRecord>> GetExecutionChainAsync(
+        string activityExecutionId,
+        bool includeCrossWorkflowChain = true,
+        int? skip = null,
+        int? take = null,
+        CancellationToken cancellationToken = default)
+    {
+        var chain = new List<ActivityExecutionRecord>();
+        var currentId = activityExecutionId;
+
+        // Traverse the chain backwards from the specified record to the root.
+        while (currentId != null)
+        {
+            var id = currentId;
+            var record = await store.FindAsync(q => q.Is(nameof(ActivityExecutionRecordRecord.Id), id), cancellationToken);
+
+            if (record == null)
+                break;
+
+            var mappedRecord = Map(record);
+            chain.Add(mappedRecord);
+
+            // If not including cross-workflow chain and we hit a workflow boundary, stop.
+            if (!includeCrossWorkflowChain && mappedRecord.SchedulingWorkflowInstanceId != null)
+                break;
+
+            currentId = mappedRecord.SchedulingActivityExecutionId;
+        }
+
+        // Reverse to get root-to-leaf order.
+        chain.Reverse();
+
+        var totalCount = chain.Count;
+
+        // Apply pagination if specified.
+        if (skip.HasValue)
+            chain = chain.Skip(skip.Value).ToList();
+        if (take.HasValue)
+            chain = chain.Take(take.Value).ToList();
+
+        return Page.Of(chain, totalCount);
+    }
+
     private static void ApplyFilter(ParameterizedQuery query, ActivityExecutionRecordFilter filter)
     {
         query
@@ -95,8 +139,21 @@ internal class DapperActivityExecutionRecordStore(Store<ActivityExecutionRecordR
             .In(nameof(ActivityExecutionRecordRecord.Id), filter.Ids)
             .Is(nameof(ActivityExecutionRecordRecord.ActivityId), filter.ActivityId)
             .In(nameof(ActivityExecutionRecordRecord.ActivityId), filter.ActivityIds)
+            .Is(nameof(ActivityExecutionRecordRecord.ActivityNodeId), filter.ActivityNodeId)
+            .In(nameof(ActivityExecutionRecordRecord.ActivityNodeId), filter.ActivityNodeIds)
+            .Is(nameof(ActivityExecutionRecordRecord.ActivityName), filter.Name)
+            .In(nameof(ActivityExecutionRecordRecord.ActivityName), filter.Names)
+            .Is(nameof(ActivityExecutionRecordRecord.Status), filter.Status?.ToString())
+            .In(nameof(ActivityExecutionRecordRecord.Status), filter.Statuses?.Select(x => x.ToString()))
             .Is(nameof(ActivityExecutionRecordRecord.WorkflowInstanceId), filter.WorkflowInstanceId)
-            .In(nameof(ActivityExecutionRecordRecord.WorkflowInstanceId), filter.WorkflowInstanceIds);
+            .In(nameof(ActivityExecutionRecordRecord.WorkflowInstanceId), filter.WorkflowInstanceIds)
+            .Is(nameof(ActivityExecutionRecordRecord.SchedulingActivityExecutionId), filter.SchedulingActivityExecutionId)
+            .In(nameof(ActivityExecutionRecordRecord.SchedulingActivityExecutionId), filter.SchedulingActivityExecutionIds)
+            .Is(nameof(ActivityExecutionRecordRecord.SchedulingActivityId), filter.SchedulingActivityId)
+            .In(nameof(ActivityExecutionRecordRecord.SchedulingActivityId), filter.SchedulingActivityIds)
+            .Is(nameof(ActivityExecutionRecordRecord.SchedulingWorkflowInstanceId), filter.SchedulingWorkflowInstanceId)
+            .In(nameof(ActivityExecutionRecordRecord.SchedulingWorkflowInstanceId), filter.SchedulingWorkflowInstanceIds)
+            .Is(nameof(ActivityExecutionRecordRecord.CallStackDepth), filter.CallStackDepth);
 
         if (filter.Completed != null)
         {
@@ -127,6 +184,12 @@ internal class DapperActivityExecutionRecordStore(Store<ActivityExecutionRecordR
             SerializedOutputs = source.Outputs?.Any() == true ? safeSerializer.Serialize(source.Outputs) : null,
             SerializedException = source.Exception != null ? payloadSerializer.Serialize(source.Exception) : null,
             SerializedProperties = source.Properties?.Any() == true ? safeSerializer.Serialize(source.Properties) : null,
+            SerializedMetadata = source.Metadata?.Any() == true ? payloadSerializer.Serialize(source.Metadata) : null,
+            AggregateFaultCount = source.AggregateFaultCount,
+            SchedulingActivityExecutionId = source.SchedulingActivityExecutionId,
+            SchedulingActivityId = source.SchedulingActivityId,
+            SchedulingWorkflowInstanceId = source.SchedulingWorkflowInstanceId,
+            CallStackDepth = source.CallStackDepth,
             TenantId = source.TenantId
         };
     }
@@ -151,6 +214,12 @@ internal class DapperActivityExecutionRecordStore(Store<ActivityExecutionRecordR
             Outputs = source.SerializedOutputs != null ? safeSerializer.Deserialize<IDictionary<string, object?>>(source.SerializedOutputs) : null,
             Exception = source.SerializedException != null ? payloadSerializer.Deserialize<ExceptionState>(source.SerializedException) : null,
             Properties = source.SerializedProperties != null ? safeSerializer.Deserialize<IDictionary<string, object>>(source.SerializedProperties) : null,
+            Metadata = source.SerializedMetadata != null ? payloadSerializer.Deserialize<IDictionary<string, object>>(source.SerializedMetadata) : null,
+            AggregateFaultCount = source.AggregateFaultCount,
+            SchedulingActivityExecutionId = source.SchedulingActivityExecutionId,
+            SchedulingActivityId = source.SchedulingActivityId,
+            SchedulingWorkflowInstanceId = source.SchedulingWorkflowInstanceId,
+            CallStackDepth = source.CallStackDepth,
             TenantId = source.TenantId
         };
     }
@@ -170,6 +239,8 @@ internal class DapperActivityExecutionRecordStore(Store<ActivityExecutionRecordR
             HasBookmarks = source.HasBookmarks,
             Status = Enum.Parse<ActivityStatus>(source.Status),
             ActivityTypeVersion = source.ActivityTypeVersion,
+            AggregateFaultCount = source.AggregateFaultCount,
+            Metadata = source.SerializedMetadata != null ? payloadSerializer.Deserialize<IDictionary<string, object>>(source.SerializedMetadata) : null,
             TenantId = source.TenantId
         };
     }
