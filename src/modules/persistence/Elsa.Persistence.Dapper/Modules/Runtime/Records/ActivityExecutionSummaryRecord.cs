@@ -51,6 +51,16 @@ internal class ActivityExecutionSummaryRecord :  Record
     /// Gets or sets the status of the activity.
     /// </summary>
     public string Status { get; set; } = null!;
+
+    /// <summary>
+    /// Lightweight metadata associated with the activity execution.
+    /// </summary>
+    public string? SerializedMetadata { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the aggregated count of faults encountered during the execution of the activity instance and its descendants.
+    /// </summary>
+    public int AggregateFaultCount { get; set; }
     
     /// <summary>
     /// Gets or sets the time at which the activity execution completed.
