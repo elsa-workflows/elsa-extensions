@@ -89,49 +89,6 @@ internal class DapperActivityExecutionRecordStore(Store<ActivityExecutionRecordR
         return await store.DeleteAsync(q => ApplyFilter(q, filter), cancellationToken);
     }
 
-    public async Task<Page<ActivityExecutionRecord>> GetExecutionChainAsync(
-        string activityExecutionId,
-        bool includeCrossWorkflowChain = true,
-        int? skip = null,
-        int? take = null,
-        CancellationToken cancellationToken = default)
-    {
-        var chain = new List<ActivityExecutionRecord>();
-        var visited = new HashSet<string>();
-        var currentId = activityExecutionId;
-
-        // Traverse the chain backwards from the specified record to the root.
-        while (currentId != null && visited.Add(currentId))
-        {
-            var id = currentId;
-            var record = await store.FindAsync(q => q.Is(nameof(ActivityExecutionRecordRecord.Id), id), cancellationToken);
-
-            if (record == null)
-                break;
-
-            var mappedRecord = Map(record);
-            chain.Add(mappedRecord);
-
-            // If not including cross-workflow chain and we hit a workflow boundary, stop.
-            if (!includeCrossWorkflowChain && mappedRecord.SchedulingWorkflowInstanceId != null)
-                break;
-
-            currentId = mappedRecord.SchedulingActivityExecutionId;
-        }
-
-        // Reverse to get root-to-leaf order.
-        chain.Reverse();
-
-        var totalCount = chain.Count;
-
-        // Apply pagination if specified.
-        if (skip.HasValue)
-            chain = chain.Skip(skip.Value).ToList();
-        if (take.HasValue)
-            chain = chain.Take(take.Value).ToList();
-
-        return Page.Of(chain, totalCount);
-    }
 
     private static void ApplyFilter(ParameterizedQuery query, ActivityExecutionRecordFilter filter)
     {
