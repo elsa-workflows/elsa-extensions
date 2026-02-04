@@ -83,10 +83,11 @@ public class MongoActivityExecutionLogStore(MongoDbStore<ActivityExecutionRecord
         CancellationToken cancellationToken = default)
     {
         var chain = new List<ActivityExecutionRecord>();
+        var visited = new HashSet<string>();
         var currentId = activityExecutionId;
 
         // Traverse the chain backwards from the specified record to the root.
-        while (currentId != null)
+        while (currentId != null && visited.Add(currentId))
         {
             var id = currentId;
             var record = await mongoDbStore.FindAsync(queryable => queryable.Where(x => x.Id == id), cancellationToken);
