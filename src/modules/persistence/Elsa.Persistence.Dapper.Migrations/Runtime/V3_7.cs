@@ -19,6 +19,7 @@ public class V3_7 : Migration
         Alter.Table("ActivityExecutionRecords").AddColumn("SchedulingActivityId").AsString().Nullable();
         Alter.Table("ActivityExecutionRecords").AddColumn("SchedulingWorkflowInstanceId").AsString().Nullable();
         Alter.Table("ActivityExecutionRecords").AddColumn("CallStackDepth").AsInt32().Nullable();
+        Alter.Table("ActivityExecutionRecords").AddColumn("AggregateFaultCount").AsInt32().NotNullable().WithDefaultValue(0);
     }
 
     /// <inheritdoc />
@@ -29,5 +30,6 @@ public class V3_7 : Migration
         Delete.Column("SchedulingActivityId").FromTable("ActivityExecutionRecords");
         Delete.Column("SchedulingWorkflowInstanceId").FromTable("ActivityExecutionRecords");
         Delete.Column("CallStackDepth").FromTable("ActivityExecutionRecords");
+        Delete.Column("AggregateFaultCount").FromTable("ActivityExecutionRecords");
     }
 }
