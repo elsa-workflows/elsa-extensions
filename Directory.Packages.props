@@ -41,7 +41,7 @@
         <PackageVersion Include="Elsa.Workflows.Management" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Workflows.Runtime" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Workflows.Runtime.Distributed" Version="$(ElsaVersion)"/>
-        <PackageVersion Include="Microsoft.Agents.AI" Version="1.0.0-preview.251204.1"/>
+        <PackageVersion Include="Microsoft.Agents.AI" Version="1.0.0-preview.260212.1"/>
     </ItemGroup>
     <ItemGroup Label="Elsa Studio">
         <PackageVersion Include="Elsa.Studio" Version="$(ElsaStudioVersion)"/>
