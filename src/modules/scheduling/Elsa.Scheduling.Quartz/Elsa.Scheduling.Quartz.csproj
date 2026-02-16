@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Elsa.Resilience" />
         <PackageReference Include="Quartz.Extensions.Hosting"/>
     </ItemGroup>
 
