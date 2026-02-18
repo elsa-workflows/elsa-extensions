@@ -1,78 +1,101 @@
-# Contributing to Elsa Extensions
+# Contributing to Elsa
 
-Thank you for your interest in contributing to **Elsa Extensions**! 🎉  
-We welcome contributions from the community to enhance workflow automation by adding new integrations, improving existing ones, fixing bugs, or refining documentation.
+Thank you for your interest in contributing to Elsa.
 
----
+We value clarity, discipline, and maintainability in our codebase. Well-scoped pull requests and high-quality bug reports help us maintain velocity without sacrificing quality.
 
-## 🚀 How to Contribute
+Whether you're:
+- Reporting a bug
+- Proposing a feature
+- Submitting a fix
+- Improving documentation
+- Becoming a maintainer
 
-### 1️⃣ Fork the Repository  
-Click the **Fork** button on the top right of this repository and clone it to your local machine:  
-```sh
-git clone https://github.com/YOUR-USERNAME/elsa-extensions.git
-cd elsa-extensions
-```
-
-### 2️⃣ Set Up the Development Environment  
-Ensure you have the following installed:
-- .NET 8 or higher SDK  
-- A text editor or IDE (Visual Studio, Rider, VS Code)  
-- Docker (if working on extensions that require local services)
-
-Then restore dependencies:
-```sh
-dotnet restore
-```
-
-### 3️⃣ Choose an Issue or Feature  
-- Check our [Issues](https://github.com/elsa-workflows/elsa-extensions/issues) for **"good first issue"** labels.  
-- If you have a new idea, open an issue to discuss before starting development.
-
-### 4️⃣ Develop Your Changes  
-Create a new branch for your changes:
-```sh
-git checkout -b feature/extension-name
-```
-Follow the repository's structure when adding a new extensions:  
-```
-[group-name]/
-  └── Elsa.[extension-name]/
-      ├── Services/
-      ├── Activities/
-      ├── AI/
-      ...
-```
-
-### 5️⃣ Commit & Push  
-Ensure your code follows the project’s conventions and add meaningful commit messages:
-```sh
-git add .
-git commit -m "Add support for [extension-name]"
-git push origin feature/extensions-name
-```
-
-### 6️⃣ Create a Pull Request (PR)  
-Go to your fork on GitHub and open a PR to merge your branch into `main`.  
-
-Please include:
-- A **clear description** of your changes.  
-- **Relevant issue numbers**, if applicable.  
-- Screenshots/logs (if UI/functional changes).  
-
-Our team will review your PR, provide feedback if necessary, and merge it once approved! ✅  
+— your contributions are welcome.
 
 ---
 
-## 🛠 Contribution Guidelines
+## Development Workflow
 
-- **Code Style**: Follow `.editorconfig` settings and existing project conventions.  
-- **Documentation**: Every extension must have a `README.md` at the root of its group folder or project. See [README-TEMPLATE](https://github.com/elsa-workflows/elsa-extensions/blob/main/README-TEMPLATE.md). 
-- **Tests**: If possible, add unit/integration tests for your changes.  
+Elsa follows **Trunk Based Development**.
+
+All changes happen through Pull Requests targeting the `main` branch.
+
+1. Fork the repository and create your branch from `main`.
+2. If you've added code that should be tested, add tests.
+3. If you've changed APIs, update documentation.
+4. Ensure the test suite passes.
+5. Open a Pull Request.
 
 ---
 
-## 💬 Need Help?  
-If you need assistance, feel free to ask in [Discussions](https://github.com/elsa-workflows/elsa-extensions/discussions) or open an issue.
+## Pull Requests
 
-🚀 Happy coding and thank you for contributing to Elsa Extensions!  
+We aim for PRs that are easy to review, easy to reason about, and safe to merge.
+
+### 1) One PR = One Concern
+
+Keep PRs focused on a single logical change:
+
+- ✅ Bug fix
+- ✅ Refactor (no behavior change)
+- ✅ Formatting
+- ✅ Dependency update
+- ✅ Documentation change
+- ❌ Mixing unrelated cleanups with functional changes
+
+**Why:** Mixed concerns increase cognitive load, slow reviews, and increase merge risk.
+
+If you notice cleanup opportunities while fixing a bug:
+- Prefer a follow-up PR titled `refactor: ...` or `chore: ...`
+- Or keep cleanup strictly limited to what is required for the fix
+
+PRs that mix unrelated concerns may be asked to split before review continues.
+
+---
+
+### 2) Make Reviews Fast
+
+A good PR includes:
+
+- A clear problem statement
+- Expected behavior
+- Steps to reproduce (if applicable)
+- Steps to verify the change
+- Screenshots or video for UI changes (if applicable)
+
+The easier your PR is to review, the faster it can be merged.
+
+---
+
+### 3) Prefer Small PRs
+
+Smaller PRs are:
+- Easier to review
+- Less risky to merge
+- More likely to receive timely feedback
+
+If a change is large, consider splitting it into incremental PRs.
+
+---
+
+## Reporting Bugs
+
+We use GitHub Issues to track bugs and feature requests.
+
+When reporting a bug, please include:
+
+- A clear summary
+- Steps to reproduce
+- Expected behavior
+- Actual behavior
+- Relevant logs or screenshots
+- Sample code (if applicable)
+
+Thorough bug reports significantly increase the chance of a fast and accurate resolution.
+
+---
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the project's MIT License.
