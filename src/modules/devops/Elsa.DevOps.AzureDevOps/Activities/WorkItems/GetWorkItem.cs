@@ -34,6 +34,7 @@ public class GetWorkItem : AzureDevOpsActivity
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
         var workItemId = context.Get(WorkItemId);
+        ActivityInputValidation.ThrowIfNegativeOrZero(workItemId, nameof(WorkItemId));
         var connection = GetConnection(context);
         var witClient = connection.GetClient<Microsoft.TeamFoundation.WorkItemTracking.WebApi.WorkItemTrackingHttpClient>();
         var workItem = await witClient.GetWorkItemAsync(workItemId, null, null, null, context.CancellationToken);

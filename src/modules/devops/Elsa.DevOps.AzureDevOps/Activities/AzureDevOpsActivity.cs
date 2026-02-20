@@ -28,9 +28,11 @@ public abstract class AzureDevOpsActivity : Workflows.Activity
     /// </summary>
     protected VssConnection GetConnection(ActivityExecutionContext context)
     {
+        var organizationUrl = context.Get(OrganizationUrl);
+        var token = context.Get(Token);
+        ActivityInputValidation.ThrowIfInvalidUri(organizationUrl, nameof(OrganizationUrl));
+        ActivityInputValidation.ThrowIfNullOrEmpty(token, nameof(Token));
         var factory = context.GetRequiredService<AzureDevOpsConnectionFactory>();
-        var organizationUrl = context.Get(OrganizationUrl)!;
-        var token = context.Get(Token)!;
-        return factory.GetConnection(organizationUrl, token);
+        return factory.GetConnection(organizationUrl!.Trim(), token!);
     }
 }

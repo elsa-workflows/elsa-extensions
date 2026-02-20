@@ -2,6 +2,7 @@ using Elsa.DevOps.AzureDevOps.Activities;
 using Elsa.Workflows;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
+using Elsa.Workflows.UIHints;
 using JetBrains.Annotations;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
@@ -34,7 +35,7 @@ public class UpdateWorkItem : AzureDevOpsActivity
     /// <summary>
     /// The updated description. Optional; omit to leave unchanged.
     /// </summary>
-    [Input(Description = "The updated description. Optional; omit to leave unchanged.")]
+    [Input(Description = "The updated description. Optional; omit to leave unchanged.", UIHint = InputUIHints.MultiLine)]
     public Input<string?> Description { get; set; } = null!;
 
     /// <summary>
@@ -47,6 +48,7 @@ public class UpdateWorkItem : AzureDevOpsActivity
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
         var workItemId = context.Get(WorkItemId);
+        ActivityInputValidation.ThrowIfNegativeOrZero(workItemId, nameof(WorkItemId));
         var title = context.Get(Title);
         var description = context.Get(Description);
         var document = new JsonPatchDocument();

@@ -45,13 +45,16 @@ public class GetBranch : AzureDevOpsActivity
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
-        var project = context.Get(Project)!;
-        var repositoryName = context.Get(RepositoryName)!;
-        var branchName = context.Get(BranchName)!;
+        var project = context.Get(Project);
+        var repositoryName = context.Get(RepositoryName);
+        var branchName = context.Get(BranchName);
+        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
+        ActivityInputValidation.ThrowIfNullOrEmpty(repositoryName, nameof(RepositoryName));
+        ActivityInputValidation.ThrowIfNullOrEmpty(branchName, nameof(BranchName));
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
-        var branches = await gitClient.GetBranchesAsync(project, repositoryName, null, null, context.CancellationToken);
-        var normalizedName = branchName.StartsWith("refs/heads/", StringComparison.OrdinalIgnoreCase) ? branchName : "refs/heads/" + branchName;
+        var branches = await gitClient.GetBranchesAsync(project!, repositoryName!, null, null, context.CancellationToken);
+        var normalizedName = branchName!.StartsWith("refs/heads/", StringComparison.OrdinalIgnoreCase) ? branchName : "refs/heads/" + branchName;
         var branch = branches?.FirstOrDefault(b =>
             string.Equals(b.Name, branchName, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(b.Name, normalizedName, StringComparison.OrdinalIgnoreCase));

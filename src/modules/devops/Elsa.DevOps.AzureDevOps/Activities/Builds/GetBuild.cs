@@ -39,11 +39,13 @@ public class GetBuild : AzureDevOpsActivity
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
-        var project = context.Get(Project)!;
+        var project = context.Get(Project);
         var buildId = context.Get(BuildId);
+        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
+        ActivityInputValidation.ThrowIfNegativeOrZero(buildId, nameof(BuildId));
         var connection = GetConnection(context);
         var buildClient = connection.GetClient<BuildHttpClient>();
-        var build = await buildClient.GetBuildAsync(project, buildId, null, null, context.CancellationToken);
+        var build = await buildClient.GetBuildAsync(project!, buildId, null, null, context.CancellationToken);
         context.Set(RetrievedBuild, build);
     }
 }

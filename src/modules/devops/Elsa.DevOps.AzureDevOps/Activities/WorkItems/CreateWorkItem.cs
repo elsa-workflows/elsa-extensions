@@ -2,6 +2,7 @@ using Elsa.DevOps.AzureDevOps.Activities;
 using Elsa.Workflows;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
+using Elsa.Workflows.UIHints;
 using JetBrains.Annotations;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
@@ -40,7 +41,7 @@ public class CreateWorkItem : AzureDevOpsActivity
     /// <summary>
     /// The description of the work item. Optional.
     /// </summary>
-    [Input(Description = "The description of the work item. Optional.")]
+    [Input(Description = "The description of the work item. Optional.", UIHint = InputUIHints.MultiLine)]
     public Input<string?> Description { get; set; } = null!;
 
     /// <summary>
@@ -52,9 +53,12 @@ public class CreateWorkItem : AzureDevOpsActivity
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
-        var project = context.Get(Project)!;
-        var workItemType = context.Get(WorkItemType)!;
-        var title = context.Get(Title)!;
+        var project = context.Get(Project);
+        var workItemType = context.Get(WorkItemType);
+        var title = context.Get(Title);
+        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
+        ActivityInputValidation.ThrowIfNullOrEmpty(workItemType, nameof(WorkItemType));
+        ActivityInputValidation.ThrowIfNullOrEmpty(title, nameof(Title));
         var description = context.Get(Description);
         var document = new JsonPatchDocument();
         document.Add(new JsonPatchOperation
@@ -74,7 +78,7 @@ public class CreateWorkItem : AzureDevOpsActivity
         }
         var connection = GetConnection(context);
         var witClient = connection.GetClient<Microsoft.TeamFoundation.WorkItemTracking.WebApi.WorkItemTrackingHttpClient>();
-        var workItem = await witClient.CreateWorkItemAsync(document, project, workItemType, null, null, null, null, context.CancellationToken);
+        var workItem = await witClient.CreateWorkItemAsync(document, project!, workItemType!, null, null, null, null, context.CancellationToken);
         context.Set(CreatedWorkItem, workItem);
     }
 }

@@ -39,11 +39,13 @@ public class GetRepository : AzureDevOpsActivity
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
-        var project = context.Get(Project)!;
-        var repositoryName = context.Get(RepositoryName)!;
+        var project = context.Get(Project);
+        var repositoryName = context.Get(RepositoryName);
+        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
+        ActivityInputValidation.ThrowIfNullOrEmpty(repositoryName, nameof(RepositoryName));
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
-        var repository = await gitClient.GetRepositoryAsync(project, repositoryName, null, context.CancellationToken);
+        var repository = await gitClient.GetRepositoryAsync(project!, repositoryName!, null, context.CancellationToken);
         context.Set(RetrievedRepository, repository);
     }
 }

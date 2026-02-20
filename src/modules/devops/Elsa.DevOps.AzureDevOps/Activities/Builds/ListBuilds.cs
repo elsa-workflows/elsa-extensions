@@ -45,14 +45,19 @@ public class ListBuilds : AzureDevOpsActivity
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
-        var project = context.Get(Project)!;
+        var project = context.Get(Project);
         var definitionId = context.Get(DefinitionId);
         var top = context.Get(Top);
+        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
+        if (definitionId.HasValue)
+            ActivityInputValidation.ThrowIfNegativeOrZero(definitionId.Value, nameof(DefinitionId));
+        if (top.HasValue && top.Value <= 0)
+            throw new ArgumentOutOfRangeException(nameof(Top), top, "'Top' must be greater than zero when specified.");
         var connection = GetConnection(context);
         var buildClient = connection.GetClient<BuildHttpClient>();
         var definitions = definitionId.HasValue ? new[] { definitionId.Value } : null;
         var builds = await buildClient.GetBuildsAsync(
-            project,
+            project!,
             definitions,
             null, null, null, null, null, null, null, null, null, null,
             top,

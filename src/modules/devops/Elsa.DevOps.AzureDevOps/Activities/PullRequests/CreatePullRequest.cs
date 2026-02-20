@@ -2,6 +2,7 @@ using Elsa.DevOps.AzureDevOps.Activities;
 using Elsa.Workflows;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
+using Elsa.Workflows.UIHints;
 using JetBrains.Annotations;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 
@@ -51,7 +52,7 @@ public class CreatePullRequest : AzureDevOpsActivity
     /// <summary>
     /// The pull request description. Optional.
     /// </summary>
-    [Input(Description = "The pull request description. Optional.")]
+    [Input(Description = "The pull request description. Optional.", UIHint = InputUIHints.MultiLine)]
     public Input<string?> Description { get; set; } = null!;
 
     /// <summary>
@@ -63,22 +64,29 @@ public class CreatePullRequest : AzureDevOpsActivity
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
-        var project = context.Get(Project)!;
-        var repositoryName = context.Get(RepositoryName)!;
-        var sourceBranch = NormalizeRef(context.Get(SourceBranch)!);
-        var targetBranch = NormalizeRef(context.Get(TargetBranch)!);
-        var title = context.Get(Title)!;
+        var project = context.Get(Project);
+        var repositoryName = context.Get(RepositoryName);
+        var sourceBranchRaw = context.Get(SourceBranch);
+        var targetBranchRaw = context.Get(TargetBranch);
+        var title = context.Get(Title);
+        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
+        ActivityInputValidation.ThrowIfNullOrEmpty(repositoryName, nameof(RepositoryName));
+        ActivityInputValidation.ThrowIfNullOrEmpty(sourceBranchRaw, nameof(SourceBranch));
+        ActivityInputValidation.ThrowIfNullOrEmpty(targetBranchRaw, nameof(TargetBranch));
+        ActivityInputValidation.ThrowIfNullOrEmpty(title, nameof(Title));
+        var sourceBranch = NormalizeRef(sourceBranchRaw!);
+        var targetBranch = NormalizeRef(targetBranchRaw!);
         var description = context.Get(Description);
         var pr = new GitPullRequest
         {
             SourceRefName = sourceBranch,
             TargetRefName = targetBranch,
-            Title = title,
+            Title = title!,
             Description = description ?? string.Empty
         };
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
-        var created = await gitClient.CreatePullRequestAsync(pr, project, repositoryName, null, null, context.CancellationToken);
+        var created = await gitClient.CreatePullRequestAsync(pr, project!, repositoryName!, null, null, context.CancellationToken);
         context.Set(CreatedPullRequest, created);
     }
 

@@ -45,9 +45,11 @@ public class QueueBuild : AzureDevOpsActivity
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
-        var project = context.Get(Project)!;
+        var project = context.Get(Project);
         var definitionId = context.Get(DefinitionId);
         var sourceBranch = context.Get(SourceBranch);
+        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
+        ActivityInputValidation.ThrowIfNegativeOrZero(definitionId, nameof(DefinitionId));
         var build = new Build
         {
             Definition = new BuildDefinitionReference { Id = definitionId },
@@ -55,7 +57,7 @@ public class QueueBuild : AzureDevOpsActivity
         };
         var connection = GetConnection(context);
         var buildClient = connection.GetClient<BuildHttpClient>();
-        var queued = await buildClient.QueueBuildAsync(build, project, null, null, null, context.CancellationToken);
+        var queued = await buildClient.QueueBuildAsync(build, project!, null, null, null, context.CancellationToken);
         context.Set(QueuedBuild, queued);
     }
 }

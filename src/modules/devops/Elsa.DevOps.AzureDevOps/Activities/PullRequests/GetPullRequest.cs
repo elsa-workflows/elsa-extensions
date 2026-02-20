@@ -40,6 +40,7 @@ public class GetPullRequest : AzureDevOpsActivity
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
         var pullRequestId = context.Get(PullRequestId);
+        ActivityInputValidation.ThrowIfNegativeOrZero(pullRequestId, nameof(PullRequestId));
         var project = context.Get(Project);
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();

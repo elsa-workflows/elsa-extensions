@@ -2,6 +2,7 @@ using Elsa.DevOps.AzureDevOps.Activities;
 using Elsa.Workflows;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
+using Elsa.Workflows.UIHints;
 using JetBrains.Annotations;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
@@ -28,7 +29,7 @@ public class QueryWorkItems : AzureDevOpsActivity
     /// <summary>
     /// The WIQL query string (e.g. SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'Active').
     /// </summary>
-    [Input(Description = "The WIQL query string.")]
+    [Input(Description = "The WIQL query string.", UIHint = InputUIHints.MultiLine)]
     public Input<string> Query { get; set; } = null!;
 
     /// <summary>
@@ -46,12 +47,16 @@ public class QueryWorkItems : AzureDevOpsActivity
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
-        var project = context.Get(Project)!;
-        var query = context.Get(Query)!;
+        var project = context.Get(Project);
+        var query = context.Get(Query);
         var top = context.Get(Top);
+        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
+        ActivityInputValidation.ThrowIfNullOrEmpty(query, nameof(Query));
+        if (top.HasValue && top.Value <= 0)
+            throw new ArgumentOutOfRangeException(nameof(Top), top, "'Top' must be greater than zero when specified.");
         var connection = GetConnection(context);
         var witClient = connection.GetClient<WorkItemTrackingHttpClient>();
-        var wiql = new Wiql { Query = query };
+        var wiql = new Wiql { Query = query! };
         var queryResult = await witClient.QueryByWiqlAsync(wiql, null, top, null, context.CancellationToken);
         var workItemRefs = queryResult?.WorkItems;
         if (workItemRefs == null || !workItemRefs.Any())
@@ -60,7 +65,7 @@ public class QueryWorkItems : AzureDevOpsActivity
             return;
         }
         var ids = workItemRefs.Select(wi => wi.Id).ToArray();
-        var workItems = await witClient.GetWorkItemsAsync(project, ids, null, null, null, null, null, context.CancellationToken);
+        var workItems = await witClient.GetWorkItemsAsync(project!, ids, null, null, null, null, null, context.CancellationToken);
         context.Set(WorkItems, workItems ?? (IEnumerable<WorkItem>)Array.Empty<WorkItem>());
     }
 }

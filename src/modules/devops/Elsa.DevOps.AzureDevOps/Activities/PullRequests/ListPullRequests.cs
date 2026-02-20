@@ -57,17 +57,23 @@ public class ListPullRequests : AzureDevOpsActivity
     /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
-        var project = context.Get(Project)!;
-        var repositoryName = context.Get(RepositoryName)!;
+        var project = context.Get(Project);
+        var repositoryName = context.Get(RepositoryName);
+        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
+        ActivityInputValidation.ThrowIfNullOrEmpty(repositoryName, nameof(RepositoryName));
         var statusInput = context.Get(Status);
         var top = context.Get(Top);
         var skip = context.Get(Skip);
+        if (top is < 0)
+            throw new ArgumentOutOfRangeException(nameof(Top), top, "'Top' must be non-negative when specified.");
+        if (skip is < 0)
+            throw new ArgumentOutOfRangeException(nameof(Skip), skip, "'Skip' must be non-negative when specified.");
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
         var searchCriteria = new GitPullRequestSearchCriteria();
         if (!string.IsNullOrEmpty(statusInput) && Enum.TryParse<PullRequestStatus>(statusInput, true, out var status))
             searchCriteria.Status = status;
-        var list = await gitClient.GetPullRequestsAsync(project, repositoryName, searchCriteria, null, skip, top, null, context.CancellationToken);
+        var list = await gitClient.GetPullRequestsAsync(project!, repositoryName!, searchCriteria, null, skip, top, null, context.CancellationToken);
         context.Set(PullRequests, list ?? (IEnumerable<GitPullRequest>)Array.Empty<GitPullRequest>());
     }
 }
