@@ -43,18 +43,30 @@ public class GetBranch : AzureDevOpsActivity
     public Output<GitBranchStats?> Branch { get; set; } = null!;
 
     /// <inheritdoc />
-    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
     {
         var project = context.Get(Project);
         var repositoryName = context.Get(RepositoryName);
         var branchName = context.Get(BranchName);
-        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
-        ActivityInputValidation.ThrowIfNullOrEmpty(repositoryName, nameof(RepositoryName));
-        ActivityInputValidation.ThrowIfNullOrEmpty(branchName, nameof(BranchName));
+        var (projectOk, projectErr) = ActivityInputValidation.TryValidateRequired(project, nameof(Project));
+        if (!projectOk) { context.AddExecutionLogEntry("Precondition Failed", projectErr); return new ValueTask<bool>(false); }
+        var (repoOk, repoErr) = ActivityInputValidation.TryValidateRequired(repositoryName, nameof(RepositoryName));
+        if (!repoOk) { context.AddExecutionLogEntry("Precondition Failed", repoErr); return new ValueTask<bool>(false); }
+        var (branchOk, branchErr) = ActivityInputValidation.TryValidateRequired(branchName, nameof(BranchName));
+        if (!branchOk) { context.AddExecutionLogEntry("Precondition Failed", branchErr); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    {
+        var project = context.Get(Project)!;
+        var repositoryName = context.Get(RepositoryName)!;
+        var branchName = context.Get(BranchName)!;
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
-        var branches = await gitClient.GetBranchesAsync(project!, repositoryName!, null, null, context.CancellationToken);
-        var normalizedName = branchName!.StartsWith("refs/heads/", StringComparison.OrdinalIgnoreCase) ? branchName : "refs/heads/" + branchName;
+        var branches = await gitClient.GetBranchesAsync(project, repositoryName, null, null, context.CancellationToken);
+        var normalizedName = branchName.StartsWith("refs/heads/", StringComparison.OrdinalIgnoreCase) ? branchName : "refs/heads/" + branchName;
         var branch = branches?.FirstOrDefault(b =>
             string.Equals(b.Name, branchName, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(b.Name, normalizedName, StringComparison.OrdinalIgnoreCase));

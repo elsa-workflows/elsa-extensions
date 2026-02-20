@@ -37,15 +37,25 @@ public class ListBranches : AzureDevOpsActivity
     public Output<IEnumerable<GitBranchStats>> Branches { get; set; } = null!;
 
     /// <inheritdoc />
-    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
     {
         var project = context.Get(Project);
         var repositoryName = context.Get(RepositoryName);
-        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
-        ActivityInputValidation.ThrowIfNullOrEmpty(repositoryName, nameof(RepositoryName));
+        var (projectOk, projectErr) = ActivityInputValidation.TryValidateRequired(project, nameof(Project));
+        if (!projectOk) { context.AddExecutionLogEntry("Precondition Failed", projectErr); return new ValueTask<bool>(false); }
+        var (repoOk, repoErr) = ActivityInputValidation.TryValidateRequired(repositoryName, nameof(RepositoryName));
+        if (!repoOk) { context.AddExecutionLogEntry("Precondition Failed", repoErr); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    {
+        var project = context.Get(Project)!;
+        var repositoryName = context.Get(RepositoryName)!;
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
-        var branches = await gitClient.GetBranchesAsync(project!, repositoryName!, null, null, context.CancellationToken);
+        var branches = await gitClient.GetBranchesAsync(project, repositoryName, null, null, context.CancellationToken);
         context.Set(Branches, branches ?? (IEnumerable<GitBranchStats>)Array.Empty<GitBranchStats>());
     }
 }

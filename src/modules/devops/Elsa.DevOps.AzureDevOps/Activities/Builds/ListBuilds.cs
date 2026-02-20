@@ -43,21 +43,29 @@ public class ListBuilds : AzureDevOpsActivity
     public Output<IEnumerable<Build>> Builds { get; set; } = null!;
 
     /// <inheritdoc />
-    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
     {
         var project = context.Get(Project);
         var definitionId = context.Get(DefinitionId);
         var top = context.Get(Top);
-        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
-        if (definitionId.HasValue)
-            ActivityInputValidation.ThrowIfNegativeOrZero(definitionId.Value, nameof(DefinitionId));
-        if (top.HasValue && top.Value <= 0)
-            throw new ArgumentOutOfRangeException(nameof(Top), top, "'Top' must be greater than zero when specified.");
+        var (projectOk, projectErr) = ActivityInputValidation.TryValidateRequired(project, nameof(Project));
+        if (!projectOk) { context.AddExecutionLogEntry("Precondition Failed", projectErr); return new ValueTask<bool>(false); }
+        if (definitionId.HasValue) { var (defOk, defErr) = ActivityInputValidation.TryValidatePositive(definitionId.Value, nameof(DefinitionId)); if (!defOk) { context.AddExecutionLogEntry("Precondition Failed", defErr); return new ValueTask<bool>(false); } }
+        if (top.HasValue && top.Value <= 0) { context.AddExecutionLogEntry("Precondition Failed", "'Top' must be greater than zero when specified."); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    {
+        var project = context.Get(Project)!;
+        var definitionId = context.Get(DefinitionId);
+        var top = context.Get(Top);
         var connection = GetConnection(context);
         var buildClient = connection.GetClient<BuildHttpClient>();
         var definitions = definitionId.HasValue ? new[] { definitionId.Value } : null;
         var builds = await buildClient.GetBuildsAsync(
-            project!,
+            project,
             definitions,
             null, null, null, null, null, null, null, null, null, null,
             top,

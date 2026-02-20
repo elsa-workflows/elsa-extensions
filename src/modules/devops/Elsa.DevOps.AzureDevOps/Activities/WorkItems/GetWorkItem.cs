@@ -31,10 +31,18 @@ public class GetWorkItem : AzureDevOpsActivity
     public Output<WorkItem> RetrievedWorkItem { get; set; } = null!;
 
     /// <inheritdoc />
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
+    {
+        var workItemId = context.Get(WorkItemId);
+        var (idOk, idErr) = ActivityInputValidation.TryValidatePositive(workItemId, nameof(WorkItemId));
+        if (!idOk) { context.AddExecutionLogEntry("Precondition Failed", idErr); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
         var workItemId = context.Get(WorkItemId);
-        ActivityInputValidation.ThrowIfNegativeOrZero(workItemId, nameof(WorkItemId));
         var connection = GetConnection(context);
         var witClient = connection.GetClient<Microsoft.TeamFoundation.WorkItemTracking.WebApi.WorkItemTrackingHttpClient>();
         var workItem = await witClient.GetWorkItemAsync(workItemId, null, null, null, context.CancellationToken);

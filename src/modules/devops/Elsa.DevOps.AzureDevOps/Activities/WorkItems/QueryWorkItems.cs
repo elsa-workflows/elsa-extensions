@@ -45,18 +45,28 @@ public class QueryWorkItems : AzureDevOpsActivity
     public Output<IEnumerable<WorkItem>> WorkItems { get; set; } = null!;
 
     /// <inheritdoc />
-    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
     {
         var project = context.Get(Project);
         var query = context.Get(Query);
         var top = context.Get(Top);
-        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
-        ActivityInputValidation.ThrowIfNullOrEmpty(query, nameof(Query));
-        if (top.HasValue && top.Value <= 0)
-            throw new ArgumentOutOfRangeException(nameof(Top), top, "'Top' must be greater than zero when specified.");
+        var (projectOk, projectErr) = ActivityInputValidation.TryValidateRequired(project, nameof(Project));
+        if (!projectOk) { context.AddExecutionLogEntry("Precondition Failed", projectErr); return new ValueTask<bool>(false); }
+        var (queryOk, queryErr) = ActivityInputValidation.TryValidateRequired(query, nameof(Query));
+        if (!queryOk) { context.AddExecutionLogEntry("Precondition Failed", queryErr); return new ValueTask<bool>(false); }
+        if (top.HasValue && top.Value <= 0) { context.AddExecutionLogEntry("Precondition Failed", "'Top' must be greater than zero when specified."); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    {
+        var project = context.Get(Project)!;
+        var query = context.Get(Query)!;
+        var top = context.Get(Top);
         var connection = GetConnection(context);
         var witClient = connection.GetClient<WorkItemTrackingHttpClient>();
-        var wiql = new Wiql { Query = query! };
+        var wiql = new Wiql { Query = query };
         var queryResult = await witClient.QueryByWiqlAsync(wiql, null, top, null, context.CancellationToken);
         var workItemRefs = queryResult?.WorkItems;
         if (workItemRefs == null || !workItemRefs.Any())
@@ -65,7 +75,7 @@ public class QueryWorkItems : AzureDevOpsActivity
             return;
         }
         var ids = workItemRefs.Select(wi => wi.Id).ToArray();
-        var workItems = await witClient.GetWorkItemsAsync(project!, ids, null, null, null, null, null, context.CancellationToken);
+        var workItems = await witClient.GetWorkItemsAsync(project, ids, null, null, null, null, null, context.CancellationToken);
         context.Set(WorkItems, workItems ?? (IEnumerable<WorkItem>)Array.Empty<WorkItem>());
     }
 }

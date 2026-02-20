@@ -62,31 +62,45 @@ public class CreatePullRequest : AzureDevOpsActivity
     public Output<GitPullRequest> CreatedPullRequest { get; set; } = null!;
 
     /// <inheritdoc />
-    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
     {
         var project = context.Get(Project);
         var repositoryName = context.Get(RepositoryName);
-        var sourceBranchRaw = context.Get(SourceBranch);
-        var targetBranchRaw = context.Get(TargetBranch);
+        var sourceBranch = context.Get(SourceBranch);
+        var targetBranch = context.Get(TargetBranch);
         var title = context.Get(Title);
-        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
-        ActivityInputValidation.ThrowIfNullOrEmpty(repositoryName, nameof(RepositoryName));
-        ActivityInputValidation.ThrowIfNullOrEmpty(sourceBranchRaw, nameof(SourceBranch));
-        ActivityInputValidation.ThrowIfNullOrEmpty(targetBranchRaw, nameof(TargetBranch));
-        ActivityInputValidation.ThrowIfNullOrEmpty(title, nameof(Title));
-        var sourceBranch = NormalizeRef(sourceBranchRaw!);
-        var targetBranch = NormalizeRef(targetBranchRaw!);
+        var (projectOk, projectErr) = ActivityInputValidation.TryValidateRequired(project, nameof(Project));
+        if (!projectOk) { context.AddExecutionLogEntry("Precondition Failed", projectErr); return new ValueTask<bool>(false); }
+        var (repoOk, repoErr) = ActivityInputValidation.TryValidateRequired(repositoryName, nameof(RepositoryName));
+        if (!repoOk) { context.AddExecutionLogEntry("Precondition Failed", repoErr); return new ValueTask<bool>(false); }
+        var (srcOk, srcErr) = ActivityInputValidation.TryValidateRequired(sourceBranch, nameof(SourceBranch));
+        if (!srcOk) { context.AddExecutionLogEntry("Precondition Failed", srcErr); return new ValueTask<bool>(false); }
+        var (tgtOk, tgtErr) = ActivityInputValidation.TryValidateRequired(targetBranch, nameof(TargetBranch));
+        if (!tgtOk) { context.AddExecutionLogEntry("Precondition Failed", tgtErr); return new ValueTask<bool>(false); }
+        var (titleOk, titleErr) = ActivityInputValidation.TryValidateRequired(title, nameof(Title));
+        if (!titleOk) { context.AddExecutionLogEntry("Precondition Failed", titleErr); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    {
+        var project = context.Get(Project)!;
+        var repositoryName = context.Get(RepositoryName)!;
+        var sourceBranch = NormalizeRef(context.Get(SourceBranch)!);
+        var targetBranch = NormalizeRef(context.Get(TargetBranch)!);
+        var title = context.Get(Title)!;
         var description = context.Get(Description);
         var pr = new GitPullRequest
         {
             SourceRefName = sourceBranch,
             TargetRefName = targetBranch,
-            Title = title!,
+            Title = title,
             Description = description ?? string.Empty
         };
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
-        var created = await gitClient.CreatePullRequestAsync(pr, project!, repositoryName!, null, null, context.CancellationToken);
+        var created = await gitClient.CreatePullRequestAsync(pr, project, repositoryName, null, null, context.CancellationToken);
         context.Set(CreatedPullRequest, created);
     }
 

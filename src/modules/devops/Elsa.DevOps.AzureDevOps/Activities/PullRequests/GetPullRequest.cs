@@ -37,10 +37,18 @@ public class GetPullRequest : AzureDevOpsActivity
     public Output<GitPullRequest> RetrievedPullRequest { get; set; } = null!;
 
     /// <inheritdoc />
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
+    {
+        var pullRequestId = context.Get(PullRequestId);
+        var (idOk, idErr) = ActivityInputValidation.TryValidatePositive(pullRequestId, nameof(PullRequestId));
+        if (!idOk) { context.AddExecutionLogEntry("Precondition Failed", idErr); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
         var pullRequestId = context.Get(PullRequestId);
-        ActivityInputValidation.ThrowIfNegativeOrZero(pullRequestId, nameof(PullRequestId));
         var project = context.Get(Project);
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();

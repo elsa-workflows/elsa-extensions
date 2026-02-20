@@ -23,6 +23,26 @@ public abstract class AzureDevOpsActivity : Workflows.Activity
     [Input(Description = "The personal access token (PAT) for authentication.")]
     public Input<string> Token { get; set; } = null!;
 
+    /// <inheritdoc />
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
+    {
+        var organizationUrl = context.Get(OrganizationUrl);
+        var token = context.Get(Token);
+        var (urlOk, urlError) = ActivityInputValidation.TryValidateUri(organizationUrl, nameof(OrganizationUrl));
+        if (!urlOk)
+        {
+            context.AddExecutionLogEntry("Precondition Failed", urlError);
+            return new ValueTask<bool>(false);
+        }
+        var (tokenOk, tokenError) = ActivityInputValidation.TryValidateRequired(token, nameof(Token));
+        if (!tokenOk)
+        {
+            context.AddExecutionLogEntry("Precondition Failed", tokenError);
+            return new ValueTask<bool>(false);
+        }
+        return base.CanExecuteAsync(context);
+    }
+
     /// <summary>
     /// Gets the Azure DevOps connection.
     /// </summary>

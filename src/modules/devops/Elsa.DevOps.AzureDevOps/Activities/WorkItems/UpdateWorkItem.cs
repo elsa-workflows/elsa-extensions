@@ -45,10 +45,18 @@ public class UpdateWorkItem : AzureDevOpsActivity
     public Output<WorkItem> UpdatedWorkItem { get; set; } = null!;
 
     /// <inheritdoc />
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
+    {
+        var workItemId = context.Get(WorkItemId);
+        var (idOk, idErr) = ActivityInputValidation.TryValidatePositive(workItemId, nameof(WorkItemId));
+        if (!idOk) { context.AddExecutionLogEntry("Precondition Failed", idErr); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
         var workItemId = context.Get(WorkItemId);
-        ActivityInputValidation.ThrowIfNegativeOrZero(workItemId, nameof(WorkItemId));
         var title = context.Get(Title);
         var description = context.Get(Description);
         var document = new JsonPatchDocument();

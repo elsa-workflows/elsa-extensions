@@ -43,13 +43,23 @@ public class QueueBuild : AzureDevOpsActivity
     public Output<Build> QueuedBuild { get; set; } = null!;
 
     /// <inheritdoc />
-    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
     {
         var project = context.Get(Project);
         var definitionId = context.Get(DefinitionId);
+        var (projectOk, projectErr) = ActivityInputValidation.TryValidateRequired(project, nameof(Project));
+        if (!projectOk) { context.AddExecutionLogEntry("Precondition Failed", projectErr); return new ValueTask<bool>(false); }
+        var (idOk, idErr) = ActivityInputValidation.TryValidatePositive(definitionId, nameof(DefinitionId));
+        if (!idOk) { context.AddExecutionLogEntry("Precondition Failed", idErr); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    {
+        var project = context.Get(Project)!;
+        var definitionId = context.Get(DefinitionId);
         var sourceBranch = context.Get(SourceBranch);
-        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
-        ActivityInputValidation.ThrowIfNegativeOrZero(definitionId, nameof(DefinitionId));
         var build = new Build
         {
             Definition = new BuildDefinitionReference { Id = definitionId },
@@ -57,7 +67,7 @@ public class QueueBuild : AzureDevOpsActivity
         };
         var connection = GetConnection(context);
         var buildClient = connection.GetClient<BuildHttpClient>();
-        var queued = await buildClient.QueueBuildAsync(build, project!, null, null, null, context.CancellationToken);
+        var queued = await buildClient.QueueBuildAsync(build, project, null, null, null, context.CancellationToken);
         context.Set(QueuedBuild, queued);
     }
 }

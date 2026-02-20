@@ -51,14 +51,26 @@ public class CreateWorkItem : AzureDevOpsActivity
     public Output<WorkItem> CreatedWorkItem { get; set; } = null!;
 
     /// <inheritdoc />
-    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
     {
         var project = context.Get(Project);
         var workItemType = context.Get(WorkItemType);
         var title = context.Get(Title);
-        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
-        ActivityInputValidation.ThrowIfNullOrEmpty(workItemType, nameof(WorkItemType));
-        ActivityInputValidation.ThrowIfNullOrEmpty(title, nameof(Title));
+        var (projectOk, projectErr) = ActivityInputValidation.TryValidateRequired(project, nameof(Project));
+        if (!projectOk) { context.AddExecutionLogEntry("Precondition Failed", projectErr); return new ValueTask<bool>(false); }
+        var (typeOk, typeErr) = ActivityInputValidation.TryValidateRequired(workItemType, nameof(WorkItemType));
+        if (!typeOk) { context.AddExecutionLogEntry("Precondition Failed", typeErr); return new ValueTask<bool>(false); }
+        var (titleOk, titleErr) = ActivityInputValidation.TryValidateRequired(title, nameof(Title));
+        if (!titleOk) { context.AddExecutionLogEntry("Precondition Failed", titleErr); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    {
+        var project = context.Get(Project)!;
+        var workItemType = context.Get(WorkItemType)!;
+        var title = context.Get(Title)!;
         var description = context.Get(Description);
         var document = new JsonPatchDocument();
         document.Add(new JsonPatchOperation
@@ -78,7 +90,7 @@ public class CreateWorkItem : AzureDevOpsActivity
         }
         var connection = GetConnection(context);
         var witClient = connection.GetClient<Microsoft.TeamFoundation.WorkItemTracking.WebApi.WorkItemTrackingHttpClient>();
-        var workItem = await witClient.CreateWorkItemAsync(document, project!, workItemType!, null, null, null, null, context.CancellationToken);
+        var workItem = await witClient.CreateWorkItemAsync(document, project, workItemType, null, null, null, null, context.CancellationToken);
         context.Set(CreatedWorkItem, workItem);
     }
 }

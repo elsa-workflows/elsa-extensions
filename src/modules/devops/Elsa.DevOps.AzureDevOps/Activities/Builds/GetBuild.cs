@@ -37,15 +37,25 @@ public class GetBuild : AzureDevOpsActivity
     public Output<Build> RetrievedBuild { get; set; } = null!;
 
     /// <inheritdoc />
-    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
     {
         var project = context.Get(Project);
         var buildId = context.Get(BuildId);
-        ActivityInputValidation.ThrowIfNullOrEmpty(project, nameof(Project));
-        ActivityInputValidation.ThrowIfNegativeOrZero(buildId, nameof(BuildId));
+        var (projectOk, projectErr) = ActivityInputValidation.TryValidateRequired(project, nameof(Project));
+        if (!projectOk) { context.AddExecutionLogEntry("Precondition Failed", projectErr); return new ValueTask<bool>(false); }
+        var (idOk, idErr) = ActivityInputValidation.TryValidatePositive(buildId, nameof(BuildId));
+        if (!idOk) { context.AddExecutionLogEntry("Precondition Failed", idErr); return new ValueTask<bool>(false); }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
+    {
+        var project = context.Get(Project)!;
+        var buildId = context.Get(BuildId);
         var connection = GetConnection(context);
         var buildClient = connection.GetClient<BuildHttpClient>();
-        var build = await buildClient.GetBuildAsync(project!, buildId, null, null, context.CancellationToken);
+        var build = await buildClient.GetBuildAsync(project, buildId, null, null, context.CancellationToken);
         context.Set(RetrievedBuild, build);
     }
 }
