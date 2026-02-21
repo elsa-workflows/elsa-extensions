@@ -10,7 +10,7 @@ You are a GitHub Copilot custom agent specializing in writing **developer-facing
 Audience: developers consuming Elsa packages in their applications.
 
 ## Primary workflow (tag-based)
-Generate release notes for a **Git tag** (e.g., `v3.2.1`), typically compared to the previous release tag.
+Generate release notes for a **Git tag** (e.g., `3.2.1`), typically compared to the previous release tag.
 
 ## Ask only when needed (max 2–3 questions)
 If missing:

@@ -25,6 +25,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{3948BAF0-023F-4B43-8E77-56C3B00C6EFD}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\packages.yml = .github\workflows\packages.yml
+		.github\workflows\pr.yml = .github\workflows\pr.yml
+		.github\workflows\copilot-setup-steps.yml.yml = .github\workflows\copilot-setup-steps.yml.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "_build", "build\_build.csproj", "{4D16DD17-0BC9-476D-9B38-0A8644DD92FE}"
@@ -293,6 +295,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Scheduling.Quartz.UnitTests", "test\modules\scheduling\Elsa.Scheduling.Quartz.UnitTests\Elsa.Scheduling.Quartz.UnitTests.csproj", "{65B9F528-568B-4E0E-894E-F22E0B7C64BB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Scheduling.Quartz.ComponentTests", "test\modules\scheduling\Elsa.Scheduling.Quartz.ComponentTests\Elsa.Scheduling.Quartz.ComponentTests.csproj", "{50798373-8A89-4159-BFD9-830D259538D6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{0125BAC5-45B7-4E9B-8A2B-55F075BF537A}"
+	ProjectSection(SolutionItems) = preProject
+		.github\agents\release-notes.agent.md = .github\agents\release-notes.agent.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1578,6 +1585,7 @@ Global
 		{6E46B8AD-FA47-474F-B959-0B530771C28C} = {3DDE6F89-531C-47F8-9CD7-7A4E6984FA48}
 		{65B9F528-568B-4E0E-894E-F22E0B7C64BB} = {6E46B8AD-FA47-474F-B959-0B530771C28C}
 		{50798373-8A89-4159-BFD9-830D259538D6} = {6E46B8AD-FA47-474F-B959-0B530771C28C}
+		{0125BAC5-45B7-4E9B-8A2B-55F075BF537A} = {D0212324-351E-4CA6-95EE-27754B5367CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11A771DA-B728-445E-8A88-AE1C84C3B3A6}

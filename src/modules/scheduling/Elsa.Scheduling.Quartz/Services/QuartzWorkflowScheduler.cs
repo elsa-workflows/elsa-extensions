@@ -3,6 +3,7 @@ using Elsa.Common.Multitenancy;
 using Elsa.Extensions;
 using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Jobs;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using QuartzIScheduler = Quartz.IScheduler;
 
@@ -11,7 +12,7 @@ namespace Elsa.Scheduling.Quartz.Services;
 /// <summary>
 /// An implementation of <see cref="IWorkflowScheduler"/> that uses Quartz.NET.
 /// </summary>
-public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, IJsonSerializer jsonSerializer, ITenantAccessor tenantAccessor, IJobKeyProvider jobKeyProvider) : IWorkflowScheduler
+public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, IJsonSerializer jsonSerializer, ITenantAccessor tenantAccessor, IJobKeyProvider jobKeyProvider, ILogger<QuartzWorkflowScheduler> logger) : IWorkflowScheduler
 {
     /// <inheritdoc />
     public async ValueTask ScheduleAtAsync(string taskName, ScheduleNewWorkflowInstanceRequest request, DateTimeOffset at, CancellationToken cancellationToken = default)
@@ -109,8 +110,21 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
     
     private async Task ScheduleJobAsync(QuartzIScheduler scheduler, ITrigger trigger, CancellationToken cancellationToken)
     {
-        if (!await scheduler.CheckExists(trigger.Key, cancellationToken))
+        try
+        {
+            // Try to schedule the trigger. In clustered mode, multiple instances may attempt this simultaneously.
+            // The ScheduleJob method will throw ObjectAlreadyExistsException if a trigger with the same key already exists.
+            // Unlike AddJob, ScheduleJob does not have a 'replace' parameter - it always fails if the trigger exists.
+            // Note: To update an existing trigger, callers should first use UnscheduleAsync before scheduling the new trigger.
             await scheduler.ScheduleJob(trigger, cancellationToken);
+        }
+        catch (ObjectAlreadyExistsException)
+        {
+            // Trigger already exists. In clustered scenarios, this is an expected race condition
+            // when multiple pods attempt to schedule the same trigger during tenant activation or startup.
+            // We can safely ignore this and continue, as the trigger is already scheduled.
+            logger.LogDebug("Trigger {TriggerKey} already exists, skipping scheduling. This is expected in clustered deployments during concurrent operations", trigger.Key);
+        }
     }
 
     private JobDataMap CreateJobDataMap(ScheduleNewWorkflowInstanceRequest request)

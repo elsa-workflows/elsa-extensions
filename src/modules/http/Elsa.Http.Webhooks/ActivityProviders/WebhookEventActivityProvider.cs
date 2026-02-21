@@ -41,11 +41,12 @@ public class WebhookEventActivityProvider(IWebhookSourceProvider webhookSourcePr
         activityDescriptor.Description = eventTypeDescription;
         activityDescriptor.Constructor = context =>
         {
-            var activity = context.CreateActivity<WebhookEventReceived>();
+            var result = context.CreateActivity<WebhookEventReceived>();
+            var activity = result.Activity;
             activity.Type = fullTypeName;
             activity.EventType = eventType.EventType;
             activity.PayloadType = eventType.PayloadType;
-            return activity;
+            return result;
         };
         
         var eventTypeDescriptor = activityDescriptor.Inputs.First(x => x.Name == nameof(WebhookEventReceived.EventType));
