@@ -1,6 +1,4 @@
 using CShells.Features;
-using Elsa.ServiceBus.MassTransit.ConsumerDefinitions;
-using Elsa.ServiceBus.MassTransit.Consumers;
 using Elsa.ServiceBus.MassTransit.Options;
 using Elsa.ServiceBus.MassTransit.Services;
 using Elsa.Workflows.Runtime;

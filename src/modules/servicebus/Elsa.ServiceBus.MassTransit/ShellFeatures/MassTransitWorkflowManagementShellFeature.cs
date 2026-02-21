@@ -1,5 +1,4 @@
 using CShells.Features;
-using Elsa.ServiceBus.MassTransit.Consumers;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
