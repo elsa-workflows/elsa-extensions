@@ -1,4 +1,7 @@
 using CShells.Features;
+using Elsa.ServiceBus.MassTransit.Consumers;
+using Elsa.ServiceBus.MassTransit.Extensions;
+using Elsa.Workflows.Management.ShellFeatures;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,13 +13,17 @@ namespace Elsa.ServiceBus.MassTransit.ShellFeatures;
 [ShellFeature(
     DisplayName = "MassTransit Workflow Management",
     Description = "Enables distributed messaging for workflow definition updates using MassTransit",
-    DependsOn = ["MassTransit Service Bus", "WorkflowManagement"])]
+    DependsOn = [typeof(MassTransitFeature), typeof(WorkflowManagementFeature)])]
 [UsedImplicitly]
-public class MassTransitWorkflowManagementShellFeature : IShellFeature
+public class MassTransitWorkflowManagementFeature(ShellFeatureContext context) : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
+        context.AddMassTransitConsumer<WorkflowDefinitionEventsConsumer>(
+            endpointName: "elsa-workflow-definition-updates",
+            isTemporary: true,
+            ignoreConsumersDisabled: true);
+
         services.AddNotificationHandlersFrom(GetType());
     }
 }
-

@@ -1,7 +1,11 @@
 using CShells.Features;
+using Elsa.ServiceBus.MassTransit.ConsumerDefinitions;
+using Elsa.ServiceBus.MassTransit.Consumers;
+using Elsa.ServiceBus.MassTransit.Extensions;
 using Elsa.ServiceBus.MassTransit.Options;
 using Elsa.ServiceBus.MassTransit.Services;
 using Elsa.Workflows.Runtime;
+using Elsa.Workflows.Runtime.ShellFeatures;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,20 +17,24 @@ namespace Elsa.ServiceBus.MassTransit.ShellFeatures;
 [ShellFeature(
     DisplayName = "MassTransit Workflow Dispatcher",
     Description = "Uses MassTransit to dispatch workflows across the system",
-    DependsOn = ["WorkflowRuntime", "MassTransit Service Bus"])]
+    DependsOn = [typeof(WorkflowRuntimeFeature), typeof(MassTransitFeature)])]
 [UsedImplicitly]
-public class MassTransitWorkflowDispatcherShellFeature : IShellFeature
+public class MassTransitWorkflowDispatcherFeature(ShellFeatureContext context) : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.Configure<MassTransitWorkflowDispatcherOptions>(x => { });
-        services.Configure<MassTransitStimulusDispatcherOptions>(x => { });
-        
+        context
+            .AddMassTransitConsumer<DispatchWorkflowRequestConsumer, DispatchWorkflowRequestConsumerDefinition>()
+            .AddMassTransitConsumer<DispatchCancelWorkflowsRequestConsumer>(endpointName: "elsa-dispatch-cancel-workflow", isTemporary: true)
+            .AddMassTransitConsumer<DispatchStimulusRequestConsumer, DispatchStimulusRequestConsumerDefinition>(endpointName: "elsa-dispatch-stimulus");
+
+        services.AddOptions<MassTransitWorkflowDispatcherOptions>();
+        services.AddOptions<MassTransitStimulusDispatcherOptions>();
         services.AddScoped<MassTransitWorkflowCancellationDispatcher>();
         services.AddScoped<MassTransitStimulusDispatcher>();
         services.AddScoped<MassTransitWorkflowDispatcher>();
         services.AddScoped<ValidatingWorkflowDispatcher>();
-        
+
         // Register as factory delegates that will be picked up by WorkflowRuntime
         services.AddSingleton<Func<IServiceProvider, IWorkflowDispatcher>>(sp =>
         {
@@ -35,4 +43,3 @@ public class MassTransitWorkflowDispatcherShellFeature : IShellFeature
         });
     }
 }
-
