@@ -8,18 +8,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Elsa.Resilience" />
         <PackageReference Include="Quartz.Extensions.Hosting"/>
+    </ItemGroup>
+
+    <ItemGroup Label="CShells" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\cshells\src\CShells.Abstractions\CShells.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Label="CShells" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="CShells.Abstractions" />
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Scheduling"/>
-        <PackageReference Include="Elsa.Resilience.Core"/>
+        <PackageReference Include="Elsa.Resilience" />
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Scheduling\Elsa.Scheduling.csproj"/>
-        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Resilience.Core\Elsa.Resilience.Core.csproj"/>
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Resilience\Elsa.Resilience.csproj"/>
     </ItemGroup>
 
 </Project>
