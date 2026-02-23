@@ -4,9 +4,10 @@ using Microsoft.VisualStudio.Services.WebApi;
 namespace Elsa.DevOps.AzureDevOps.Services;
 
 /// <summary>
-/// Factory for creating Azure DevOps connections.
+/// Factory for creating and caching Azure DevOps connections.
+/// Implements <see cref="IDisposable"/> to ensure cached <see cref="VssConnection"/> instances are properly disposed.
 /// </summary>
-public class AzureDevOpsConnectionFactory
+public class AzureDevOpsConnectionFactory : IDisposable
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly Dictionary<string, VssConnection> _connections = new();
@@ -37,5 +38,15 @@ public class AzureDevOpsConnectionFactory
         {
             _semaphore.Release();
         }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        foreach (var connection in _connections.Values)
+            connection.Dispose();
+
+        _connections.Clear();
+        _semaphore.Dispose();
     }
 }
