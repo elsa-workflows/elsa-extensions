@@ -78,16 +78,16 @@ public class UpdateWorkItem : AzureDevOpsActivity
                 Value = description
             });
         }
+        var connection = GetConnection(context);
+        var client = connection.GetClient<Microsoft.TeamFoundation.WorkItemTracking.WebApi.WorkItemTrackingHttpClient>();
+
         if (document.Count == 0)
         {
-            var connection = GetConnection(context);
-            var witClient = connection.GetClient<Microsoft.TeamFoundation.WorkItemTracking.WebApi.WorkItemTrackingHttpClient>();
-            var existing = await witClient.GetWorkItemAsync(workItemId, null, null, null, context.CancellationToken);
+            var existing = await client.GetWorkItemAsync(workItemId, null, null, null, context.CancellationToken);
             context.Set(UpdatedWorkItem, existing);
             return;
         }
-        var conn = GetConnection(context);
-        var client = conn.GetClient<Microsoft.TeamFoundation.WorkItemTracking.WebApi.WorkItemTrackingHttpClient>();
+
         var workItem = await client.UpdateWorkItemAsync(document, workItemId, null, null, null, null, context.CancellationToken);
         context.Set(UpdatedWorkItem, workItem);
     }
