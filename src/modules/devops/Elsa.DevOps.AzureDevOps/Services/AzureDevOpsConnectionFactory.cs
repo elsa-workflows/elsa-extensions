@@ -17,7 +17,7 @@ public class AzureDevOpsConnectionFactory : IDisposable
     /// </summary>
     public VssConnection GetConnection(string organizationUrl, string token)
     {
-        var key = $"{organizationUrl}|{token}";
+        var key = $"{organizationUrl}|{ComputeHash(token)}";
         if (_connections.TryGetValue(key, out var connection))
             return connection;
 
