@@ -8,16 +8,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Elsa.Resilience" />
         <PackageReference Include="Quartz.Extensions.Hosting"/>
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="Elsa.Resilience" />
         <PackageReference Include="Elsa.Scheduling"/>
         <PackageReference Include="Elsa.Resilience.Core"/>
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Resilience\Elsa.Resilience.csproj"/>
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Scheduling\Elsa.Scheduling.csproj"/>
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Resilience.Core\Elsa.Resilience.Core.csproj"/>
     </ItemGroup>
