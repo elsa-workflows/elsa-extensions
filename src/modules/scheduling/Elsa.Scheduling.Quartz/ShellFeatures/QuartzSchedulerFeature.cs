@@ -19,7 +19,7 @@ namespace Elsa.Scheduling.Quartz.ShellFeatures;
 [ShellFeature(DependsOn = [
     typeof(QuartzFeature), 
     typeof(SchedulingFeature), 
-    typeof(ResilienceShellFeature)])]
+    typeof(ResilienceFeature)])]
 [UsedImplicitly]
 public class QuartzSchedulerFeature : IShellFeature
 {
