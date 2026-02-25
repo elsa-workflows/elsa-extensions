@@ -2,23 +2,10 @@
 
 **Feature Branch**: `001-umbrella-spec`  
 **Created**: 2026-02-25  
-**Status**: Draft  
+**Status**: Ready for Module Specs  
 **Input**: User description: "Create umbrella specification: module catalog, dependency rules, and cross-cutting conventions for Elsa Extensions"
 
 ## User Scenarios & Testing *(mandatory)*
-
-<!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
--->
 
 ### User Story 1 - Understand the module landscape (Priority: P1)
 
@@ -81,11 +68,6 @@ same conventions and does not introduce contradictory guidance.
 
 ### Edge Cases
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
-
 - Module area exists but has no module-level README.
 - A module has multiple packages and the “contract surface” is unclear.
 - A module depends on another module’s persistence implementation (disallowed) and needs a
@@ -94,11 +76,6 @@ same conventions and does not introduce contradictory guidance.
   module README corrected; do not allow silent drift).
 
 ## Requirements *(mandatory)*
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
--->
 
 ### Functional Requirements
 
@@ -123,11 +100,6 @@ same conventions and does not introduce contradictory guidance.
 - **Host App**: A composition root (e.g., projects under `src/workbench/`).
 
 ## Success Criteria *(mandatory)*
-
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
 
 ### Measurable Outcomes
 
