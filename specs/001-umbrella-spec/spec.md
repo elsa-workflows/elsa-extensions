@@ -79,8 +79,6 @@ same conventions and does not introduce contradictory guidance.
 
 ---
 
-[Add more user stories as needed, each with an assigned priority]
-
 ### Edge Cases
 
 <!--
@@ -155,16 +153,37 @@ stable location (either within this spec or as a dedicated doc referenced by mod
   - `Elsa.ServerAndStudio.Web`
   - `ElsaStudioWebAssembly`
 
-### Module Catalog (starting point)
+### Module Catalog
 
-This list is intentionally minimal: it links to existing “canonical” module docs where
-they exist today. Over time, expand this list to cover all module areas.
+This catalog links each top-level module area to its module-level README.
 
+- **Actors**: [src/modules/actors/README.md](../../src/modules/actors/README.md)
 - **Agents**: [src/modules/agents/README.md](../../src/modules/agents/README.md)
+- **Alterations**: [src/modules/alterations/README.md](../../src/modules/alterations/README.md)
+- **Caching**: [src/modules/caching/README.md](../../src/modules/caching/README.md)
+- **CMS**: [src/modules/cms/README.md](../../src/modules/cms/README.md)
+- **Communication**: [src/modules/communication/README.md](../../src/modules/communication/README.md)
+- **Connections**: [src/modules/connections/README.md](../../src/modules/connections/README.md)
+- **Data**: [src/modules/data/README.md](../../src/modules/data/README.md)
+- **DevOps**: [src/modules/devops/README.md](../../src/modules/devops/README.md)
+- **Diagnostics**: [src/modules/diagnostics/README.md](../../src/modules/diagnostics/README.md)
+- **Dropins**: [src/modules/dropins/README.md](../../src/modules/dropins/README.md)
+- **Email**: [src/modules/email/README.md](../../src/modules/email/README.md)
+- **HTTP**: [src/modules/http/README.md](../../src/modules/http/README.md)
+- **IO**: [src/modules/io/README.md](../../src/modules/io/README.md)
+- **Labels**: [src/modules/labels/README.md](../../src/modules/labels/README.md)
+- **Persistence**: [src/modules/persistence/README.md](../../src/modules/persistence/README.md)
+- **Retention**: [src/modules/retention/README.md](../../src/modules/retention/README.md)
+- **Runtimes**: [src/modules/runtimes/README.md](../../src/modules/runtimes/README.md)
+- **Scheduling**: [src/modules/scheduling/README.md](../../src/modules/scheduling/README.md)
+- **Secrets**: [src/modules/secrets/README.md](../../src/modules/secrets/README.md)
+- **ServiceBus**: [src/modules/servicebus/README.md](../../src/modules/servicebus/README.md)
+- **Slack**: [src/modules/slack/README.md](../../src/modules/slack/README.md)
 - **SQL**: [src/modules/sql/README.md](../../src/modules/sql/README.md)
-- **DevOps / GitHub** (package-level doc): [src/modules/devops/Elsa.DevOps.GitHub/README.md](../../src/modules/devops/Elsa.DevOps.GitHub/README.md)
-- **HTTP / OpenAPI** (package-level doc): [src/modules/http/Elsa.Http.OpenApi/README.md](../../src/modules/http/Elsa.Http.OpenApi/README.md)
-- **Diagnostics / Logging** (package-level doc): [src/modules/diagnostics/Elsa.Logging/README.md](../../src/modules/diagnostics/Elsa.Logging/README.md)
+- **Storage**: [src/modules/storage/README.md](../../src/modules/storage/README.md)
+- **Telecom**: [src/modules/telecom/README.md](../../src/modules/telecom/README.md)
+- **Testing**: [src/modules/testing/README.md](../../src/modules/testing/README.md)
+- **Workflows**: [src/modules/workflows/README.md](../../src/modules/workflows/README.md)
 
 Hosts:
 
