@@ -5,6 +5,19 @@
 **Status**: Ready for Module Specs  
 **Input**: User description: "Create umbrella specification: module catalog, dependency rules, and cross-cutting conventions for Elsa Extensions"
 
+## Implementation Scope *(mandatory)*
+
+**Module Area**: Cross-module (umbrella governance)  
+**Primary Module**: N/A (documentation umbrella)  
+**Target Packages**: Documentation and spec artifacts only  
+**In-Scope Paths**: `specs/001-umbrella-spec/**`, `src/modules/**/README.md`, `.specify/**`  
+**Out-of-Scope Paths**: Runtime code under `src/modules/**` (except documentation files), `src/workbench/**` runtime implementation
+
+**Scope Rules**:
+
+- Defines governance and module-boundary guidance only.
+- Must not introduce runtime behavior changes.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Understand the module landscape (Priority: P1)

@@ -5,6 +5,20 @@
 **Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
 
+## Implementation Scope *(mandatory)*
+
+**Module Area**: [e.g., http, agents, persistence]  
+**Primary Module**: [e.g., Elsa.Http.Webhooks]  
+**Target Packages**: [list package names to create/modify]  
+**In-Scope Paths**: [repo paths that this implementation may change]  
+**Out-of-Scope Paths**: [repo paths explicitly excluded from this feature]
+
+**Scope Rules**:
+
+- Changes MUST be limited to in-scope paths unless the spec is amended.
+- If new packages are introduced, they MUST be listed under Target Packages.
+- Cross-module changes outside the declared module area require explicit spec amendment.
+
 ## User Scenarios & Testing *(mandatory)*
 
 <!--

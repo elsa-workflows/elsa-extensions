@@ -50,11 +50,12 @@ public class OrchardContentItemsEventActivityProvider(IOptions<OrchardCoreOption
         activityDescriptor.Description = description;
         activityDescriptor.Constructor = context =>
         {
-            var activity = context.CreateActivity<ContentItemEvent>();
-            activity.Type = fullTypeName;
-            activity.ContentType = contentType;
-            activity.EventType = eventType;
-            return activity;
+            return context.CreateActivity<ContentItemEvent>(activity => 
+            {
+                activity.Type = fullTypeName;
+                activity.ContentType = contentType;
+                activity.EventType = eventType;
+            });
         };
 
         foreach (var inputDescriptor in activityDescriptor.Inputs)
