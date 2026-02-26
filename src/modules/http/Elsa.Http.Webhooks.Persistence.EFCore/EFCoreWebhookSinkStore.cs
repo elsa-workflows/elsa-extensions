@@ -1,24 +1,31 @@
 using Elsa.Http.Webhooks.Abstractions.Contracts;
 using Elsa.Http.Webhooks.Persistence.Contracts;
 using Elsa.Http.Webhooks.Persistence.Entities;
-using Elsa.Persistence.EFCore;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Elsa.Http.Webhooks.Persistence.EFCore;
 
 [UsedImplicitly]
-public class EFCoreWebhookSinkStore(EntityStore<WebhookPersistenceDbContext, WebhookSinkRecord> store) : IWebhookSinkStore
+public class EFCoreWebhookSinkStore(WebhookPersistenceDbContext dbContext) : EFCoreWebhookSinkStore<WebhookPersistenceDbContext>(dbContext)
 {
+}
+
+public class EFCoreWebhookSinkStore<TDbContext>(TDbContext dbContext) : IWebhookSinkStore where TDbContext : DbContext
+{
+    private DbSet<WebhookSinkRecord> Sinks => dbContext.Set<WebhookSinkRecord>();
+
     public async Task<PersistedWebhookSink> CreateAsync(PersistedWebhookSink sink, CancellationToken cancellationToken = default)
     {
         var record = ToRecord(sink);
-        await store.AddAsync(record, cancellationToken);
+        await Sinks.AddAsync(record, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return ToModel(record);
     }
 
     public async Task<PersistedWebhookSink?> FindAsync(string id, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var record = await store.FindAsync(x => x.Id == id && (includeDeleted || !x.IsDeleted), cancellationToken);
+        var record = await Sinks.FirstOrDefaultAsync(x => x.Id == id && (includeDeleted || !x.IsDeleted), cancellationToken);
         return record == null ? null : ToModel(record);
     }
 
@@ -26,26 +33,25 @@ public class EFCoreWebhookSinkStore(EntityStore<WebhookPersistenceDbContext, Web
     {
         filter ??= new WebhookSinkFilter();
 
-        var items = await store.QueryAsync(query =>
-        {
-            if (!filter.IncludeDeleted)
-                query = query.Where(x => !x.IsDeleted);
+        IQueryable<WebhookSinkRecord> query = Sinks;
 
-            if (!string.IsNullOrWhiteSpace(filter.Id))
-                query = query.Where(x => x.Id == filter.Id);
+        if (!filter.IncludeDeleted)
+            query = query.Where(x => !x.IsDeleted);
 
-            if (!string.IsNullOrWhiteSpace(filter.Name))
-                query = query.Where(x => x.Name == filter.Name);
+        if (!string.IsNullOrWhiteSpace(filter.Id))
+            query = query.Where(x => x.Id == filter.Id);
 
-            return query;
-        }, cancellationToken);
+        if (!string.IsNullOrWhiteSpace(filter.Name))
+            query = query.Where(x => x.Name == filter.Name);
+
+        var items = await query.ToListAsync(cancellationToken);
 
         return items.Select(ToModel);
     }
 
     public async Task<PersistedWebhookSink?> UpdateAsync(PersistedWebhookSink sink, string? expectedVersion = null, CancellationToken cancellationToken = default)
     {
-        var existing = await store.FindAsync(x => x.Id == sink.Id, cancellationToken);
+        var existing = await Sinks.FirstOrDefaultAsync(x => x.Id == sink.Id, cancellationToken);
 
         if (existing == null)
             return null;
@@ -63,13 +69,13 @@ public class EFCoreWebhookSinkStore(EntityStore<WebhookPersistenceDbContext, Web
         existing.UpdatedAt = DateTimeOffset.UtcNow;
         existing.Version = Guid.NewGuid().ToString("N");
 
-        await store.UpdateAsync(existing, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return ToModel(existing);
     }
 
     public async Task<bool> SoftDeleteAsync(string id, string? expectedVersion = null, CancellationToken cancellationToken = default)
     {
-        var sink = await store.FindAsync(x => x.Id == id, cancellationToken);
+        var sink = await Sinks.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (sink == null)
             return false;
@@ -80,13 +86,13 @@ public class EFCoreWebhookSinkStore(EntityStore<WebhookPersistenceDbContext, Web
         sink.IsDeleted = true;
         sink.UpdatedAt = DateTimeOffset.UtcNow;
         sink.Version = Guid.NewGuid().ToString("N");
-        await store.UpdateAsync(sink, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
 
     public async Task<bool> RestoreAsync(string id, string? expectedVersion = null, CancellationToken cancellationToken = default)
     {
-        var sink = await store.FindAsync(x => x.Id == id, cancellationToken);
+        var sink = await Sinks.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (sink == null)
             return false;
@@ -97,7 +103,7 @@ public class EFCoreWebhookSinkStore(EntityStore<WebhookPersistenceDbContext, Web
         sink.IsDeleted = false;
         sink.UpdatedAt = DateTimeOffset.UtcNow;
         sink.Version = Guid.NewGuid().ToString("N");
-        await store.UpdateAsync(sink, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
 

@@ -94,8 +94,8 @@
 - [X] T025 [P] [US3] Implement EF Core DbContext and entity mapping for webhook sinks in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/DbContext.cs` and related configuration files
 - [X] T026 [US3] Implement EF Core store `IWebhookSinkStore` adapter in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/`
 - [X] T027 [US3] Ensure EF Core provider package fully owns its `IWebhookSinkProvider` implementation and DI setup in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/`
-- [ ] T027a [US3] Add EF Core model composition extensions (e.g., `ModelBuilder`/`EntityTypeBuilder` helpers) for webhook sink mappings in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/`
-- [ ] T027b [US3] Add EF Core registration overloads for composed host DbContext mode (without inheriting from `WebhookPersistenceDbContext`) in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/Extensions.cs` and feature wiring
+- [X] T027a [US3] Add EF Core model composition extensions (e.g., `ModelBuilder`/`EntityTypeBuilder` helpers) for webhook sink mappings in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/`
+- [X] T027b [US3] Add EF Core registration overloads for composed host DbContext mode (without inheriting from `WebhookPersistenceDbContext`) in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/Extensions.cs` and feature wiring
 - [X] T028 [P] [US3] Implement MongoDB store `IWebhookSinkStore` adapter and mapping classes in `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/`
 - [X] T029 [US3] Implement MongoDB store-backed `IWebhookSinkProvider` and DI registration in `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/`
 - [X] T030 [US3] Add package READMEs for provider setup at `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/README.md` and `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/README.md`
@@ -111,9 +111,9 @@
 - [X] T031 [P] Update module-area documentation with new package catalog and dependency-direction rule in `src/modules/http/README.md`
 - [X] T032 [P] Reconcile API contract file with implemented endpoint/DTO names in `specs/002-webhooks-sink-persistence/contracts/webhook-sinks.openapi.yaml`
 - [ ] T033 Validate quickstart scenarios and update commands/examples in `specs/002-webhooks-sink-persistence/quickstart.md`
-- [ ] T033a Add explicit EF Core migration command workflows for standalone and composed DbContext modes in `specs/002-webhooks-sink-persistence/quickstart.md`
+- [X] T033a Add explicit EF Core migration command workflows for standalone and composed DbContext modes in `specs/002-webhooks-sink-persistence/quickstart.md`
 - [X] T034 Add implementation notes and migration guidance in `specs/002-webhooks-sink-persistence/research.md`
-- [ ] T034a Add package-level migration guidance and design-time setup notes in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/README.md`
+- [X] T034a Add package-level migration guidance and design-time setup notes in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/README.md`
 
 ---
 
