@@ -1,0 +1,195 @@
+openapi: 3.0.3
+info:
+  title: Elsa Http Webhooks Sink Management API
+  version: 0.1.0
+  description: API contract for managing webhook sinks used by Elsa.Http.Webhooks.
+servers:
+  - url: /
+paths:
+  /webhooks/sinks:
+    get:
+      summary: List webhook sinks
+      operationId: listWebhookSinks
+      responses:
+        '200':
+          description: Sinks returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebhookSink'
+    post:
+      summary: Create webhook sink
+      operationId: createWebhookSink
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWebhookSinkRequest'
+      responses:
+        '201':
+          description: Sink created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookSink'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /webhooks/sinks/{id}:
+    get:
+      summary: Get webhook sink by id
+      operationId: getWebhookSink
+      parameters:
+        - $ref: '#/components/parameters/SinkId'
+      responses:
+        '200':
+          description: Sink returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookSink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Update webhook sink
+      operationId: updateWebhookSink
+      parameters:
+        - $ref: '#/components/parameters/SinkId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWebhookSinkRequest'
+      responses:
+        '200':
+          description: Sink updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookSink'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      summary: Delete webhook sink
+      operationId: deleteWebhookSink
+      parameters:
+        - $ref: '#/components/parameters/SinkId'
+      responses:
+        '204':
+          description: Sink deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  parameters:
+    SinkId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    WebhookSink:
+      type: object
+      required: [id, url, isEnabled]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+        isEnabled:
+          type: boolean
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateWebhookSinkRequest:
+      type: object
+      required: [id, url]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+        isEnabled:
+          type: boolean
+          default: true
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+    UpdateWebhookSinkRequest:
+      type: object
+      required: [url]
+      properties:
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+        isEnabled:
+          type: boolean
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+    ApiError:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+          nullable: true
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Conflict:
+      description: Conflict (e.g., duplicate sink id)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
