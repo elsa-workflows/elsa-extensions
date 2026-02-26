@@ -16,5 +16,14 @@ The public contract for packages in this module area is defined by their publish
 - Do not introduce direct persistence/table coupling across module boundaries.
 - Document new cross-module dependencies in package and module docs.
 
+## Package Catalog
+
+- `Elsa.Http.Webhooks`: runtime feature root (no dependency on provider/API packages)
+- `Elsa.Http.Webhooks.Abstractions`: shared sink contracts/types
+- `Elsa.Http.Webhooks.Persistence`: store and management service contracts
+- `Elsa.Http.Webhooks.Persistence.EFCore`: EF Core store-backed provider implementation
+- `Elsa.Http.Webhooks.Persistence.MongoDb`: MongoDB store-backed provider implementation
+- `Elsa.Http.Webhooks.Api`: management REST API endpoints
+
 ## Notes
 - Keep this module-area README aligned with package-level READMEs in this folder.

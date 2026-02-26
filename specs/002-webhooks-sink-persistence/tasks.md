@@ -19,10 +19,10 @@
 
 **Purpose**: Create package skeletons and solution wiring in `http` module area.
 
-- [ ] T001 Create new package folder structures under `src/modules/http/Elsa.Http.Webhooks.Abstractions`, `src/modules/http/Elsa.Http.Webhooks.Persistence`, `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore`, `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb`, and `src/modules/http/Elsa.Http.Webhooks.Api`
-- [ ] T002 [P] Add project files `src/modules/http/Elsa.Http.Webhooks.Abstractions/Elsa.Http.Webhooks.Abstractions.csproj`, `src/modules/http/Elsa.Http.Webhooks.Persistence/Elsa.Http.Webhooks.Persistence.csproj`, `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/Elsa.Http.Webhooks.Persistence.EFCore.csproj`, `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/Elsa.Http.Webhooks.Persistence.MongoDb.csproj`, and `src/modules/http/Elsa.Http.Webhooks.Api/Elsa.Http.Webhooks.Api.csproj`
-- [ ] T003 Add new projects to solution file `Elsa.Extensions.sln`
-- [ ] T004 [P] Add/update shared package references required by new packages in `Directory.Packages.props`
+- [X] T001 Create new package folder structures under `src/modules/http/Elsa.Http.Webhooks.Abstractions`, `src/modules/http/Elsa.Http.Webhooks.Persistence`, `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore`, `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb`, and `src/modules/http/Elsa.Http.Webhooks.Api`
+- [X] T002 [P] Add project files `src/modules/http/Elsa.Http.Webhooks.Abstractions/Elsa.Http.Webhooks.Abstractions.csproj`, `src/modules/http/Elsa.Http.Webhooks.Persistence/Elsa.Http.Webhooks.Persistence.csproj`, `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/Elsa.Http.Webhooks.Persistence.EFCore.csproj`, `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/Elsa.Http.Webhooks.Persistence.MongoDb.csproj`, and `src/modules/http/Elsa.Http.Webhooks.Api/Elsa.Http.Webhooks.Api.csproj`
+- [X] T003 Add new projects to solution file `Elsa.Extensions.sln`
+- [X] T004 [P] Add/update shared package references required by new packages in `Directory.Packages.props`
 
 ---
 
@@ -32,14 +32,14 @@
 
 **⚠️ CRITICAL**: No user story implementation starts before this phase is complete.
 
-- [ ] T005 Create shared sink contracts/types in `src/modules/http/Elsa.Http.Webhooks.Abstractions/Contracts/`
-- [ ] T006 Move or add reusable types needed by both existing and new packages into `src/modules/http/Elsa.Http.Webhooks.Abstractions/`
-- [ ] T007 Create persistence entity model(s) for webhook sinks (including soft-delete and concurrency token) in `src/modules/http/Elsa.Http.Webhooks.Persistence/Entities/`
-- [ ] T008 Create store abstraction `IWebhookSinkStore` and query/result contracts in `src/modules/http/Elsa.Http.Webhooks.Persistence/Contracts/`
-- [ ] T009 Create application service abstraction `IWebhookSinkManagementService` in `src/modules/http/Elsa.Http.Webhooks.Persistence/Services/`
-- [ ] T010 Implement management service logic (ID strategy, duplicate checks, soft-delete semantics, restore path, optimistic concurrency contract) in `src/modules/http/Elsa.Http.Webhooks.Persistence/Services/`
-- [ ] T011 Create feature/DI wiring for abstractions and persistence contracts in `src/modules/http/Elsa.Http.Webhooks.Persistence/Features/Feature.cs` and `src/modules/http/Elsa.Http.Webhooks.Persistence/Extensions/`
-- [ ] T012 Add package READMEs for abstractions and persistence contract packages at `src/modules/http/Elsa.Http.Webhooks.Abstractions/README.md` and `src/modules/http/Elsa.Http.Webhooks.Persistence/README.md`
+- [X] T005 Create shared sink contracts/types in `src/modules/http/Elsa.Http.Webhooks.Abstractions/Contracts/`
+- [X] T006 Move or add reusable types needed by both existing and new packages into `src/modules/http/Elsa.Http.Webhooks.Abstractions/`
+- [X] T007 Create persistence entity model(s) for webhook sinks (including soft-delete and concurrency token) in `src/modules/http/Elsa.Http.Webhooks.Persistence/Entities/`
+- [X] T008 Create store abstraction `IWebhookSinkStore` and query/result contracts in `src/modules/http/Elsa.Http.Webhooks.Persistence/Contracts/`
+- [X] T009 Create application service abstraction `IWebhookSinkManagementService` in `src/modules/http/Elsa.Http.Webhooks.Persistence/Services/`
+- [X] T010 Implement management service logic (ID strategy, duplicate checks, soft-delete semantics, restore path, optimistic concurrency contract) in `src/modules/http/Elsa.Http.Webhooks.Persistence/Services/`
+- [X] T011 Create feature/DI wiring for abstractions and persistence contracts in `src/modules/http/Elsa.Http.Webhooks.Persistence/Features/Feature.cs` and `src/modules/http/Elsa.Http.Webhooks.Persistence/Extensions/`
+- [X] T012 Add package READMEs for abstractions and persistence contract packages at `src/modules/http/Elsa.Http.Webhooks.Abstractions/README.md` and `src/modules/http/Elsa.Http.Webhooks.Persistence/README.md`
 
 **Checkpoint**: Foundation ready — user story phases can proceed.
 
@@ -53,10 +53,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Implement EF Core store-backed `IWebhookSinkProvider` in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/`
-- [ ] T014 [US1] Add EF Core provider registration extensions for single active provider selection in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/Extensions.cs`
-- [ ] T015 [US1] Validate and document that `Elsa.Http.Webhooks` has no dependencies on new persistence/API packages in `src/modules/http/Elsa.Http.Webhooks/README.md`
-- [ ] T016 [US1] Document host registration flow (existing config-based vs EF Core store-backed provider) in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/README.md`
+- [X] T013 [P] [US1] Implement EF Core store-backed `IWebhookSinkProvider` in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/`
+- [X] T014 [US1] Add EF Core provider registration extensions for single active provider selection in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/Extensions.cs`
+- [X] T015 [US1] Validate and document that `Elsa.Http.Webhooks` has no dependencies on new persistence/API packages in `src/modules/http/Elsa.Http.Webhooks/README.md`
+- [X] T016 [US1] Document host registration flow (existing config-based vs EF Core store-backed provider) in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/README.md`
 
 **Checkpoint**: US1 is independently functional.
 
@@ -70,14 +70,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T017 [P] [US2] Create API DTOs for create/update/list/get/restore including concurrency token in `src/modules/http/Elsa.Http.Webhooks.Api/Contracts/`
-- [ ] T018 [P] [US2] Create API feature/DI setup in `src/modules/http/Elsa.Http.Webhooks.Api/Features/Feature.cs` and `src/modules/http/Elsa.Http.Webhooks.Api/Extensions/`
-- [ ] T019 [US2] Implement list and get endpoints in `src/modules/http/Elsa.Http.Webhooks.Api/Endpoints/WebhookSinks/`
-- [ ] T020 [US2] Implement create endpoint supporting optional client ID and server-generated fallback in `src/modules/http/Elsa.Http.Webhooks.Api/Endpoints/WebhookSinks/`
-- [ ] T021 [US2] Implement update endpoint with optimistic concurrency conflict mapping in `src/modules/http/Elsa.Http.Webhooks.Api/Endpoints/WebhookSinks/`
-- [ ] T022 [US2] Implement soft-delete and restore endpoints in `src/modules/http/Elsa.Http.Webhooks.Api/Endpoints/WebhookSinks/`
-- [ ] T023 [US2] Implement API error mapping and validation behavior aligned with `specs/002-webhooks-sink-persistence/contracts/webhook-sinks.openapi.yaml` in `src/modules/http/Elsa.Http.Webhooks.Api/`
-- [ ] T024 [US2] Add package README for API usage and auth expectations at `src/modules/http/Elsa.Http.Webhooks.Api/README.md`
+- [X] T017 [P] [US2] Create API DTOs for create/update/list/get/restore including concurrency token in `src/modules/http/Elsa.Http.Webhooks.Api/Contracts/`
+- [X] T018 [P] [US2] Create API feature/DI setup in `src/modules/http/Elsa.Http.Webhooks.Api/Features/Feature.cs` and `src/modules/http/Elsa.Http.Webhooks.Api/Extensions/`
+- [X] T019 [US2] Implement list and get endpoints in `src/modules/http/Elsa.Http.Webhooks.Api/Endpoints/WebhookSinks/`
+- [X] T020 [US2] Implement create endpoint supporting optional client ID and server-generated fallback in `src/modules/http/Elsa.Http.Webhooks.Api/Endpoints/WebhookSinks/`
+- [X] T021 [US2] Implement update endpoint with optimistic concurrency conflict mapping in `src/modules/http/Elsa.Http.Webhooks.Api/Endpoints/WebhookSinks/`
+- [X] T022 [US2] Implement soft-delete and restore endpoints in `src/modules/http/Elsa.Http.Webhooks.Api/Endpoints/WebhookSinks/`
+- [X] T023 [US2] Implement API error mapping and validation behavior aligned with `specs/002-webhooks-sink-persistence/contracts/webhook-sinks.openapi.yaml` in `src/modules/http/Elsa.Http.Webhooks.Api/`
+- [X] T024 [US2] Add package README for API usage and auth expectations at `src/modules/http/Elsa.Http.Webhooks.Api/README.md`
 
 **Checkpoint**: US2 is independently functional.
 
@@ -91,12 +91,12 @@
 
 ### Implementation for User Story 3
 
-- [ ] T025 [P] [US3] Implement EF Core DbContext and entity mapping for webhook sinks in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/DbContext.cs` and related configuration files
-- [ ] T026 [US3] Implement EF Core store `IWebhookSinkStore` adapter in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/`
-- [ ] T027 [US3] Ensure EF Core provider package fully owns its `IWebhookSinkProvider` implementation and DI setup in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/`
-- [ ] T028 [P] [US3] Implement MongoDB store `IWebhookSinkStore` adapter and mapping classes in `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/`
-- [ ] T029 [US3] Implement MongoDB store-backed `IWebhookSinkProvider` and DI registration in `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/`
-- [ ] T030 [US3] Add package READMEs for provider setup at `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/README.md` and `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/README.md`
+- [X] T025 [P] [US3] Implement EF Core DbContext and entity mapping for webhook sinks in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/DbContext.cs` and related configuration files
+- [X] T026 [US3] Implement EF Core store `IWebhookSinkStore` adapter in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/`
+- [X] T027 [US3] Ensure EF Core provider package fully owns its `IWebhookSinkProvider` implementation and DI setup in `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/`
+- [X] T028 [P] [US3] Implement MongoDB store `IWebhookSinkStore` adapter and mapping classes in `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/`
+- [X] T029 [US3] Implement MongoDB store-backed `IWebhookSinkProvider` and DI registration in `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/`
+- [X] T030 [US3] Add package READMEs for provider setup at `src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore/README.md` and `src/modules/http/Elsa.Http.Webhooks.Persistence.MongoDb/README.md`
 
 **Checkpoint**: US3 is independently functional.
 
@@ -106,10 +106,10 @@
 
 **Purpose**: Ensure docs/contracts alignment and final integration polish.
 
-- [ ] T031 [P] Update module-area documentation with new package catalog and dependency-direction rule in `src/modules/http/README.md`
-- [ ] T032 [P] Reconcile API contract file with implemented endpoint/DTO names in `specs/002-webhooks-sink-persistence/contracts/webhook-sinks.openapi.yaml`
-- [ ] T033 Validate quickstart scenarios and update commands/examples in `specs/002-webhooks-sink-persistence/quickstart.md`
-- [ ] T034 Add implementation notes and migration guidance in `specs/002-webhooks-sink-persistence/research.md`
+- [X] T031 [P] Update module-area documentation with new package catalog and dependency-direction rule in `src/modules/http/README.md`
+- [X] T032 [P] Reconcile API contract file with implemented endpoint/DTO names in `specs/002-webhooks-sink-persistence/contracts/webhook-sinks.openapi.yaml`
+- [X] T033 Validate quickstart scenarios and update commands/examples in `specs/002-webhooks-sink-persistence/quickstart.md`
+- [X] T034 Add implementation notes and migration guidance in `specs/002-webhooks-sink-persistence/research.md`
 
 ---
 

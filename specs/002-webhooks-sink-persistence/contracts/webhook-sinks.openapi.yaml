@@ -6,19 +6,28 @@ info:
 servers:
   - url: /
 paths:
-  /webhooks/sinks:
+  /webhook-sinks:
     get:
       summary: List webhook sinks
       operationId: listWebhookSinks
+      parameters:
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: includeDeleted
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         '200':
           description: Sinks returned
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/WebhookSink'
+                $ref: '#/components/schemas/WebhookSinkListResponse'
     post:
       summary: Create webhook sink
       operationId: createWebhookSink
@@ -29,7 +38,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateWebhookSinkRequest'
       responses:
-        '201':
+        '200':
           description: Sink created
           content:
             application/json:
@@ -39,12 +48,17 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '409':
           $ref: '#/components/responses/Conflict'
-  /webhooks/sinks/{id}:
+  /webhook-sinks/{id}:
     get:
       summary: Get webhook sink by id
       operationId: getWebhookSink
       parameters:
         - $ref: '#/components/parameters/SinkId'
+        - name: includeDeleted
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         '200':
           description: Sink returned
@@ -54,7 +68,7 @@ paths:
                 $ref: '#/components/schemas/WebhookSink'
         '404':
           $ref: '#/components/responses/NotFound'
-    put:
+    post:
       summary: Update webhook sink
       operationId: updateWebhookSink
       parameters:
@@ -83,11 +97,37 @@ paths:
       operationId: deleteWebhookSink
       parameters:
         - $ref: '#/components/parameters/SinkId'
+        - name: expectedVersion
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
-        '204':
+        '200':
           description: Sink deleted
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /webhook-sinks/{id}/restore:
+    post:
+      summary: Restore webhook sink
+      operationId: restoreWebhookSink
+      parameters:
+        - $ref: '#/components/parameters/SinkId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreWebhookSinkRequest'
+      responses:
+        '200':
+          description: Sink restored
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
 components:
   parameters:
     SinkId:
@@ -97,6 +137,14 @@ components:
       schema:
         type: string
   schemas:
+    WebhookSinkListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookSink'
     WebhookSink:
       type: object
       required: [id, url, isEnabled]
@@ -114,10 +162,19 @@ components:
           format: uri
         isEnabled:
           type: boolean
+        isDeleted:
+          type: boolean
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookEventFilter'
         headers:
           type: object
           additionalProperties:
             type: string
+        version:
+          type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -126,10 +183,11 @@ components:
           format: date-time
     CreateWebhookSinkRequest:
       type: object
-      required: [id, url]
+      required: [url]
       properties:
         id:
           type: string
+          nullable: true
         name:
           type: string
           nullable: true
@@ -142,10 +200,17 @@ components:
         isEnabled:
           type: boolean
           default: true
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookEventFilter'
         headers:
           type: object
           additionalProperties:
             type: string
+        expectedVersion:
+          type: string
+          nullable: true
     UpdateWebhookSinkRequest:
       type: object
       required: [url]
@@ -161,10 +226,41 @@ components:
           format: uri
         isEnabled:
           type: boolean
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookEventFilter'
         headers:
           type: object
           additionalProperties:
             type: string
+        expectedVersion:
+          type: string
+          nullable: true
+    RestoreWebhookSinkRequest:
+      type: object
+      properties:
+        expectedVersion:
+          type: string
+          nullable: true
+    WebhookEventFilter:
+      type: object
+      required: [eventType]
+      properties:
+        eventType:
+          type: string
+        payloadFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/PayloadFilter'
+    PayloadFilter:
+      type: object
+      required: [key, value]
+      properties:
+        key:
+          type: string
+        value:
+          type: string
     ApiError:
       type: object
       required: [message]

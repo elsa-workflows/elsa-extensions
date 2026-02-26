@@ -24,6 +24,16 @@ In host startup:
 3. Register **exactly one** store-backed `IWebhookSinkProvider` implementation via DI.
 4. Enable webhooks API endpoints.
 
+Example:
+
+```csharp
+module
+  .UseWebhooks()
+  .UseWebhookPersistence(x => x.UseEntityFrameworkCore())
+  // or: .UseWebhookPersistence(x => x.UseMongoDb())
+  .UseWebhooksApi();
+```
+
 ## 3) Validate management flow
 
 1. Create sink through REST API.
@@ -40,3 +50,9 @@ In host startup:
 ## 5) Backward compatibility check
 
 Run host without persistence packages and confirm existing configuration-based sink setup still works.
+
+## 6) Concurrency check
+
+1. Read a sink and capture its `version`.
+2. Update the sink with the captured `expectedVersion`.
+3. Repeat update with the stale `expectedVersion` and confirm API returns conflict.

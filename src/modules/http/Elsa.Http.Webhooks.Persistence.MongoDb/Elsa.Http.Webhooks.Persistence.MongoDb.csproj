@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Provides a MongoDB provider for Elsa.Http.Webhooks sink persistence.</Description>
+        <PackageTags>elsa extension module http webhooks persistence mongodb</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Elsa.Http.Webhooks.Persistence\Elsa.Http.Webhooks.Persistence.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MongoDB.Driver" />
+    </ItemGroup>
+
+</Project>

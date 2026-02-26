@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Provides API endpoints to manage Elsa.Http.Webhooks sinks.</Description>
+        <PackageTags>elsa extension module http webhooks api management</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="Elsa.Api.Common" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\common\Elsa.Api.Common\Elsa.Api.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Elsa.Http.Webhooks.Persistence\Elsa.Http.Webhooks.Persistence.csproj" />
+    </ItemGroup>
+
+</Project>

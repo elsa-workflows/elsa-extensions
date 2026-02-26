@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Provides shared abstractions and contracts for Elsa.Http.Webhooks extensions.</Description>
+        <PackageTags>elsa extension module http webhooks abstractions contracts</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="WebhooksCore" />
+    </ItemGroup>
+
+</Project>

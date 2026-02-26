@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Provides persistence contracts and application services for Elsa.Http.Webhooks sink management.</Description>
+        <PackageTags>elsa extension module http webhooks persistence management</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Elsa.Http.Webhooks.Abstractions\Elsa.Http.Webhooks.Abstractions.csproj" />
+        <ProjectReference Include="..\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
+    </ItemGroup>
+
+</Project>
