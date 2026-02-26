@@ -14,12 +14,10 @@
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Workflows.Runtime"/>
-        <PackageReference Include="WebhooksCore"/>
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Runtime\Elsa.Workflows.Runtime.csproj"/>
-        <ProjectReference Include="..\..\..\..\..\webhooks-core\src\WebhooksCore\WebhooksCore.csproj"/>
     </ItemGroup>
 
 </Project>

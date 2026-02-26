@@ -35,9 +35,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            8.x
             9.x
-            10.x
       - uses: actions/checkout@v4
+      - name: 'Run: Interface filename convention check'
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          python3 .github/scripts/check_csharp_interface_filenames.py $(git diff --name-only --diff-filter=ACMRT "origin/${{ github.base_ref }}...HEAD")
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack

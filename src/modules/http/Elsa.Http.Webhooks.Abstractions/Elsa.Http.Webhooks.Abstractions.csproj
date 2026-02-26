@@ -5,8 +5,12 @@
         <PackageTags>elsa extension module http webhooks abstractions contracts</PackageTags>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="WebhooksCore" />
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="WebhooksCore"/>
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\webhooks-core\src\WebhooksCore\WebhooksCore.csproj"/>
     </ItemGroup>
 
 </Project>

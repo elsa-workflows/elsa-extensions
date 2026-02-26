@@ -54,6 +54,21 @@ PRs that mix unrelated concerns may be asked to split before review continues.
 
 ---
 
+## Coding Conventions
+
+Repository-wide coding conventions apply to all modules and packages.
+
+### C# File Naming
+
+- The filename MUST match the primary type name declared in the file.
+- Interface files MUST include the `I` prefix in the filename.
+	- Example: `IGenerateWebhookSinkId` must be in `IGenerateWebhookSinkId.cs`.
+- Avoid introducing files where the declared interface name and filename diverge.
+
+These conventions are enforced in CI and should be treated as part of review readiness.
+
+---
+
 ### 2) Make Reviews Fast
 
 A good PR includes:

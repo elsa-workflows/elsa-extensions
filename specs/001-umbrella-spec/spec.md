@@ -104,6 +104,8 @@ same conventions and does not introduce contradictory guidance.
   MUST state that module READMEs remain the canonical module-level specs.
 - **FR-006**: When a module introduces a dependency on another module, the module README MUST
   document that dependency and reference the dependency’s public contract.
+- **FR-007**: Module and package specs MUST follow repository-wide coding conventions documented
+  in `CONTRIBUTING.md`.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -201,3 +203,5 @@ A module’s public contract is comprised of:
 - Secrets and tokens are never committed; docs use placeholders.
 - Breaking changes require migration notes and versioning discipline.
 - Module README is the canonical spec for module behavior.
+- Source-level conventions (including file naming rules) are defined in
+  [CONTRIBUTING.md](../../CONTRIBUTING.md) and are authoritative for code-style conventions.
