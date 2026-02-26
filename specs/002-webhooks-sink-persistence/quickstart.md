@@ -34,6 +34,54 @@ module
   .UseWebhooksApi();
 ```
 
+For EF Core, support two integration modes:
+
+- **Standalone mode**: use provider-owned `WebhookPersistenceDbContext`.
+- **Composed mode**: use host-owned `DbContext` and apply webhook mapping extensions.
+
+## 2a) EF Core migrations (standalone context mode)
+
+1. Ensure design-time setup can resolve `WebhookPersistenceDbContext`.
+2. Generate migration:
+
+```bash
+dotnet ef migrations add InitWebhookSinks \
+  --context WebhookPersistenceDbContext \
+  --project src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore \
+  --startup-project <your-host-startup-project>
+```
+
+3. Apply migration:
+
+```bash
+dotnet ef database update \
+  --context WebhookPersistenceDbContext \
+  --project src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore \
+  --startup-project <your-host-startup-project>
+```
+
+## 2b) EF Core migrations (composed host context mode)
+
+1. In your host `DbContext.OnModelCreating`, apply webhook sink model extensions from `Elsa.Http.Webhooks.Persistence.EFCore`.
+2. Register webhook persistence EF Core provider using host-composed context overloads.
+3. Generate migration using host context:
+
+```bash
+dotnet ef migrations add AddWebhookSinksToHostContext \
+  --context <YourHostDbContext> \
+  --project <your-host-data-project> \
+  --startup-project <your-host-startup-project>
+```
+
+4. Apply migration using host context:
+
+```bash
+dotnet ef database update \
+  --context <YourHostDbContext> \
+  --project <your-host-data-project> \
+  --startup-project <your-host-startup-project>
+```
+
 ## 3) Validate management flow
 
 1. Create sink through REST API.

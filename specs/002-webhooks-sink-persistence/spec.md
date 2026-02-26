@@ -132,6 +132,12 @@ EF Core and MongoDB implementations.
 - **FR-013**: `Elsa.Http.Webhooks` MUST NOT introduce dependencies on `Elsa.Http.Webhooks.Persistence*` or `Elsa.Http.Webhooks.Api`.
 - **FR-014**: Store-backed `IWebhookSinkProvider` implementations MUST live in provider packages (EF Core and MongoDB), not in `Elsa.Http.Webhooks`.
 - **FR-015**: Any types required by both `Elsa.Http.Webhooks` and new packages MUST be moved to `Elsa.Http.Webhooks.Abstractions` when appropriate.
+- **FR-016**: The EF Core provider MUST support first-class migration generation guidance for `WebhookPersistenceDbContext` (design-time setup + example commands).
+- **FR-017**: The EF Core provider MUST support host-owned DbContext composition without requiring inheritance from `WebhookPersistenceDbContext`.
+- **FR-018**: The EF Core provider MUST expose reusable EF model configuration extensions so host DbContexts can apply webhook sink mappings (entity mapping + indexes + value conversions) consistently.
+- **FR-019**: EF Core registration MUST support both standalone context mode and composed host context mode (e.g., provider registration overloads for default context vs host `TDbContext`).
+- **FR-020**: In composed mode, webhook sink schema and configuration MUST be included in host migrations when host applies webhook model extensions.
+- **FR-021**: Documentation MUST include side-by-side migration workflows for standalone and composed EF Core modes, including required commands and expected artifacts.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -148,6 +154,8 @@ EF Core and MongoDB implementations.
 - **SC-002**: After restart, persisted sinks remain available and are used by webhook dispatch without reconfiguration.
 - **SC-003**: The same acceptance tests for sink CRUD pass against both EF Core and MongoDB providers.
 - **SC-004**: Existing hosts using configuration-only sink registration continue to work unchanged when persistence packages are not enabled.
+- **SC-005**: A developer can generate EF Core migrations for standalone `WebhookPersistenceDbContext` using documented commands without additional code changes.
+- **SC-006**: A developer using a custom host DbContext can compose webhook sink mappings via documented extension methods and generate a single migration that includes webhook sink schema.
 
 ## Proposed Package Boundaries
 

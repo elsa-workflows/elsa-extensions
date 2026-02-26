@@ -20,4 +20,8 @@
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Runtime\Elsa.Workflows.Runtime.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Elsa.Http.Webhooks.Abstractions\Elsa.Http.Webhooks.Abstractions.csproj" />
+    </ItemGroup>
+
 </Project>
