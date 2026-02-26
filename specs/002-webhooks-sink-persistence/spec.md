@@ -9,15 +9,25 @@
 
 **Module Area**: `http`  
 **Primary Module**: `Elsa.Http.Webhooks`  
-**Target Packages**: `Elsa.Http.Webhooks` (existing), `Elsa.Http.Webhooks.Persistence` (new), `Elsa.Http.Webhooks.Persistence.EFCore` (new), `Elsa.Http.Webhooks.Persistence.MongoDb` (new), `Elsa.Http.Webhooks.Api` (new)  
-**In-Scope Paths**: `src/modules/http/Elsa.Http.Webhooks/**`, `src/modules/http/Elsa.Http.Webhooks.Persistence*/**`, `src/modules/http/Elsa.Http.Webhooks.Api/**`, `src/modules/http/README.md`, `specs/002-webhooks-sink-persistence/**`  
+**Target Packages**: `Elsa.Http.Webhooks` (existing), `Elsa.Http.Webhooks.Abstractions` (new), `Elsa.Http.Webhooks.Persistence` (new), `Elsa.Http.Webhooks.Persistence.EFCore` (new), `Elsa.Http.Webhooks.Persistence.MongoDb` (new), `Elsa.Http.Webhooks.Api` (new)  
+**In-Scope Paths**: `src/modules/http/Elsa.Http.Webhooks/**`, `src/modules/http/Elsa.Http.Webhooks.Abstractions/**`, `src/modules/http/Elsa.Http.Webhooks.Persistence*/**`, `src/modules/http/Elsa.Http.Webhooks.Api/**`, `src/modules/http/README.md`, `specs/002-webhooks-sink-persistence/**`  
 **Out-of-Scope Paths**: `src/modules/agents/**`, `src/modules/servicebus/**`, `src/modules/persistence/**` (except consumed package references), `src/workbench/**`, `test/modules/**` outside webhooks-related tests
 
 **Scope Rules**:
 
 - Runtime and API implementation for this feature stays within the `http` module area.
 - Provider-specific persistence logic must remain behind the sink store/provider abstractions.
+- `Elsa.Http.Webhooks` MUST NOT depend on new persistence/API packages.
+- New packages may depend on `Elsa.Http.Webhooks` and/or `Elsa.Http.Webhooks.Abstractions`, but dependency direction remains one-way from new packages toward base runtime/abstractions.
 - Any required cross-module runtime code changes outside `http` require explicit spec amendment.
+
+## Clarifications
+
+### Session 2026-02-26
+
+- Q: How should webhook sink IDs be assigned (client, server, or both)? → A: Support both: client `id` optional; server generates when missing.
+- Q: Should sink deletion be soft or hard? → A: Soft delete sinks (hide from active use/list, keep recoverable record).
+- Q: What update conflict strategy should the API use? → A: Optimistic concurrency with version/etag checks; reject stale updates.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -67,6 +77,7 @@ store state changes and validation behavior.
 1. **Given** a valid sink payload, **When** I call create endpoint, **Then** API returns created sink identifier and persisted sink data.
 2. **Given** an existing sink, **When** I call update endpoint with valid changes, **Then** API returns updated representation and subsequent list/get reflect those changes.
 3. **Given** an existing sink, **When** I call delete endpoint, **Then** sink is no longer returned by list/get operations.
+4. **Given** a soft-deleted sink, **When** I request active sinks for runtime dispatch, **Then** the sink is excluded.
 
 ---
 
@@ -91,6 +102,7 @@ EF Core and MongoDB implementations.
 
 - Creating two sinks with the same external identifier or name.
 - Updating a sink while it is being used by in-flight dispatch.
+- Updating a sink with a stale version/etag must return a conflict and preserve existing persisted state.
 - Provider unavailable (database down) while dispatch or management operations are requested.
 - Migration from configuration-only sinks to a store-backed provider introduces duplicates.
 - Validation of malformed sink URL, unsupported protocol, or invalid headers/auth metadata.
@@ -100,6 +112,7 @@ EF Core and MongoDB implementations.
 ### Functional Requirements
 
 - **FR-001**: The solution MUST introduce a dedicated webhook persistence abstraction package for `Elsa.Http.Webhooks` (e.g., `Elsa.Http.Webhooks.Persistence`) that defines sink persistence contracts.
+- **FR-001**: The solution MUST introduce a dedicated package `Elsa.Http.Webhooks.Abstractions` for shared contracts/types needed by multiple new packages.
 - **FR-002**: The abstraction package MUST define a sink store contract (e.g., `IWebhookSinkStore`) supporting create, list, get by identifier, update, and delete operations.
 - **FR-003**: The solution MUST provide application-level services for webhook sink management, separated from transport concerns and reusable by API and future UI integrations.
 - **FR-004**: The solution MUST provide an EF Core persistence package (e.g., `Elsa.Http.Webhooks.Persistence.EFCore`) implementing the sink store contract.
@@ -108,9 +121,17 @@ EF Core and MongoDB implementations.
 - **FR-007**: The API package MUST provide request validation and return deterministic error responses for invalid input, missing resources, and duplicate constraints.
 - **FR-008**: The runtime sink provider used by webhook dispatch MUST support a store-backed implementation that resolves sinks from persistence.
 - **FR-009**: Only one `IWebhookSinkProvider` implementation is active at runtime; hosts choose the provider through DI registration.
+- **FR-009a**: Sink creation MUST support both client-supplied IDs and server-generated IDs when the client omits `id`.
+- **FR-009b**: IDs (supplied or generated) MUST be unique within the active provider store; duplicate supplied IDs MUST return a conflict error.
+- **FR-009c**: Sink deletion MUST be implemented as soft delete; deleted sinks are excluded from active runtime resolution and default API list/get responses.
+- **FR-009d**: The API MUST support restore/recover of soft-deleted sinks via an explicit operation.
+- **FR-009e**: Sink update operations MUST use optimistic concurrency (version/etag); stale update attempts MUST return a conflict error without overwriting current persisted state.
 - **FR-010**: The feature MUST preserve backward compatibility for existing configuration-only hosts that do not enable persistence packages.
 - **FR-011**: The feature MUST include module-level and package-level documentation updates covering registration, configuration, migrations, and API usage.
 - **FR-012**: The API contract MUST support future Elsa Studio consumption without requiring breaking changes for basic sink management flows.
+- **FR-013**: `Elsa.Http.Webhooks` MUST NOT introduce dependencies on `Elsa.Http.Webhooks.Persistence*` or `Elsa.Http.Webhooks.Api`.
+- **FR-014**: Store-backed `IWebhookSinkProvider` implementations MUST live in provider packages (EF Core and MongoDB), not in `Elsa.Http.Webhooks`.
+- **FR-015**: Any types required by both `Elsa.Http.Webhooks` and new packages MUST be moved to `Elsa.Http.Webhooks.Abstractions` when appropriate.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -131,6 +152,7 @@ EF Core and MongoDB implementations.
 ## Proposed Package Boundaries
 
 - **`Elsa.Http.Webhooks`** (existing): runtime dispatch integration and feature registration.
+- **`Elsa.Http.Webhooks.Abstractions`** (new): shared contracts/types consumed by runtime, persistence providers, and API package.
 - **`Elsa.Http.Webhooks.Persistence`** (new): abstractions + domain/application contracts (including `IWebhookSinkStore`).
 - **`Elsa.Http.Webhooks.Persistence.EFCore`** (new): EF Core implementation.
 - **`Elsa.Http.Webhooks.Persistence.MongoDb`** (new): MongoDB implementation.
@@ -141,4 +163,5 @@ EF Core and MongoDB implementations.
 - Existing `WebhooksCore` sink model remains the foundational external sink contract.
 - Authentication/authorization strategy for management endpoints follows existing Elsa API conventions unless overridden.
 - Host applications activate exactly one `IWebhookSinkProvider` implementation through DI.
+- Dependency direction is one-way: base runtime stays dependency root and does not depend on new persistence/API packages.
 - Studio integration is out of scope for this spec and will be addressed in a follow-up spec.

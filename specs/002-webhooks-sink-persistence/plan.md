@@ -10,6 +10,7 @@ provider packages (EF Core + MongoDB), and REST management endpoints for sink CR
 
 The runtime model uses exactly one active `IWebhookSinkProvider` selected through DI.
 Configuration-based sinks remain backward compatible by keeping the existing provider path available.
+Dependency direction is one-way: `Elsa.Http.Webhooks` does not depend on new persistence/API packages.
 
 ## Technical Context
 
@@ -55,6 +56,7 @@ specs/002-webhooks-sink-persistence/
 ```text
 src/modules/http/
 ├── Elsa.Http.Webhooks/                          # existing runtime package
+├── Elsa.Http.Webhooks.Abstractions/             # new shared contracts/types
 ├── Elsa.Http.Webhooks.Persistence/              # new abstractions + app services
 ├── Elsa.Http.Webhooks.Persistence.EFCore/       # new EF Core provider
 ├── Elsa.Http.Webhooks.Persistence.MongoDb/      # new MongoDB provider
@@ -70,9 +72,11 @@ test/modules/http/
 
 ### Phase 0 — Contracts & Abstractions
 
-1. Add `Elsa.Http.Webhooks.Persistence` package.
-2. Define contracts: `IWebhookSinkStore`, query models, result models, and application service interfaces.
-3. Define DI registration extension methods for abstraction + default service wiring.
+1. Add `Elsa.Http.Webhooks.Abstractions` package.
+2. Move/create shared contracts/types required across runtime, providers, and API.
+3. Add `Elsa.Http.Webhooks.Persistence` package for store abstractions + app services.
+4. Define contracts: `IWebhookSinkStore`, query models, result models, and application service interfaces.
+5. Define DI registration extension methods for abstraction + default service wiring.
 
 **Exit Criteria**: Runtime package can consume abstraction without storage-specific references.
 
@@ -86,9 +90,10 @@ test/modules/http/
 
 ### Phase 2 — Runtime Integration
 
-1. Add store-backed `IWebhookSinkProvider` implementation in `http` module scope.
-2. Wire provider registration so hosts can choose exactly one active sink provider via DI.
-3. Keep configuration-based provider path intact for backward compatibility.
+1. Keep `Elsa.Http.Webhooks` dependency direction unchanged (no dependencies on new packages).
+2. Implement provider-specific `IWebhookSinkProvider` in EF Core and MongoDB packages.
+3. Provide registration extensions so hosts choose exactly one active sink provider via DI.
+4. Keep configuration-based provider path intact for backward compatibility.
 
 **Exit Criteria**: Runtime resolves sinks through active provider implementation.
 
@@ -115,6 +120,9 @@ test/modules/http/
 
 - **Risk**: Ambiguous DI setup for sink provider selection.  
   **Mitigation**: Enforce explicit registration APIs and document single-provider requirement.
+
+- **Risk**: Accidental reverse dependency from `Elsa.Http.Webhooks` to new modules.  
+  **Mitigation**: Place shared contracts in `Elsa.Http.Webhooks.Abstractions` and enforce dependency direction in project references and review checklist.
 
 - **Risk**: API model drift from future Studio needs.  
   **Mitigation**: Keep API resource model stable and version endpoints if breaking change is required.
