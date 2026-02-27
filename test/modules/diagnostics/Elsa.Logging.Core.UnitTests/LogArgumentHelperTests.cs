@@ -157,7 +157,7 @@ namespace Elsa.Logging.Core.UnitTests
 
         private sealed class Poco
         {
-            public string Name { get; set; } = default!;
+            public string Name { get; set; } = null!;
             public int Age { get; set; }
             public bool IsActive { get; init; }
         }

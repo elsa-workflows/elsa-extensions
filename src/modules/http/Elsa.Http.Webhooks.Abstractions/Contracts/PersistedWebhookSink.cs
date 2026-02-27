@@ -4,10 +4,10 @@ using WebhooksCore;
 
 public class PersistedWebhookSink
 {
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = null!;
     public string? Name { get; set; }
     public string? Description { get; set; }
-    public Uri Url { get; set; } = default!;
+    public Uri Url { get; set; } = null!;
     public bool IsEnabled { get; set; } = true;
     public bool IsDeleted { get; set; }
     public ICollection<WebhookEventFilter> Filters { get; set; } = new List<WebhookEventFilter>();

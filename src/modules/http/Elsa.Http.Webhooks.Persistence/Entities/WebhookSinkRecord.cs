@@ -4,8 +4,8 @@ using WebhooksCore;
 
 public class WebhookSinkRecord
 {
-    public string Id { get; set; } = default!;
-    public string Url { get; set; } = default!;
+    public string Id { get; set; } = null!;
+    public string Url { get; set; } = null!;
     public bool IsEnabled { get; set; } = true;
     public bool IsDeleted { get; set; }
     public List<WebhookEventFilter> Filters { get; set; } = new();

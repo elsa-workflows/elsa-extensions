@@ -67,6 +67,18 @@ Repository-wide coding conventions apply to all modules and packages.
 
 These conventions are enforced in CI and should be treated as part of review readiness.
 
+### C# Non-Nullable Property Initialization
+
+- This rule applies to non-nullable **reference-type** properties only.
+- For non-nullable reference-type properties that require placeholder initialization, prefer `null!`.
+- Do not use `default!` for these reference-type properties.
+	- Preferred: `public string Id { get; set; } = null!;`
+	- Avoid: `public string Id { get; set; } = default!;`
+- Value types are excluded from this rule.
+	- Value-type examples: use `default` or an explicit value (for example `DateTimeOffset.UtcNow`), never `null!`.
+
+This convention is enforced in CI and should be treated as part of review readiness.
+
 ---
 
 ### 2) Make Reviews Fast

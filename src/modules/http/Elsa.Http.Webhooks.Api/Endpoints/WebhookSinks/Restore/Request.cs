@@ -4,5 +4,5 @@ namespace Elsa.Http.Webhooks.Api.Endpoints.WebhookSinks.Restore;
 
 public class Request : RestoreWebhookSinkRequest
 {
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = null!;
 }

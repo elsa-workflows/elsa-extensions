@@ -4,5 +4,5 @@ namespace Elsa.Http.Webhooks.Api.Endpoints.WebhookSinks.Update;
 
 public class Request : WebhookSinkInputModel
 {
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = null!;
 }

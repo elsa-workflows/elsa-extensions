@@ -8,11 +8,11 @@ public class WebhookSinkDocument
 {
     [BsonId]
     [BsonRepresentation(BsonType.String)]
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = null!;
 
     public string? Name { get; set; }
     public string? Description { get; set; }
-    public string Url { get; set; } = default!;
+    public string Url { get; set; } = null!;
     public bool IsEnabled { get; set; } = true;
     public bool IsDeleted { get; set; }
     public List<WebhookEventFilter> Filters { get; set; } = new();
