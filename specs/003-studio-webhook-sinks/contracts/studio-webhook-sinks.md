@@ -4,6 +4,8 @@
 
 Defines the Studio-to-API behavior contract for managing webhook sinks in `Elsa.Studio.Http.Webhooks`.
 
+This feature remains backward compatible for hosts that include the module package but do not navigate to webhook management routes.
+
 ## API Mapping Contract
 
 Studio actions map to existing webhook sink management endpoints:

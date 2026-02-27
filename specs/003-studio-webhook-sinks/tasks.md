@@ -3,7 +3,7 @@
 **Input**: Design documents from `/specs/003-studio-webhook-sinks/`  
 **Prerequisites**: plan.md (required), spec.md (required), research.md, data-model.md, contracts/, quickstart.md
 
-**Tests**: No explicit TDD requirement in the feature specification; test tasks are not mandatory in this task list.
+**Tests**: Automated tests are mandatory for behavior changes in this feature and must pass before completion.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and validation.
 
@@ -114,6 +114,18 @@
 - [ ] T036 [P] Update module-area documentation references in `src/modules/http/README.md`
 - [ ] T037 Validate quickstart scenarios against implemented UI flow in `specs/003-studio-webhook-sinks/quickstart.md`
 - [ ] T038 Run regression/build validation for module package in `src/modules/http/Elsa.Studio.Http.Webhooks/Elsa.Studio.Http.Webhooks.csproj`
+- [ ] T039 Add backward-compatibility verification scenario for hosts that register the module but do not use webhook navigation in `specs/003-studio-webhook-sinks/quickstart.md`
+- [ ] T040 [P] Add deferred-scope verification checks (no pagination dependency, event filters remain optional) in `specs/003-studio-webhook-sinks/quickstart.md`
+
+## Phase 7: Test Coverage & Quality Gates
+
+**Purpose**: Satisfy constitution quality gates by validating behavior with automated tests.
+
+- [ ] T041 [P] Create API contract mapping tests for sink list/create/update/delete/restore flows in `test/modules/http/Elsa.Studio.Http.Webhooks/Client/WebhookSinksApiContractTests.cs`
+- [ ] T042 [P] Create permission and action-availability tests (including disabled unauthorized actions with reason) in `test/modules/http/Elsa.Studio.Http.Webhooks/UI/WebhookSinkActionAvailabilityServiceTests.cs`
+- [ ] T043 [P] Create operation-result mapping tests for validation/conflict/not-found/transport outcomes in `test/modules/http/Elsa.Studio.Http.Webhooks/UI/WebhookSinkOperationResultMapperTests.cs`
+- [ ] T044 Create module registration/backward-compatibility smoke test for host startup and route discovery in `test/modules/http/Elsa.Studio.Http.Webhooks/Module/WebhookModuleRegistrationTests.cs`
+- [ ] T045 Run targeted Studio webhook module test suite and record results in `specs/003-studio-webhook-sinks/quickstart.md`
 
 ---
 
@@ -127,6 +139,7 @@
 - **Phase 4 (US2)**: depends on Phase 2 and builds on list UX from US1
 - **Phase 5 (US3)**: depends on Phase 2 and builds on list actions from US1
 - **Phase 6 (Polish)**: depends on completion of desired user stories
+- **Phase 7 (Test Coverage & Quality Gates)**: depends on Phases 2-6
 
 ### User Story Dependencies
 
@@ -175,6 +188,7 @@
 2. Add US2 create/edit behavior
 3. Add US3 delete/restore lifecycle
 4. Finish with Phase 6 docs and verification
+5. Complete Phase 7 mandatory automated tests
 
 ### Parallel Team Strategy
 
@@ -182,3 +196,4 @@
 2. One engineer builds list UI (US1)
 3. One engineer builds create/edit (US2) after US1 scaffolding
 4. One engineer adds lifecycle actions (US3) and polish/docs
+5. One engineer owns Phase 7 test implementation and execution

@@ -124,13 +124,13 @@ As an operator, I can soft delete and restore sinks from Studio so that obsolete
 
 ### Measurable Outcomes
 
-- **SC-001**: Authorized users can load the sink list in Studio and view existing sinks within 3 seconds for typical datasets.
+- **SC-001**: Authorized users can load the sink list in Studio and view existing sinks within 3 seconds at p95 for a reference dataset of 120 sinks (100 active, 20 soft-deleted) measured over 20 runs.
 - **SC-001a**: Feature acceptance is independent of introducing pagination behavior.
 - **SC-002**: Users can successfully create a new sink from Studio end-to-end in under 90 seconds on first attempt.
-- **SC-003**: Users can update an existing sink and observe persisted changes reflected in the list without page reload in at least 95% of normal operations.
+- **SC-003**: Users can update an existing sink and observe persisted changes reflected in the list without page reload in at least 19 of 20 consecutive successful update attempts.
 - **SC-004**: Users can soft delete a sink from Studio and the sink no longer appears in the default active list immediately after completion.
 - **SC-004a**: Users can restore a soft-deleted sink from Studio and the sink reappears in the default active list immediately after completion.
-- **SC-005**: In conflict or validation failure scenarios, users receive actionable feedback and can recover without losing unsaved input in at least 95% of tested cases.
+- **SC-005**: In conflict or validation failure scenarios, users receive actionable feedback and can recover without losing unsaved input in at least 19 of 20 scripted failure-case trials.
 
 ## Assumptions
 

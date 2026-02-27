@@ -54,4 +54,14 @@ Use the existing `BackendApiConfig` setup used by other Studio modules. Ensure S
 ## 7) Test & docs checklist
 
 - Add/execute tests for API client flow and key UI behaviors.
+- Validate backward compatibility by starting a host that registers the module but does not navigate to Webhooks; confirm startup remains healthy.
+- Verify deferred scope is preserved: no pagination dependency is introduced and event filters remain optional.
 - Update module README/docs if registration/usage notes changed.
+
+## 8) Success criteria measurement protocol
+
+- Use a reference dataset of 120 sinks total (100 active, 20 soft-deleted).
+- Run all measurements in the same host profile after one warm-up request.
+- For list-load timing, execute 20 runs and verify p95 list-load time is <= 3 seconds.
+- For update persistence, execute 20 consecutive successful update attempts and verify list reflects persisted values without full-page reload in at least 19 runs.
+- For validation/conflict recovery, execute 20 scripted failure-case trials and verify recovery without unsaved-input loss in at least 19 runs.
