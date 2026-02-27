@@ -37,16 +37,8 @@ Studio actions map to existing webhook sink management endpoints:
 - On success: sink disappears from default active list.
 
 ### Restore
-- Restore available when sink is soft-deleted and user has permission.
+- Restore available when sink is soft-deleted.
 - On success: sink reappears in default active list.
-
-## Permission Contract
-
-- Read/create/update/delete/restore permissions are evaluated by backend policy.
-- UI behavior for unauthorized operations:
-  - action remains visible
-  - action is disabled
-  - disabled reason is shown to user
 
 ## Error Handling Contract
 
@@ -54,7 +46,7 @@ Studio normalizes backend failures into user-facing outcomes:
 
 - Validation -> actionable field/form feedback
 - Conflict -> refresh-required guidance + manual retry path
-- Unauthorized -> permission message and disabled action state
+- Unauthorized -> user-visible unauthorized error message
 - Network/transport -> retry-capable error state
 - Not found (stale item) -> notify and refresh list
 
@@ -62,4 +54,5 @@ Studio normalizes backend failures into user-facing outcomes:
 
 - Adding pagination requirements to sink list contract.
 - Introducing additional mandatory sink fields beyond `name` and `targetUrl`.
+- Implementing comprehensive permission-aware UI checks.
 - Extending backend API shape beyond current endpoint contract.

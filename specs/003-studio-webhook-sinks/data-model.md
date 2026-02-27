@@ -43,22 +43,6 @@ Represents list retrieval options.
 - Default query must exclude soft-deleted sinks.
 - Including deleted sinks is explicit user intent.
 
-## Entity: WebhookSinkActionAvailability
-
-Represents permission-aware action state used by UI controls.
-
-### Fields
-- `canRead` (bool)
-- `canCreate` (bool)
-- `canUpdate` (bool)
-- `canDelete` (bool)
-- `canRestore` (bool)
-- `disabledReason` (string, optional)
-
-### Validation Rules
-- Unauthorized actions remain visible but disabled.
-- Disabled actions should include a readable reason.
-
 ## Entity: WebhookSinkOperationResult
 
 Represents normalized action outcome for create/update/delete/restore.
@@ -78,7 +62,6 @@ Represents normalized action outcome for create/update/delete/restore.
 - One `WebhookSinkListQuery` produces many `WebhookSinkListItem` records.
 - One `WebhookSinkListItem` maps to one `WebhookSinkInputModel` for editing.
 - Every user mutation action produces one `WebhookSinkOperationResult`.
-- `WebhookSinkActionAvailability` applies across all list items and forms per action type.
 
 ## State Transitions
 

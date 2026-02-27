@@ -1,0 +1,21 @@
+@using Elsa.Studio.Workflows.Services
+@using Variant = MudBlazor.Variant
+@inherits StudioComponentBase
+@inject ILocalizer Localizer
+
+<MudDialog>
+    <DialogContent>
+        <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit">
+            <FluentValidationValidator @ref="_fluentValidationValidator" Validator="_validator" DisableAssemblyScanning="true"/>
+            <MudStack>
+                <MudTextField Label="@Localizer["Name"]" @bind-Value="_inputModel.Name" For="@(() => _inputModel.Name)" HelperText="@Localizer["The display name of the sink."]" Variant="Variant.Outlined" />
+                <MudTextField Label="@Localizer["Target URL"]" @bind-Value="_inputModel.TargetUrl" For="@(() => _inputModel.TargetUrl)" HelperText="@Localizer["The webhook target URL."]" Variant="Variant.Outlined" />
+                <MudTextField Label="@Localizer["Description"]" @bind-Value="_inputModel.Description" For="@(() => _inputModel.Description)" HelperText="@Localizer["Optional description."]" Lines="3" Variant="Variant.Outlined" />
+            </MudStack>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="OnCancelClicked">@Localizer["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" OnClick="OnSubmitClicked">@Localizer["Create"]</MudButton>
+    </DialogActions>
+</MudDialog>

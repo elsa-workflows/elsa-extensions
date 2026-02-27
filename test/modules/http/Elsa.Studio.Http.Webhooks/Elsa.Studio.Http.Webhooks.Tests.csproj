@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\..\src\modules\http\Elsa.Studio.Http.Webhooks\Elsa.Studio.Http.Webhooks.csproj" />
+    </ItemGroup>
+
+</Project>

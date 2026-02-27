@@ -24,13 +24,13 @@
   - Add server-side pagination now: rejected due to scope expansion and backend contract changes.
   - Add client-side pseudo-pagination over full result set: rejected as unnecessary complexity for current scope.
 
-## Decision 4: Permission UX shows disabled actions with explanations
+## Decision 4: Comprehensive permission-aware UI behavior is deferred
 
-- **Decision**: Keep action controls visible and disable unauthorized actions with clear missing-permission guidance.
-- **Rationale**: This matches clarification outcomes, improves discoverability, and avoids surprise API failure-only feedback.
+- **Decision**: Do not require comprehensive permission-aware UI checks in this feature; defer to a dedicated follow-up feature.
+- **Rationale**: Elsa and Elsa Studio do not yet provide a comprehensive permission-aware system suitable for full UX enforcement in this scope.
 - **Alternatives considered**:
-  - Hide unauthorized actions entirely: rejected because it reduces discoverability and can confuse role-limited operators.
-  - Leave unauthorized actions enabled and rely on API errors: rejected due to poor UX and avoidable failure loops.
+  - Implement ad-hoc UI permission checks now: rejected because it introduces inconsistent behavior and technical debt.
+  - Block feature delivery until permission system exists: rejected because core webhook sink management can ship independently.
 
 ## Decision 5: Conflict handling is explicit refresh + manual retry
 

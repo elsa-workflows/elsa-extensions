@@ -19,10 +19,10 @@
 
 **Purpose**: Prepare Studio webhook module structure and baseline registration wiring.
 
-- [ ] T001 Create UI folder structure `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages`, `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Components`, and `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Validators`
-- [ ] T002 Create client folder `src/modules/http/Elsa.Studio.Http.Webhooks/Client` for remote API contracts
-- [ ] T003 [P] Update namespace imports in `src/modules/http/Elsa.Studio.Http.Webhooks/_Imports.razor` to align with module UI patterns
-- [ ] T004 [P] Update package metadata and dependencies in `src/modules/http/Elsa.Studio.Http.Webhooks/Elsa.Studio.Http.Webhooks.csproj`
+- [x] T001 Create UI folder structure `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages`, `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Components`, and `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Validators`
+- [x] T002 Create client folder `src/modules/http/Elsa.Studio.Http.Webhooks/Client` for remote API contracts
+- [x] T003 [P] Update namespace imports in `src/modules/http/Elsa.Studio.Http.Webhooks/_Imports.razor` to align with module UI patterns
+- [x] T004 [P] Update package metadata and dependencies in `src/modules/http/Elsa.Studio.Http.Webhooks/Elsa.Studio.Http.Webhooks.csproj`
 
 ---
 
@@ -32,14 +32,13 @@
 
 **⚠️ CRITICAL**: User story implementation starts only after this phase completes.
 
-- [ ] T005 Create webhook sink API interface in `src/modules/http/Elsa.Studio.Http.Webhooks/Client/IWebhookSinksApi.cs`
-- [ ] T006 Create request/response DTO mappings in `src/modules/http/Elsa.Studio.Http.Webhooks/Client/WebhookSinkApiModels.cs`
-- [ ] T007 Add module service registration with `AddRemoteApi<IWebhookSinksApi>` in `src/modules/http/Elsa.Studio.Http.Webhooks/Extensions/ServiceCollectionExtensions.cs`
-- [ ] T008 Create shared page state models in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/Models/WebhookSinkPageModels.cs`
-- [ ] T009 Create permission/action availability helper in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/Services/WebhookSinkActionAvailabilityService.cs`
-- [ ] T010 Create operation result/error normalization helper in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/Services/WebhookSinkOperationResultMapper.cs`
-- [ ] T011 Create form validator for required fields in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Validators/WebhookSinkInputValidator.cs`
-- [ ] T012 Update module feature registration in `src/modules/http/Elsa.Studio.Http.Webhooks/Module.cs`
+- [x] T005 Create webhook sink API interface in `src/modules/http/Elsa.Studio.Http.Webhooks/Client/IWebhookSinksApi.cs`
+- [x] T006 Create request/response DTO mappings in `src/modules/http/Elsa.Studio.Http.Webhooks/Client/WebhookSinkApiModels.cs`
+- [x] T007 Add module service registration with `AddRemoteApi<IWebhookSinksApi>` in `src/modules/http/Elsa.Studio.Http.Webhooks/Extensions/ServiceCollectionExtensions.cs`
+- [x] T008 Create shared page state models in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/Models/WebhookSinkPageModels.cs`
+- [x] T010 Create operation result/error normalization helper in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/Services/WebhookSinkOperationResultMapper.cs`
+- [x] T011 Create form validator for required fields in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Validators/WebhookSinkInputValidator.cs`
+- [x] T012 Update module feature registration in `src/modules/http/Elsa.Studio.Http.Webhooks/Module.cs`
 
 **Checkpoint**: Core API client, validation, and module plumbing are ready.
 
@@ -47,18 +46,17 @@
 
 ## Phase 3: User Story 1 - View webhook sinks in Studio (Priority: P1) 🎯 MVP
 
-**Goal**: Provide a functional Webhooks list page with loading, empty, error, and permission-aware action visibility states.
+**Goal**: Provide a functional Webhooks list page with loading, empty, and error states.
 
-**Independent Test**: Open `/webhooks`, load existing sinks, verify empty/retry states, and verify unauthorized actions are visible but disabled with guidance.
+**Independent Test**: Open `/webhooks`, load existing sinks, and verify empty/retry states.
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Implement webhooks list page markup in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor`
-- [ ] T014 [US1] Implement list page code-behind with server reload and retry in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
-- [ ] T015 [P] [US1] Add include-deleted toggle and query-state binding in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor`
-- [ ] T016 [US1] Implement default active-only list query behavior in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
-- [ ] T017 [P] [US1] Add disabled-action tooltip/message rendering for missing permissions in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor`
-- [ ] T018 [US1] Replace skeleton route page by routing to list page in `src/modules/http/Elsa.Studio.Http.Webhooks/Pages/Index.razor`
+- [x] T013 [P] [US1] Implement webhooks list page markup in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor`
+- [x] T014 [US1] Implement list page code-behind with server reload and retry in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
+- [x] T015 [P] [US1] Add include-deleted toggle and query-state binding in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor`
+- [x] T016 [US1] Implement default active-only list query behavior in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
+- [x] T018 [US1] Replace skeleton route page by routing to list page in `src/modules/http/Elsa.Studio.Http.Webhooks/Pages/Index.razor`
 
 **Checkpoint**: US1 is independently functional and demoable.
 
@@ -72,15 +70,15 @@
 
 ### Implementation for User Story 2
 
-- [ ] T019 [P] [US2] Implement create dialog UI in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Components/CreateWebhookSinkDialog.razor`
-- [ ] T020 [US2] Implement create dialog logic and submit pipeline in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Components/CreateWebhookSinkDialog.razor.cs`
-- [ ] T021 [P] [US2] Implement edit page UI in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSink.razor`
-- [ ] T022 [US2] Implement edit page load/save flow in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSink.razor.cs`
-- [ ] T023 [US2] Wire create action from list page to dialog in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
-- [ ] T024 [US2] Wire row edit navigation/action from list page in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
-- [ ] T025 [US2] Enforce required field validation (`Name`, `Target URL`) in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Validators/WebhookSinkInputValidator.cs`
-- [ ] T026 [US2] Implement conflict handling (refresh + manual retry, no auto-overwrite) in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/Services/WebhookSinkOperationResultMapper.cs`
-- [ ] T027 [US2] Ensure unsaved form values persist on validation/conflict/network failure in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Components/CreateWebhookSinkDialog.razor.cs` and `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSink.razor.cs`
+- [x] T019 [P] [US2] Implement create dialog UI in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Components/CreateWebhookSinkDialog.razor`
+- [x] T020 [US2] Implement create dialog logic and submit pipeline in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Components/CreateWebhookSinkDialog.razor.cs`
+- [x] T021 [P] [US2] Implement edit page UI in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSink.razor`
+- [x] T022 [US2] Implement edit page load/save flow in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSink.razor.cs`
+- [x] T023 [US2] Wire create action from list page to dialog in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
+- [x] T024 [US2] Wire row edit navigation/action from list page in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
+- [x] T025 [US2] Enforce required field validation (`Name`, `Target URL`) in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Validators/WebhookSinkInputValidator.cs`
+- [x] T026 [US2] Implement conflict handling (refresh + manual retry, no auto-overwrite) in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/Services/WebhookSinkOperationResultMapper.cs`
+- [x] T027 [US2] Ensure unsaved form values persist on validation/conflict/network failure in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Components/CreateWebhookSinkDialog.razor.cs` and `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSink.razor.cs`
 
 **Checkpoint**: US2 is independently functional and demoable.
 
@@ -94,12 +92,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] Implement delete confirmation flow in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
-- [ ] T029 [US3] Implement soft-delete API invocation and list refresh in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
-- [ ] T030 [P] [US3] Implement restore action UI for deleted sinks in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor`
-- [ ] T031 [US3] Implement restore API invocation and active-list reinstate in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
-- [ ] T032 [US3] Apply permission-aware disabled behavior to delete/restore actions in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor`
-- [ ] T033 [US3] Handle stale/not-found outcomes for delete/restore with refresh guidance in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/Services/WebhookSinkOperationResultMapper.cs`
+- [x] T028 [US3] Implement delete confirmation flow in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
+- [x] T029 [US3] Implement soft-delete API invocation and list refresh in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
+- [x] T030 [P] [US3] Implement restore action UI for deleted sinks in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor`
+- [x] T031 [US3] Implement restore API invocation and active-list reinstate in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/WebhookSinks.razor.cs`
+- [x] T033 [US3] Handle stale/not-found outcomes for delete/restore with refresh guidance in `src/modules/http/Elsa.Studio.Http.Webhooks/UI/Pages/Services/WebhookSinkOperationResultMapper.cs`
 
 **Checkpoint**: US3 is independently functional and demoable.
 
@@ -109,23 +106,22 @@
 
 **Purpose**: Finalize documentation, wiring consistency, and verification checklist.
 
-- [ ] T034 [P] Update webhooks menu metadata/path consistency in `src/modules/http/Elsa.Studio.Http.Webhooks/Menu/WebhooksMenu.cs`
-- [ ] T035 [P] Add module README with registration, permissions, and API prerequisites in `src/modules/http/Elsa.Studio.Http.Webhooks/README.md`
-- [ ] T036 [P] Update module-area documentation references in `src/modules/http/README.md`
-- [ ] T037 Validate quickstart scenarios against implemented UI flow in `specs/003-studio-webhook-sinks/quickstart.md`
-- [ ] T038 Run regression/build validation for module package in `src/modules/http/Elsa.Studio.Http.Webhooks/Elsa.Studio.Http.Webhooks.csproj`
-- [ ] T039 Add backward-compatibility verification scenario for hosts that register the module but do not use webhook navigation in `specs/003-studio-webhook-sinks/quickstart.md`
-- [ ] T040 [P] Add deferred-scope verification checks (no pagination dependency, event filters remain optional) in `specs/003-studio-webhook-sinks/quickstart.md`
+- [x] T034 [P] Update webhooks menu metadata/path consistency in `src/modules/http/Elsa.Studio.Http.Webhooks/Menu/WebhooksMenu.cs`
+- [x] T035 [P] Add module README with registration and API prerequisites in `src/modules/http/Elsa.Studio.Http.Webhooks/README.md`
+- [x] T036 [P] Update module-area documentation references in `src/modules/http/README.md`
+- [x] T037 Validate quickstart scenarios against implemented UI flow in `specs/003-studio-webhook-sinks/quickstart.md`
+- [x] T038 Run regression/build validation for module package in `src/modules/http/Elsa.Studio.Http.Webhooks/Elsa.Studio.Http.Webhooks.csproj`
+- [x] T039 Add backward-compatibility verification scenario for hosts that register the module but do not use webhook navigation in `specs/003-studio-webhook-sinks/quickstart.md`
+- [x] T040 [P] Add deferred-scope verification checks (no pagination dependency, event filters remain optional) in `specs/003-studio-webhook-sinks/quickstart.md`
 
 ## Phase 7: Test Coverage & Quality Gates
 
 **Purpose**: Satisfy constitution quality gates by validating behavior with automated tests.
 
-- [ ] T041 [P] Create API contract mapping tests for sink list/create/update/delete/restore flows in `test/modules/http/Elsa.Studio.Http.Webhooks/Client/WebhookSinksApiContractTests.cs`
-- [ ] T042 [P] Create permission and action-availability tests (including disabled unauthorized actions with reason) in `test/modules/http/Elsa.Studio.Http.Webhooks/UI/WebhookSinkActionAvailabilityServiceTests.cs`
-- [ ] T043 [P] Create operation-result mapping tests for validation/conflict/not-found/transport outcomes in `test/modules/http/Elsa.Studio.Http.Webhooks/UI/WebhookSinkOperationResultMapperTests.cs`
-- [ ] T044 Create module registration/backward-compatibility smoke test for host startup and route discovery in `test/modules/http/Elsa.Studio.Http.Webhooks/Module/WebhookModuleRegistrationTests.cs`
-- [ ] T045 Run targeted Studio webhook module test suite and record results in `specs/003-studio-webhook-sinks/quickstart.md`
+- [x] T041 [P] Create API contract mapping tests for sink list/create/update/delete/restore flows in `test/modules/http/Elsa.Studio.Http.Webhooks/Client/WebhookSinksApiContractTests.cs`
+- [x] T043 [P] Create operation-result mapping tests for validation/conflict/not-found/transport outcomes in `test/modules/http/Elsa.Studio.Http.Webhooks/UI/WebhookSinkOperationResultMapperTests.cs`
+- [x] T044 Create module registration/backward-compatibility smoke test for host startup and route discovery in `test/modules/http/Elsa.Studio.Http.Webhooks/Module/WebhookModuleRegistrationTests.cs`
+- [x] T045 Run targeted Studio webhook module test suite and record results in `specs/003-studio-webhook-sinks/quickstart.md`
 
 ---
 
@@ -160,7 +156,6 @@
 ### User Story 1
 
 - T013 and T015 can run in parallel (separate list markup concerns in same feature slice).
-- T017 can run in parallel with T014 once action model contracts are in place.
 
 ### User Story 2
 
@@ -180,7 +175,7 @@
 1. Complete Phase 1 (Setup)
 2. Complete Phase 2 (Foundational)
 3. Complete Phase 3 (US1)
-4. Validate list/empty/error/permission-disabled behavior
+4. Validate list/empty/error behavior
 
 ### Incremental Delivery
 

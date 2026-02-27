@@ -15,7 +15,7 @@ public class WebhooksMenu(ILocalizer localizer) : IMenuProvider
             {
                 Icon = Icons.Material.Filled.Http,
                 Href = "webhooks",
-                Text = localizer["Webhooks"],
+                Text = localizer["Webhook Sinks"],
                 GroupName = MenuItemGroups.Settings.Name
             }
         };

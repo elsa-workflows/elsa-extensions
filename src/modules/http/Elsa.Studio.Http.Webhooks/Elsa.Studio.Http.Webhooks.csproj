@@ -18,5 +18,9 @@
         <PackageReference Include="Elsa.Studio.Shared" />
         <PackageReference Include="Elsa.Studio.Workflows" />
     </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Elsa.Http.Webhooks.Api\Elsa.Http.Webhooks.Api.csproj"/>
+    </ItemGroup>
 	
 </Project>

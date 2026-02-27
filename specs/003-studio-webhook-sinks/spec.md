@@ -17,7 +17,7 @@
 
 - Studio module implementation MUST consume the existing webhook sink management API contract rather than duplicating backend logic.
 - If API gaps block required user flows, the spec MAY be amended with minimal API contract extensions.
-- Authorization behavior MUST follow existing Elsa Studio and API permission conventions.
+- Comprehensive permission-aware UI behavior is deferred to a separate future feature.
 - UX and module behavior changes MUST remain limited to Studio webhook sink management concerns.
 - Pagination changes to API or Studio list contracts are out of scope for this feature.
 
@@ -27,9 +27,9 @@
 
 - Q: Should Studio include restore for soft-deleted sinks? → A: Yes, include restore in this feature.
 - Q: Should pagination be required for sink listing in this feature? → A: No, use the current list contract without pagination requirements.
-- Q: How should unauthorized actions be presented in Studio UI? → A: Show actions but disable them with a clear permission explanation.
 - Q: What are the minimum required fields for create/edit in this feature? → A: `Name` and `Target URL` only.
 - Q: How should conflict responses be handled in Studio? → A: Show conflict, require refresh, and manual retry.
+- Q: Should comprehensive permission-aware UI checks be required in this feature? → A: No, defer to a separate future feature.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -43,10 +43,9 @@ As an operator, I can open the Webhooks page and view existing webhook sinks so 
 
 **Acceptance Scenarios**:
 
-1. **Given** the user has permission to read webhook sinks, **When** the user opens the Webhooks page, **Then** Studio loads and displays sinks returned by the API list endpoint.
-2. **Given** the user lacks permission for one or more actions, **When** the user views the sink list and details, **Then** Studio shows those actions as disabled with clear permission guidance.
-3. **Given** no sinks exist, **When** the user opens the Webhooks page, **Then** Studio displays an empty-state message with a clear path to create a sink.
-4. **Given** the API request fails, **When** the page loads, **Then** Studio shows a recoverable error state and allows retry.
+1. **Given** the user opens the Webhooks page, **When** the API list request succeeds, **Then** Studio loads and displays sinks returned by the API list endpoint.
+2. **Given** no sinks exist, **When** the user opens the Webhooks page, **Then** Studio displays an empty-state message with a clear path to create a sink.
+3. **Given** the API request fails, **When** the page loads, **Then** Studio shows a recoverable error state and allows retry.
 
 ---
 
@@ -82,7 +81,6 @@ As an operator, I can soft delete and restore sinks from Studio so that obsolete
 
 ### Edge Cases
 
-- User lacks required permissions for one or more actions (read/create/update/delete).
 - Concurrent edits by multiple users result in conflict responses for stale versions.
 - API is reachable but returns partial/invalid payload fields for one or more sinks.
 - Network interruption occurs during save/delete and leaves uncertain final state.
@@ -106,12 +104,9 @@ As an operator, I can soft delete and restore sinks from Studio so that obsolete
 - **FR-006a**: On conflict responses, Studio MUST require explicit refresh and manual retry, and MUST NOT auto-retry or force-overwrite.
 - **FR-007**: The module MUST preserve unsaved user-entered data when API save attempts fail due to validation or transient errors.
 - **FR-008**: The module MUST include loading, empty, success, and failure states for list and mutation operations.
-- **FR-009**: The module MUST enforce permission-aware UI behavior that aligns with backend permissions for read/create/update/delete actions.
-- **FR-009a**: Permission-aware UI behavior MUST also cover restore actions.
-- **FR-009b**: Unauthorized actions MUST remain visible but disabled, and MUST include a clear explanation of missing permission.
-- **FR-010**: The module MUST keep navigation entry and route discoverable through the existing Studio menu group.
-- **FR-011**: The feature MUST remain backward compatible with existing hosts that include the Studio module but do not yet navigate to webhook management.
-- **FR-012**: Module documentation MUST describe configuration prerequisites for API connectivity and required permissions.
+- **FR-009**: The module MUST keep navigation entry and route discoverable through the existing Studio menu group.
+- **FR-010**: The feature MUST remain backward compatible with existing hosts that include the Studio module but do not yet navigate to webhook management.
+- **FR-011**: Module documentation MUST describe configuration prerequisites for API connectivity.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -137,6 +132,7 @@ As an operator, I can soft delete and restore sinks from Studio so that obsolete
 - The existing webhook sink API endpoints in `Elsa.Http.Webhooks.Api` remain the source of truth for sink CRUD behavior.
 - The Studio module uses existing Elsa Studio authentication/session context and does not introduce a new auth model.
 - Soft-delete semantics are enforced by the API and persistence layer; Studio reflects, but does not redefine, those rules.
-- Include-deleted and restore behavior are exposed in UI and follow existing API contracts and permissions.
+- Include-deleted and restore behavior are exposed in UI and follow existing API contracts.
 - Pagination concerns are explicitly deferred and not required for this feature.
+- Comprehensive permission-aware UI behavior is explicitly deferred to a separate future feature.
 - Create/edit minimum field set in this feature is `Name` and `Target URL`; additional sink metadata is deferred unless already provided by API defaults.

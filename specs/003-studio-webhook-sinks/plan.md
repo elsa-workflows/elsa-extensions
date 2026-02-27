@@ -7,7 +7,7 @@
 
 Implement `Elsa.Studio.Http.Webhooks` from skeleton to complete sink management UX using the existing REST contract from `Elsa.Http.Webhooks.Api`.
 
-The module will provide list/create/edit/soft-delete/restore flows, permission-aware actions (visible but disabled when unauthorized), explicit conflict handling (refresh + manual retry), and reuse established Studio patterns from modules such as `Elsa.Studio.Agents` and `Elsa.Studio.Secrets`.
+The module will provide list/create/edit/soft-delete/restore flows, explicit conflict handling (refresh + manual retry), and reuse established Studio patterns from modules such as `Elsa.Studio.Agents` and `Elsa.Studio.Secrets`.
 
 ## Technical Context
 
@@ -87,11 +87,10 @@ test/modules/http/
 1. Define data model for Studio-side entities/state objects:
    - sink list item model
    - create/edit form model
-   - permission state/action availability model
    - operation result model (success/validation/conflict/auth/network)
 2. Define interface/behavior contract artifact for this feature:
    - UI actions and expected API mappings
-   - conflict and permission behavior
+   - conflict behavior
    - soft-delete + restore lifecycle behavior
 3. Produce quickstart with concrete module wiring and manual verification flow.
 
@@ -108,14 +107,11 @@ test/modules/http/
 3. Implement create/edit flows:
    - required fields (`Name`, `Target URL`)
    - validation and unsaved input preservation on failure
-4. Implement permission-aware UX:
-   - show all actions
-   - disable unauthorized actions with explanation
-5. Implement conflict/error handling:
+4. Implement conflict/error handling:
    - conflict: require refresh + manual retry
    - map validation/auth/network failures to actionable UI feedback
-6. Integrate menu, module registration, and docs updates.
-7. Add tests for critical behaviors and regressions.
+5. Integrate menu, module registration, and docs updates.
+6. Add tests for critical behaviors and regressions.
 
 **Exit Criteria**: Feature stories in `spec.md` are covered by planned tasks and test strategy.
 
@@ -123,9 +119,6 @@ test/modules/http/
 
 - **Risk**: Backend contract drift between Studio and `Elsa.Http.Webhooks.Api`.  
   **Mitigation**: Keep API interface focused on current endpoint contract and capture mapping in `contracts/studio-webhook-sinks.md`.
-
-- **Risk**: Permission behavior inconsistencies across screens.  
-  **Mitigation**: Reuse existing permission-aware UI patterns and explicitly test disabled-action behavior.
 
 - **Risk**: Conflict handling causes user confusion.  
   **Mitigation**: Standardized conflict messaging + explicit refresh action + no silent retries.

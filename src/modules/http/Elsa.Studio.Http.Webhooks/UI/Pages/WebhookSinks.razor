@@ -1,0 +1,74 @@
+@page "/webhooks"
+@using Elsa.Http.Webhooks.Api.Contracts
+@using Elsa.Studio.Http.Webhooks.UI.Pages.Models
+@using Elsa.Studio.Workflows.Services
+@using Variant = MudBlazor.Variant
+@inherits StudioComponentBase
+@inject ILocalizer Localizer
+
+<PageTitle>@Localizer["Webhooks"]</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False">
+    <PageHeading Text="@Localizer["Webhooks"]"/>
+
+    @if (!string.IsNullOrWhiteSpace(_listErrorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4">
+            @_listErrorMessage
+            <MudButton Class="ml-3" Variant="Variant.Text" OnClick="Reload">@Localizer["Retry"]</MudButton>
+        </MudAlert>
+    }
+
+    <MudTable
+        @ref="_table"
+        T="WebhookSinkModel"
+        ServerData="ServerReload"
+        Dense="true"
+        Hover="true"
+        Elevation="0"
+        Class="definitions-table">
+        <ToolBarContent>
+            <MudTextField T="string"
+                          Placeholder="@Localizer["Search by name"]"
+                          Value="@_queryState.Name"
+                          ValueChanged="OnNameFilterChanged"
+                          Immediate="true"
+                          Margin="Margin.Dense"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mr-2"/>
+
+            <MudSwitch T="bool" Value="@_queryState.IncludeDeleted" ValueChanged="OnIncludeDeletedChanged" Color="Color.Primary" Label="@Localizer["Include deleted"]" />
+            <MudSpacer/>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnCreateClicked">
+                @Localizer["Create Sink"]
+            </MudButton>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>@Localizer["Name"]</MudTh>
+            <MudTh>@Localizer["Target URL"]</MudTh>
+            <MudTh>@Localizer["Status"]</MudTh>
+            <MudTh class="text-right">@Localizer["Actions"]</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="@Localizer["Name"]">@context.Name</MudTd>
+            <MudTd DataLabel="@Localizer["Target URL"]">@context.Url</MudTd>
+            <MudTd DataLabel="@Localizer["Status"]">@(context.IsDeleted ? Localizer["Deleted"] : Localizer["Active"])</MudTd>
+            <MudTd class="text-right">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OnEditClicked(context.Id))" />
+                @if (!context.IsDeleted)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => OnDeleteClicked(context))" />
+                }
+                else
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Restore" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OnRestoreClicked(context))" />
+                }
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2">@Localizer["No webhook sinks found."]</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudContainer>

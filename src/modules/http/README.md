@@ -24,6 +24,7 @@ The public contract for packages in this module area is defined by their publish
 - `Elsa.Http.Webhooks.Persistence.EFCore`: EF Core store-backed provider implementation
 - `Elsa.Http.Webhooks.Persistence.MongoDb`: MongoDB store-backed provider implementation
 - `Elsa.Http.Webhooks.Api`: management REST API endpoints
+- `Elsa.Studio.Http.Webhooks`: Elsa Studio webhook sink management UI module
 
 ## Notes
 - Keep this module-area README aligned with package-level READMEs in this folder.

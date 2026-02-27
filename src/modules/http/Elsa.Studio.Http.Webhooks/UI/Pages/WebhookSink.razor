@@ -1,0 +1,30 @@
+@page "/webhooks/{WebhookSinkId}"
+@using Elsa.Studio.Workflows.Services
+@using Variant = MudBlazor.Variant
+@inherits StudioComponentBase
+@inject ILocalizer Localizer
+
+<PageTitle>@Localizer["Webhook Sink"]</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False">
+    <PageHeading Text="@Localizer["Webhook Sink"]"/>
+
+    <MudCard>
+        <MudCardContent>
+            <EditForm EditContext="_editContext" OnValidSubmit="OnSaveClicked">
+                <FluentValidationValidator @ref="_fluentValidationValidator" Validator="_validator" DisableAssemblyScanning="true" />
+
+                <MudStack Spacing="2">
+                    <MudTextField Label="@Localizer["Name"]" @bind-Value="_model.Name" For="@(() => _model.Name)" Variant="Variant.Outlined" />
+                    <MudTextField Label="@Localizer["Target URL"]" @bind-Value="_model.TargetUrl" For="@(() => _model.TargetUrl)" Variant="Variant.Outlined" />
+                    <MudTextField Label="@Localizer["Description"]" @bind-Value="_model.Description" For="@(() => _model.Description)" Lines="3" Variant="Variant.Outlined" />
+                </MudStack>
+            </EditForm>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Text" OnClick="OnCancelClicked">@Localizer["Cancel"]</MudButton>
+            <MudSpacer/>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnSaveClicked">@Localizer["Save"]</MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudContainer>

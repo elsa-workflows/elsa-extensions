@@ -20,4 +20,4 @@ module
 - `DELETE /webhook-sinks/{id}`
 - `POST /webhook-sinks/{id}/restore`
 
-Auth and permissions follow existing Elsa API conventions via `ConfigurePermissions`.
+Authorization follows existing Elsa API conventions via `ConfigurePermissions`.
