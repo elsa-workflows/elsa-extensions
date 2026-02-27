@@ -12,7 +12,7 @@ module
 
 ### Composed Host DbContext Mode
 
-If your host owns the DbContext, you can compose webhook persistence into it without inheriting from `WebhookPersistenceDbContext`:
+If your host owns the DbContext, you can compose webhook persistence into it without inheriting from `WebhooksDbContext`:
 
 ```csharp
 public class AppDbContext : DbContext
@@ -33,24 +33,24 @@ This package provides:
 
 - `IWebhookSinkStore` backed by EF Core (`EFCoreWebhookSinkStore`)
 - runtime `IWebhookSinkProvider` backed by store (`EFCoreWebhookSinkProvider`)
-- `WebhookPersistenceDbContext` with sink mapping and JSON storage for headers/filters
+- `WebhooksDbContext` with sink mapping and JSON storage for headers/filters
 
 ## Migrations
 
 Migrations are **consumer-owned**. This package does not ship provider-specific migrations; application developers generate and maintain migrations in their own solution.
 
-### Standalone Context (`WebhookPersistenceDbContext`)
+### Standalone Context (`WebhooksDbContext`)
 
-If you use `WebhookPersistenceDbContext` directly, create migrations in your own data/migrations project (not in this module package):
+If you use `WebhooksDbContext` directly, create migrations in your own data/migrations project (not in this module package):
 
 ```bash
 dotnet ef migrations add InitWebhookSinks \
-    --context WebhookPersistenceDbContext \
+    --context WebhooksDbContext \
     --project <your-app-data-or-migrations-project> \
     --startup-project <your-host-startup-project>
 
 dotnet ef database update \
-    --context WebhookPersistenceDbContext \
+    --context WebhooksDbContext \
     --project <your-app-data-or-migrations-project> \
     --startup-project <your-host-startup-project>
 ```

@@ -1,5 +1,6 @@
 using Elsa.Features.Attributes;
 using Elsa.Features.Services;
+using Elsa.Http.Webhooks.Persistence.Entities;
 using Elsa.Http.Webhooks.Persistence.Features;
 using Elsa.Persistence.EFCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ public class EFCoreWebhookPersistenceFeature(IModule module) : PersistenceFeatur
     public override void Apply()
     {
         base.Apply();
+        AddEntityStore<WebhookSinkRecord, EFCoreWebhookSinkStore>();
         Services.AddSingleton<IWebhookSinkProvider, EFCoreWebhookSinkProvider>();
     }
 }

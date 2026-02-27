@@ -1,10 +1,11 @@
+using Elsa.Common.Entities;
+
 namespace Elsa.Http.Webhooks.Persistence.Entities;
 
 using WebhooksCore;
 
-public class WebhookSinkRecord
+public class WebhookSinkRecord : Entity
 {
-    public string Id { get; set; } = null!;
     public string Url { get; set; } = null!;
     public bool IsEnabled { get; set; } = true;
     public bool IsDeleted { get; set; }

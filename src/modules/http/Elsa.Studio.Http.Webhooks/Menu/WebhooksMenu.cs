@@ -20,6 +20,6 @@ public class WebhooksMenu(ILocalizer localizer) : IMenuProvider
             }
         };
 
-        return new ValueTask<IEnumerable<MenuItem>>(menuItems);
+        return new(menuItems);
     }
 }
