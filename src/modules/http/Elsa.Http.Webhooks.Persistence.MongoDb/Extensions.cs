@@ -1,4 +1,5 @@
 using Elsa.Http.Webhooks.Persistence.Features;
+using Elsa.Http.Webhooks.Persistence.MongoDb;
 using JetBrains.Annotations;
 
 // ReSharper disable once CheckNamespace

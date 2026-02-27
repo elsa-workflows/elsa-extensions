@@ -2,7 +2,7 @@ using Elsa.Abstractions;
 using Elsa.Http.Webhooks.Api.Contracts;
 using Elsa.Http.Webhooks.Persistence.Services;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace Elsa.Http.Webhooks.Api.Endpoints.WebhookSinks.Update;
 
@@ -31,7 +31,7 @@ public class Endpoint(IWebhookSinkManagementService managementService) : ElsaEnd
         }
         catch (InvalidOperationException ex)
         {
-            await Send.ResultAsync(new ConflictObjectResult(new { Error = ex.Message }));
+            await Send.ResultAsync(Results.Conflict(new { Error = ex.Message }));
             return null!;
         }
     }
