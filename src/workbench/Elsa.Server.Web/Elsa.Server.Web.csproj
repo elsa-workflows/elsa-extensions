@@ -3,14 +3,16 @@
         <TargetFramework>net10.0</TargetFramework>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <IsPackable>false</IsPackable>
+		<WarningsNotAsErrors>$(WarningsNotAsErrors);NU1605</WarningsNotAsErrors>
+		<NoWarn>$(NoWarn);NU1605</NoWarn>
     </PropertyGroup>
     
     <ItemGroup>
         <PackageReference Include="Elsa" />
-        <PackageReference Include="Elsa.Common" />
+		<PackageReference Include="Elsa.Common" VersionOverride="3.6.0-preview.4061" />
 		<PackageReference Include="Elsa.Expressions.CSharp" />
-		<PackageReference Include="Elsa.Expressions.JavaScript" />
-		<PackageReference Include="Elsa.Expressions.Liquid" />
+		<PackageReference Include="Elsa.Expressions.JavaScript" VersionOverride="3.6.0-preview.4073" />
+		<PackageReference Include="Elsa.Expressions.Liquid" VersionOverride="3.6.0-preview.4073" />
 		<PackageReference Include="Elsa.Expressions.Python" />
 		<PackageReference Include="Elsa.Http" />
         <PackageReference Include="Elsa.Persistence.EFCore.Common" />
@@ -60,7 +62,10 @@
 	  <ProjectReference Include="..\..\modules\diagnostics\Elsa.OpenTelemetry\Elsa.OpenTelemetry.csproj" />
 	  <ProjectReference Include="..\..\modules\dropins\Elsa.DropIns\Elsa.DropIns.csproj" />
 	  <ProjectReference Include="..\..\modules\email\Elsa.Email\Elsa.Email.csproj" />
+	  <ProjectReference Include="..\..\modules\http\Elsa.Http.Webhooks.Api\Elsa.Http.Webhooks.Api.csproj" />
 	  <ProjectReference Include="..\..\modules\http\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
+	  <ProjectReference Include="..\..\modules\http\Elsa.Http.Webhooks.Persistence.EFCore\Elsa.Http.Webhooks.Persistence.EFCore.csproj" />
+	  <ProjectReference Include="..\..\modules\http\Elsa.Http.Webhooks.Persistence\Elsa.Http.Webhooks.Persistence.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper.Migrations\Elsa.Persistence.Dapper.Migrations.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper\Elsa.Persistence.Dapper.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.MongoDb\Elsa.Persistence.MongoDb.csproj" />

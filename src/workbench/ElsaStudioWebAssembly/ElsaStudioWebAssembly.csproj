@@ -20,6 +20,7 @@
     
     <ItemGroup>
       <ProjectReference Include="..\..\modules\agents\Elsa.Studio.Agents\Elsa.Studio.Agents.csproj" />
+            <ProjectReference Include="..\..\modules\http\Elsa.Studio.Http.Webhooks\Elsa.Studio.Http.Webhooks.csproj" />
     </ItemGroup>
 
 </Project>

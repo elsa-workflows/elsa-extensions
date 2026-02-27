@@ -37,17 +37,21 @@ This package provides:
 
 ## Migrations
 
+Migrations are **consumer-owned**. This package does not ship provider-specific migrations; application developers generate and maintain migrations in their own solution.
+
 ### Standalone Context (`WebhookPersistenceDbContext`)
+
+If you use `WebhookPersistenceDbContext` directly, create migrations in your own data/migrations project (not in this module package):
 
 ```bash
 dotnet ef migrations add InitWebhookSinks \
     --context WebhookPersistenceDbContext \
-    --project src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore \
+    --project <your-app-data-or-migrations-project> \
     --startup-project <your-host-startup-project>
 
 dotnet ef database update \
     --context WebhookPersistenceDbContext \
-    --project src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore \
+    --project <your-app-data-or-migrations-project> \
     --startup-project <your-host-startup-project>
 ```
 
@@ -66,5 +70,7 @@ dotnet ef database update \
 ```
 
 In composed mode, ensure your host `DbContext` calls `modelBuilder.ApplyWebhookPersistence()`.
+
+For workbench-style development hosts (such as `Elsa.Server.Web` and `Elsa.ServerAndStudio.Web`), follow the same rule: keep migrations in a consumer-owned project and use the host project only as `--startup-project`.
 
 The package owns provider registration so `Elsa.Http.Webhooks` remains free of direct dependencies on persistence providers.

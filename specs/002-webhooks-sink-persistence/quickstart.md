@@ -41,22 +41,23 @@ For EF Core, support two integration modes:
 
 ## 2a) EF Core migrations (standalone context mode)
 
-1. Ensure design-time setup can resolve `WebhookPersistenceDbContext`.
-2. Generate migration:
+1. Ensure design-time setup can resolve `WebhookPersistenceDbContext` from your application solution.
+2. Generate and maintain migrations in your own data/migrations project.
+3. Generate migration:
 
 ```bash
 dotnet ef migrations add InitWebhookSinks \
   --context WebhookPersistenceDbContext \
-  --project src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore \
+  --project <your-app-data-or-migrations-project> \
   --startup-project <your-host-startup-project>
 ```
 
-3. Apply migration:
+4. Apply migration:
 
 ```bash
 dotnet ef database update \
   --context WebhookPersistenceDbContext \
-  --project src/modules/http/Elsa.Http.Webhooks.Persistence.EFCore \
+  --project <your-app-data-or-migrations-project> \
   --startup-project <your-host-startup-project>
 ```
 
@@ -81,6 +82,8 @@ dotnet ef database update \
   --project <your-host-data-project> \
   --startup-project <your-host-startup-project>
 ```
+
+> Note: this feature does not require shipping generated migrations as provider packages. Consumers are responsible for generating and maintaining their own migrations.
 
 ## 3) Validate management flow
 

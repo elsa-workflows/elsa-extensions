@@ -6,6 +6,7 @@ using Elsa.Studio.Workflows.Extensions;
 using Elsa.Studio.Contracts;
 using Elsa.Studio.Core.BlazorWasm.Extensions;
 using Elsa.Studio.Extensions;
+using Elsa.Studio.Http.Webhooks.Extensions;
 using Elsa.Studio.Login.BlazorWasm.Extensions;
 using Elsa.Studio.Login.Extensions;
 using Elsa.Studio.Login.HttpMessageHandlers;
@@ -40,6 +41,7 @@ builder.Services.UseElsaIdentity();
 builder.Services.AddDashboardModule();
 builder.Services.AddWorkflowsModule();
 builder.Services.AddAgentsModule(backendApiConfig);
+builder.Services.AddWebhooksModule(backendApiConfig);
 
 // Build the application.
 var app = builder.Build();
