@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Elsa.Http.Webhooks.Persistence.EFCore;
 
 [UsedImplicitly]
-public class EFCoreWebhookSinkStore(WebhookPersistenceDbContext dbContext) : EFCoreWebhookSinkStore<WebhookPersistenceDbContext>(dbContext)
+public class EFCoreWebhookSinkStore(WebhooksDbContext dbContext) : EFCoreWebhookSinkStore<WebhooksDbContext>(dbContext)
 {
 }
 

@@ -6,12 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Elsa.Http.Webhooks.Persistence.EFCore;
 
 [UsedImplicitly]
-public class WebhookPersistenceDbContext : ElsaDbContextBase
+public class WebhooksDbContext(DbContextOptions<WebhooksDbContext> options, IServiceProvider serviceProvider) : ElsaDbContextBase(options, serviceProvider)
 {
-    public WebhookPersistenceDbContext(DbContextOptions<WebhookPersistenceDbContext> options, IServiceProvider serviceProvider) : base(options, serviceProvider)
-    {
-    }
-
     public DbSet<WebhookSinkRecord> WebhookSinks { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -8,7 +8,7 @@ using WebhooksCore;
 namespace Elsa.Http.Webhooks.Persistence.EFCore;
 
 [DependsOn(typeof(WebhookPersistenceFeature))]
-public class EFCoreWebhookPersistenceFeature(IModule module) : PersistenceFeatureBase<EFCoreWebhookPersistenceFeature, WebhookPersistenceDbContext>(module)
+public class EFCoreWebhookPersistenceFeature(IModule module) : PersistenceFeatureBase<EFCoreWebhookPersistenceFeature, WebhooksDbContext>(module)
 {
     public override void Configure()
     {

@@ -16,6 +16,7 @@
 		<PackageReference Include="Elsa.Expressions.Python" />
 		<PackageReference Include="Elsa.Http" />
         <PackageReference Include="Elsa.Persistence.EFCore.Common" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
         <PackageReference Include="Elsa.Persistence.EFCore.MySql" />
         <PackageReference Include="Elsa.Persistence.EFCore.Oracle" />
         <PackageReference Include="Elsa.Persistence.EFCore.PostgreSql" />

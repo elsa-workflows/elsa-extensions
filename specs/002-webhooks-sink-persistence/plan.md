@@ -84,7 +84,7 @@ test/modules/http/
 
 1. Add `Elsa.Http.Webhooks.Persistence.EFCore` package with concrete store implementation.
 2. Add `Elsa.Http.Webhooks.Persistence.MongoDb` package with concrete store implementation.
-3. Add EF Core model composition extensions so host DbContexts can apply webhook sink mappings without inheriting from `WebhookPersistenceDbContext`.
+3. Add EF Core model composition extensions so host DbContexts can apply webhook sink mappings without inheriting from `WebhooksDbContext`.
 4. Add EF Core registration overloads for standalone and composed host DbContext modes.
 5. Ensure parity of behavior between providers (validation, duplicate handling, not-found semantics).
 
@@ -92,7 +92,7 @@ test/modules/http/
 
 ### Phase 1a — EF Core Migration Ergonomics
 
-1. Provide design-time migration path for standalone `WebhookPersistenceDbContext`.
+1. Provide design-time migration path for standalone `WebhooksDbContext`.
 2. Document host-composed migration path where webhook mappings are applied to custom `DbContext`.
 3. Validate that migration commands produce expected schema in both modes.
 
