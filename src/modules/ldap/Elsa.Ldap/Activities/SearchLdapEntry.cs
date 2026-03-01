@@ -19,7 +19,7 @@ namespace Elsa.Ldap.Activities;
     Description = "Search for single entry in LDAP directory.",
     Kind = ActivityKind.Task)]
 [FlowNode(OutcomeFound, OutcomeNotFound)]
-public class SearchLdapEntry : CodeActivity<SearchResultEntry?>
+public class SearchLdapEntry : Activity<SearchResultEntry?>
 {
     private const string OutcomeFound = "Found";
     private const string OutcomeNotFound = "Not Found";

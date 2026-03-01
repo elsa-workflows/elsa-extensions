@@ -17,7 +17,7 @@ namespace Elsa.Ldap.Activities;
     DisplayName = "Search all LDAP entries",
     Description = "Search for all matching entries in LDAP directory.",
     Kind = ActivityKind.Task)]
-public class SearchLdapEntries : CodeActivity<IEnumerable<SearchResultEntry>>
+public class SearchLdapEntries : Activity<IEnumerable<SearchResultEntry>>
 {
     [Input(
         DisplayName = "Connection Name",

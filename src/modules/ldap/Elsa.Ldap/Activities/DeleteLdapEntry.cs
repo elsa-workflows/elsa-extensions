@@ -18,7 +18,7 @@ namespace Elsa.Ldap.Activities;
     DisplayName = "Delete LDAP entry",
     Description = "Deletes an entry from an LDAP directory.")]
 [FlowNode(OutcomeSuccess, OutcomeFailure)]
-public class DeleteLdapEntry : CodeActivity<bool>
+public class DeleteLdapEntry : Activity<bool>
 {
     private const string OutcomeSuccess = "Success";
     private const string OutcomeFailure = "Failure";

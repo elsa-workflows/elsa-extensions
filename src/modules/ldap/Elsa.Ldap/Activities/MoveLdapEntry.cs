@@ -18,7 +18,7 @@ namespace Elsa.Ldap.Activities;
     DisplayName = "Move LDAP entry",
     Description = "Moves an existing entry in an LDAP directory by modifying its distinguished name.")]
 [FlowNode(OutcomeSuccess, OutcomeFailure)]
-public class MoveLdapEntry : CodeActivity<bool>
+public class MoveLdapEntry : Activity<bool>
 {
     private const string OutcomeSuccess = "Success";
     private const string OutcomeFailure = "Failure";

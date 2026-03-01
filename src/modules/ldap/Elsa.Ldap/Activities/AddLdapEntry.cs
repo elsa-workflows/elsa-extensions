@@ -18,7 +18,7 @@ namespace Elsa.Ldap.Activities;
     DisplayName = "Add LDAP entry",
     Description = "Adds a new entry to an LDAP directory.")]
 [FlowNode(OutcomeSuccess, OutcomeFailure)]
-public class AddLdapEntry : CodeActivity<bool>
+public class AddLdapEntry : Activity<bool>
 {
     private const string OutcomeSuccess= "Success";
     private const string OutcomeFailure = "Failure";
