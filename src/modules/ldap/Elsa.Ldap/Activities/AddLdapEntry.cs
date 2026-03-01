@@ -2,6 +2,7 @@
 using Elsa.Ldap.Contracts;
 using Elsa.Ldap.Extensions;
 using Elsa.Workflows;
+using Elsa.Workflows.Activities.Flowchart.Attributes;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
 using Microsoft.Extensions.Logging;
@@ -16,8 +17,12 @@ namespace Elsa.Ldap.Activities;
     Category = "LDAP",
     DisplayName = "Add LDAP entry",
     Description = "Adds a new entry to an LDAP directory.")]
+[FlowNode(OutcomeSuccess, OutcomeFailure)]
 public class AddLdapEntry : CodeActivity<bool>
 {
+    private const string OutcomeSuccess= "Success";
+    private const string OutcomeFailure = "Failure";
+
     [Input(
         DisplayName = "Connection Name",
         Description = "The name of the LDAP connection to use, as configured in the module options. Defaults to 'Default'.")]
@@ -53,10 +58,14 @@ public class AddLdapEntry : CodeActivity<bool>
             logger.LogError("{Status} - LDAP request (add entry) failed: {Message}", response.ResultCode, response.ErrorMessage);
         }
 
-        context.Set(Result, response.ResultCode.IsSuccess());
+        var result = response.ResultCode.IsSuccess();
+
+        context.Set(Result, result);
 
         context.JournalData.Add("ResultCode", response.ResultCode);
         context.JournalData.Add("AddedEntry", entryDn);
         context.JournalData.Add("AttributesCount", request.Attributes.Count);
+
+        await context.CompleteActivityWithOutcomesAsync(result ? OutcomeSuccess : OutcomeFailure);
     }
 }

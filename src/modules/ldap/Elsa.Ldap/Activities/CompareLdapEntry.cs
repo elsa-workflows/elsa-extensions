@@ -2,6 +2,7 @@
 using Elsa.Ldap.Contracts;
 using Elsa.Ldap.Extensions;
 using Elsa.Workflows;
+using Elsa.Workflows.Activities.Flowchart.Attributes;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
 using Microsoft.Extensions.Logging;
@@ -16,8 +17,12 @@ namespace Elsa.Ldap.Activities;
     Category = "LDAP",
     DisplayName = "Compare LDAP entry",
     Description = "Compares the specified attributes of an existing entry in an LDAP directory.")]
-public class CompareLdapEntry : CodeActivity<bool>
+[FlowNode(OutcomeTrue, OutcomeFalse)]
+public class CompareLdapEntry : Activity<bool>
 {
+    private const string OutcomeTrue = "True";
+    private const string OutcomeFalse = "False";
+
     [Input(
         DisplayName = "Connection Name",
         Description = "The name of the LDAP connection to use, as configured in the module options. Defaults to 'Default'.")]
@@ -53,9 +58,13 @@ public class CompareLdapEntry : CodeActivity<bool>
             logger.LogError("{Status} - LDAP request (compare entry) failed: {Message}", response.ResultCode, response.ErrorMessage);
         }
 
-        context.Set(Result, response.ResultCode == ResultCode.CompareTrue);
+        var result = response.ResultCode == ResultCode.CompareTrue;
+
+        context.Set(Result, result);
 
         context.JournalData.Add("ResultCode", response.ResultCode);
         context.JournalData.Add("ComparedEntry", entryDn);
+
+        await context.CompleteActivityWithOutcomesAsync(result ? OutcomeTrue : OutcomeFalse);
     }
 }

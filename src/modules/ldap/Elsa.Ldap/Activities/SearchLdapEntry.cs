@@ -2,6 +2,7 @@
 using Elsa.Ldap.Contracts;
 using Elsa.Ldap.Extensions;
 using Elsa.Workflows;
+using Elsa.Workflows.Activities.Flowchart.Attributes;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
 using Microsoft.Extensions.Logging;
@@ -17,8 +18,12 @@ namespace Elsa.Ldap.Activities;
     DisplayName = "Search single LDAP entry",
     Description = "Search for single entry in LDAP directory.",
     Kind = ActivityKind.Task)]
+[FlowNode(OutcomeFound, OutcomeNotFound)]
 public class SearchLdapEntry : CodeActivity<SearchResultEntry?>
 {
+    private const string OutcomeFound = "Found";
+    private const string OutcomeNotFound = "Not Found";
+
     [Input(
         DisplayName = "Connection Name",
         Description = "The name of the LDAP connection to use, as configured in the module options. Defaults to 'Default'.")]
@@ -82,5 +87,7 @@ public class SearchLdapEntry : CodeActivity<SearchResultEntry?>
 
         context.JournalData.Add("ResultCode", response.ResultCode);
         context.JournalData.Add("MatchFound", entry is not null);
+
+        await context.CompleteActivityWithOutcomesAsync(entry is not null ? OutcomeFound : OutcomeNotFound);
     }
 }

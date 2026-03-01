@@ -38,6 +38,8 @@ public class CompareLdapEntryTests
 
         // Assert
         Assert.Equal(ActivityStatus.Completed, context.Status);
+        Assert.True(context.HasOutcome("True"));
+        Assert.False(context.HasOutcome("False"));
         Assert.True(context.GetActivityOutput(() => activity.Result) as bool?);
         Assert.Contains(context.JournalData, x => x.Key == "ResultCode" && (ResultCode)x.Value == ResultCode.CompareTrue);
         Assert.Contains(context.JournalData, x => x.Key == "ComparedEntry" && (string)x.Value == "cn=test,dc=example,dc=org");
@@ -80,6 +82,8 @@ public class CompareLdapEntryTests
 
         // Assert
         Assert.Equal(ActivityStatus.Completed, context.Status);
+        Assert.False(context.HasOutcome("True"));
+        Assert.True(context.HasOutcome("False"));
         Assert.False(context.GetActivityOutput(() => activity.Result) as bool?);
     }
 }

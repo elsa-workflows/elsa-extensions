@@ -39,6 +39,8 @@ public class MoveLdapEntryTests
 
         // Assert
         Assert.Equal(ActivityStatus.Completed, context.Status);
+        Assert.True(context.HasOutcome("Success"));
+        Assert.False(context.HasOutcome("Failure"));
         Assert.True(context.GetActivityOutput(() => activity.Result) as bool?);
         Assert.Contains(context.JournalData, x => x.Key == "ResultCode" && (ResultCode)x.Value == ResultCode.Success);
         Assert.Contains(context.JournalData, x => x.Key == "ModifiedEntry" && (string)x.Value == "cn=test,dc=example,dc=org");
@@ -82,6 +84,8 @@ public class MoveLdapEntryTests
 
         // Assert
         Assert.Equal(ActivityStatus.Completed, context.Status);
+        Assert.False(context.HasOutcome("Success"));
+        Assert.True(context.HasOutcome("Failure"));
         Assert.False(context.GetActivityOutput(() => activity.Result) as bool?);
     }
 }
