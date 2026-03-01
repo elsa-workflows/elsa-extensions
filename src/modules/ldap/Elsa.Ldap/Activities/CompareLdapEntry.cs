@@ -1,5 +1,4 @@
 ﻿using System.DirectoryServices.Protocols;
-using Elsa.Extensions;
 using Elsa.Ldap.Contracts;
 using Elsa.Ldap.Extensions;
 using Elsa.Workflows;
@@ -49,14 +48,12 @@ public class CompareLdapEntry : CodeActivity<bool>
 
         var response = await connection.SendRequestAsync(request);
 
-        if (!string.IsNullOrWhiteSpace(response.ErrorMessage))
+        if (response.ResultCode.IsError())
         {
             logger.LogError("{Status} - LDAP request (compare entry) failed: {Message}", response.ResultCode, response.ErrorMessage);
         }
 
-        var result = response.ResultCode == ResultCode.CompareTrue;
-
-        Result.Set(context, result);
+        context.Set(Result, response.ResultCode == ResultCode.CompareTrue);
 
         context.JournalData.Add("ResultCode", response.ResultCode);
         context.JournalData.Add("ComparedEntry", entryDn);

@@ -1,6 +1,6 @@
 ﻿using System.DirectoryServices.Protocols;
-using Elsa.Extensions;
 using Elsa.Ldap.Contracts;
+using Elsa.Ldap.Extensions;
 using Elsa.Workflows;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
@@ -42,14 +42,12 @@ public class DeleteLdapEntry : CodeActivity<bool>
 
         var response = await connection.SendRequestAsync(request);
 
-        if (!string.IsNullOrWhiteSpace(response.ErrorMessage))
+        if (response.ResultCode.IsError())
         {
             logger.LogError("{Status} - LDAP request (delete entry) failed: {Message}", response.ResultCode, response.ErrorMessage);
         }
 
-        var result = response.ResultCode == ResultCode.Success;
-
-        Result.Set(context, result);
+        context.Set(Result, response.ResultCode.IsSuccess());
 
         context.JournalData.Add("ResultCode", response.ResultCode);
         context.JournalData.Add("DeletedEntry", entryDn);

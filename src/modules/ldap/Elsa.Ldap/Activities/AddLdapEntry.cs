@@ -1,10 +1,10 @@
 ﻿using System.DirectoryServices.Protocols;
-using Elsa.Extensions;
 using Elsa.Ldap.Contracts;
 using Elsa.Ldap.Extensions;
 using Elsa.Workflows;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Elsa.Ldap.Activities;
 
@@ -35,6 +35,7 @@ public class AddLdapEntry : CodeActivity<bool>
 
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
+        var logger = context.GetRequiredService<ILogger<AddLdapEntry>>();
         var ldapConnectionFactory = context.GetRequiredService<ILdapConnectionFactory>();
 
         var connectionName = context.Get(ConnectionName);
@@ -46,9 +47,13 @@ public class AddLdapEntry : CodeActivity<bool>
         var request = new AddRequest(entryDn, attributes.ToArray());
 
         var response = await connection.SendRequestAsync(request);
-        var result = response.ResultCode == ResultCode.Success;
 
-        Result.Set(context, result);
+        if (response.ResultCode.IsError())
+        {
+            logger.LogError("{Status} - LDAP request (add entry) failed: {Message}", response.ResultCode, response.ErrorMessage);
+        }
+
+        context.Set(Result, response.ResultCode.IsSuccess());
 
         context.JournalData.Add("ResultCode", response.ResultCode);
         context.JournalData.Add("AddedEntry", entryDn);

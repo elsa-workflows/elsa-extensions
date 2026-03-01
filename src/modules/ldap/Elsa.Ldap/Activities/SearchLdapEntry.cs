@@ -68,7 +68,7 @@ public class SearchLdapEntry : CodeActivity<SearchResultEntry?>
 
         var response = await connection.SendRequestAsync(request);
 
-        if (!string.IsNullOrWhiteSpace(response.ErrorMessage))
+        if (response.ResultCode.IsError())
         {
             logger.LogError("{Status} - LDAP request (search entry) failed: {Message}", response.ResultCode, response.ErrorMessage);
         }

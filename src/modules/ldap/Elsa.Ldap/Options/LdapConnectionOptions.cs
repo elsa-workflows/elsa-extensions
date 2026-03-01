@@ -1,4 +1,6 @@
-﻿namespace Elsa.Ldap.Options;
+﻿using System.DirectoryServices.Protocols;
+
+namespace Elsa.Ldap.Options;
 
 /// <summary>
 /// Configuration options for a single named LDAP connection.
@@ -29,4 +31,11 @@ public class LdapConnectionOptions
     /// The password for the bind DN.
     /// </summary>
     public string? BindPassword { get; set; }
+
+    /// <summary>
+    /// The referral chasing behavior for the connection.
+    /// Defaults to <see cref="ReferralChasingOptions.None"/>.
+    /// See <see cref="ReferralChasingOptions"/> for details.
+    /// </summary>
+    public ReferralChasingOptions ReferralChasing { get; set; } = ReferralChasingOptions.None;
 }

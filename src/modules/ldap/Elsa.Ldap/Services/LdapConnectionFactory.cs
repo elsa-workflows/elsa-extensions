@@ -23,7 +23,11 @@ internal class LdapConnectionFactory : ILdapConnectionFactory
         var connection = new LdapConnection(identifier)
         {
             AutoBind = true,
-            SessionOptions = { SecureSocketLayer = connectionOptions.UseSsl },
+            SessionOptions =
+            {
+                ReferralChasing = connectionOptions.ReferralChasing,
+                SecureSocketLayer = connectionOptions.UseSsl,
+            },
         };
 
         if (connectionOptions.BindDn is not null)
