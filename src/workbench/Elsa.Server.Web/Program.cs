@@ -10,6 +10,7 @@ using Elsa.Expressions.Helpers;
 using Elsa.Extensions;
 using Elsa.Features.Services;
 using Elsa.Identity.Multitenancy;
+using Elsa.Ldap.Extensions;
 using Elsa.OpenTelemetry.Middleware;
 using Elsa.Persistence.Dapper.Extensions;
 using Elsa.Persistence.Dapper.Contracts;
@@ -441,6 +442,20 @@ services
                 };
             })
             .UseEmail(email => email.ConfigureOptions = options => configuration.GetSection("Smtp").Bind(options))
+            .UseLdap(ldap =>
+            {
+                ldap.ConfigureOptions = options =>
+                {
+                    options.AddDefaultConnection(new Elsa.Ldap.Options.LdapConnectionOptions
+                    {
+                        BindDn = configuration.GetValue<string>("Ldap:BindDn"),
+                        BindPassword = configuration.GetValue<string>("Ldap:BindPassword"),
+                        Host = configuration.GetValue<string>("Ldap:Host")!,
+                        Port = configuration.GetValue<int>("Ldap:Port"),
+                        UseSsl = configuration.GetValue<bool>("Ldap:UseSsl"),
+                    });
+                };
+            })
             .UseAlterations(alterations =>
             {
                 if (persistenceProvider == PersistenceProvider.MongoDb)
