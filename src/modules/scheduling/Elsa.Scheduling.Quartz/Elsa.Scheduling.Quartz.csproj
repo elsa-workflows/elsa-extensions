@@ -20,11 +20,13 @@
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="Elsa.Resilience" />
         <PackageReference Include="Elsa.Scheduling"/>
         <PackageReference Include="Elsa.Resilience" />
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Resilience\Elsa.Resilience.csproj"/>
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Scheduling\Elsa.Scheduling.csproj"/>
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Resilience\Elsa.Resilience.csproj"/>
     </ItemGroup>
