@@ -11,7 +11,7 @@ public class GenerateFakeProductsTests
     public async Task Execute_WithDefaultCount_Generates10Records()
     {
         // Arrange
-        var result = new Output<ICollection<FakeProduct>>();
+        var result = new Output<FakeProduct[]>();
         var activity = new GenerateFakeProducts { Result = result };
 
         // Act
@@ -20,7 +20,7 @@ public class GenerateFakeProductsTests
         // Assert
         var products = context.Get(result);
         Assert.NotNull(products);
-        Assert.Equal(10, products.Count);
+        Assert.Equal(10, products.Length);
     }
 
     [Theory]
@@ -30,7 +30,7 @@ public class GenerateFakeProductsTests
     public async Task Execute_WithCustomCount_GeneratesExpectedCount(int count)
     {
         // Arrange
-        var result = new Output<ICollection<FakeProduct>>();
+        var result = new Output<FakeProduct[]>();
         var activity = new GenerateFakeProducts { Count = new Input<int>(count), Result = result };
 
         // Act
@@ -39,7 +39,7 @@ public class GenerateFakeProductsTests
         // Assert
         var products = context.Get(result);
         Assert.NotNull(products);
-        Assert.Equal(count, products.Count);
+        Assert.Equal(count, products.Length);
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class GenerateFakeProductsTests
         const int count = 5;
 
         // Arrange
-        var result1 = new Output<ICollection<FakeProduct>>();
+        var result1 = new Output<FakeProduct[]>();
         var activity1 = new GenerateFakeProducts
         {
             Count = new Input<int>(count),
@@ -57,7 +57,7 @@ public class GenerateFakeProductsTests
             Result = result1,
         };
 
-        var result2 = new Output<ICollection<FakeProduct>>();
+        var result2 = new Output<FakeProduct[]>();
         var activity2 = new GenerateFakeProducts
         {
             Count = new Input<int>(count),
@@ -86,7 +86,7 @@ public class GenerateFakeProductsTests
     public async Task Execute_GeneratesProducts_WithAllPropertiesPopulated()
     {
         // Arrange
-        var result = new Output<ICollection<FakeProduct>>();
+        var result = new Output<FakeProduct[]>();
         var activity = new GenerateFakeProducts
         {
             Count = new Input<int>(5),

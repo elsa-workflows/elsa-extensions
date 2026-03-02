@@ -10,7 +10,7 @@ namespace Elsa.FakeData.Activities;
 /// Provides a base implementation for activities that generate collections of fake data
 /// using the <see href="https://github.com/bchavez/Bogus">Bogus</see> library.
 /// </summary>
-public abstract class GenerateFakeDataActivity<T> : CodeActivity<ICollection<T>> where T : class
+public abstract class GenerateFakeDataActivity<T> : CodeActivity<T[]> where T : class
 {
     /// <inheritdoc />
     protected GenerateFakeDataActivity(string? source = null, int? line = null) : base(source, line)
@@ -54,7 +54,7 @@ public abstract class GenerateFakeDataActivity<T> : CodeActivity<ICollection<T>>
         var faker = CreateFaker(locale, seed);
         var items = faker.Generate(count);
 
-        context.Set(Result, items);
+        context.Set(Result, items.ToArray());
 
         return ValueTask.CompletedTask;
     }

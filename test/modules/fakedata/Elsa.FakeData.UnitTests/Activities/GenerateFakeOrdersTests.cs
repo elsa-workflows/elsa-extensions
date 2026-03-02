@@ -11,7 +11,7 @@ public class GenerateFakeOrdersTests
     public async Task Execute_WithDefaultCount_Generates10Records()
     {
         // Arrange
-        var result = new Output<ICollection<FakeOrder>>();
+        var result = new Output<FakeOrder[]>();
         var activity = new GenerateFakeOrders { Result = result };
 
         // Act
@@ -20,7 +20,7 @@ public class GenerateFakeOrdersTests
         // Assert
         var orders = context.Get(result);
         Assert.NotNull(orders);
-        Assert.Equal(10, orders.Count);
+        Assert.Equal(10, orders.Length);
     }
 
     [Theory]
@@ -30,7 +30,7 @@ public class GenerateFakeOrdersTests
     public async Task Execute_WithCustomCount_GeneratesExpectedCount(int count)
     {
         // Arrange
-        var result = new Output<ICollection<FakeOrder>>();
+        var result = new Output<FakeOrder[]>();
         var activity = new GenerateFakeOrders { Count = new Input<int>(count), Result = result };
 
         // Act
@@ -39,7 +39,7 @@ public class GenerateFakeOrdersTests
         // Assert
         var orders = context.Get(result);
         Assert.NotNull(orders);
-        Assert.Equal(count, orders.Count);
+        Assert.Equal(count, orders.Length);
     }
 
     [Fact]
@@ -49,15 +49,15 @@ public class GenerateFakeOrdersTests
         const int count = 5;
 
         // Arrange
-        var result1 = new Output<ICollection<FakeOrder>>();
+        var result1 = new Output<FakeOrder[]>();
         var activity1 = new GenerateFakeOrders
         {
             Count = new Input<int>(count),
             Seed = new Input<int?>(seed),
             Result = result1,
         };
-        
-        var result2 = new Output<ICollection<FakeOrder>>();
+
+        var result2 = new Output<FakeOrder[]>();
         var activity2 = new GenerateFakeOrders
         {
             Count = new Input<int>(count),
@@ -86,7 +86,7 @@ public class GenerateFakeOrdersTests
     public async Task Execute_GeneratesOrders_WithAllPropertiesPopulated()
     {
         // Arrange
-        var result = new Output<ICollection<FakeOrder>>();
+        var result = new Output<FakeOrder[]>();
         var activity = new GenerateFakeOrders
         { 
             Count = new Input<int>(5),
