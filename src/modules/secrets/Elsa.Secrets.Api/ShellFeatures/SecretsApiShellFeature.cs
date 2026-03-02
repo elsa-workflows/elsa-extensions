@@ -16,7 +16,7 @@ public class SecretsApiShellFeature : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddFastEndpointsAssembly<SecretsApiShellFeature>();
+        throw new NotImplementedException();
     }
 }
 

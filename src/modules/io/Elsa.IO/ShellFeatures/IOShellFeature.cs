@@ -15,7 +15,6 @@ public class IOShellFeature : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddScoped<IFileSystem, DefaultFileSystem>();
+        throw new NotImplementedException();
     }
 }
-

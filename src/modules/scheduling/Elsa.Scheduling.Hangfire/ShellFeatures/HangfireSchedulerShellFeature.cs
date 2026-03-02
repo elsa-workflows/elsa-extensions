@@ -16,8 +16,7 @@ public class HangfireSchedulerShellFeature : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton<HangfireWorkflowScheduler>();
-        services.AddSingleton<IActivityDescriptorModifier, CronActivityDescriptorModifier>();
+        throw new NotImplementedException();
     }
 }
 

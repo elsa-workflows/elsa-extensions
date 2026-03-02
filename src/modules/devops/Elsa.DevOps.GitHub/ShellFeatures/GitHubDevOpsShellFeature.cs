@@ -15,7 +15,7 @@ public class GitHubDevOpsShellFeature : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddScoped<GitHubClient>();
+        throw new NotImplementedException();
     }
 }
 

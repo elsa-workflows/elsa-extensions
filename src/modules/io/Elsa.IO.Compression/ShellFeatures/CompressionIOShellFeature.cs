@@ -16,7 +16,7 @@ public class CompressionIOShellFeature : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddScoped<ICompressionService, DefaultCompressionService>();
+        throw new NotImplementedException();
     }
 }
 

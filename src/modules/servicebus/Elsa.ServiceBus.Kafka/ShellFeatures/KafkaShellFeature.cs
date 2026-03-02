@@ -13,13 +13,16 @@ namespace Elsa.ServiceBus.Kafka.ShellFeatures;
 [UsedImplicitly]
 public class KafkaShellFeature : IShellFeature
 {
-    public string BootstrapServers { get; set; } = "localhost:9092";
+    public string WorkflowInstanceIdHeaderKey { get; set; } = "localhost:9092";
 
     public void ConfigureServices(IServiceCollection services)
     {
         // Kafka configuration setup
-        services.AddOptions<Elsa.ServiceBus.Kafka.Options.KafkaOptions>()
-            .Configure(options => options.BootstrapServers = BootstrapServers);
+        services.AddOptions<KafkaOptions>()
+            .Configure(options =>
+            {
+                options.WorkflowInstanceIdHeaderKey = WorkflowInstanceIdHeaderKey;
+            });
     }
 }
 

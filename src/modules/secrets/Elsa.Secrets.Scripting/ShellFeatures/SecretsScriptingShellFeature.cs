@@ -16,7 +16,7 @@ public class SecretsScriptingShellFeature : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddScriptingSupport<SecretsScriptingContext>();
+        throw new NotImplementedException();
     }
 }
 

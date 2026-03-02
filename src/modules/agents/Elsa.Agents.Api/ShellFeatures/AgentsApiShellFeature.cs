@@ -1,3 +1,4 @@
+using CShells.FastEndpoints.Features;
 using CShells.Features;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,11 +13,10 @@ namespace Elsa.Agents.Api.ShellFeatures;
     Description = "Exposes API endpoints for managing agents",
     DependsOn = ["AgentsCore"])]
 [UsedImplicitly]
-public class AgentsApiShellFeature : IShellFeature
+public class AgentsApiShellFeature : IFastEndpointsShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddFastEndpointsAssembly<AgentsApiShellFeature>();
     }
 }
 
