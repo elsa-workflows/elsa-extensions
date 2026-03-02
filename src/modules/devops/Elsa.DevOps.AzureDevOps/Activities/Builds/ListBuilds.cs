@@ -66,11 +66,9 @@ public class ListBuilds : AzureDevOpsActivity
         var definitions = definitionId.HasValue ? new[] { definitionId.Value } : null;
         var builds = await buildClient.GetBuildsAsync(
             project,
-            definitions,
-            null, null, null, null, null, null, null, null, null, null,
-            top,
-            null, null, null, null, null, null, null, null, null,
-            context.CancellationToken);
+            definitions: definitions,
+            top: top,
+            cancellationToken: context.CancellationToken);
         context.Set(Builds, builds ?? (IEnumerable<Build>)Array.Empty<Build>());
         await context.CompleteActivityAsync();
     }
