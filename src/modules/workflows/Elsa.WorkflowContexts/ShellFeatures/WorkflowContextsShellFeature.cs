@@ -1,4 +1,6 @@
+using CShells.FastEndpoints.Features;
 using CShells.Features;
+using Elsa.Workflows.Management.Extensions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,11 +13,11 @@ namespace Elsa.WorkflowContexts.ShellFeatures;
     DisplayName = "Workflow Contexts",
     Description = "Provides workflow context management functionality")]
 [UsedImplicitly]
-public class WorkflowContextsShellFeature : IShellFeature
+public class WorkflowContextsShellFeature : IFastEndpointsShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddScoped<IWorkflowContextService, DefaultWorkflowContextService>();
+        services.AddActivitiesFrom<WorkflowContextsShellFeature>();
     }
 }
 

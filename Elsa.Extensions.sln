@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution", "solution", "{DE
 		NuGet.Config = NuGet.Config
 		README-TEMPLATE.md = README-TEMPLATE.md
 		README.md = README.md
+		Directory.Build.targets = Directory.Build.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{A99FA26E-2098-403A-BD04-6BBCFBE3AC7D}"

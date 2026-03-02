@@ -16,7 +16,7 @@ public class SecretManagementShellFeature : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddScoped<ISecretStore, DefaultSecretStore>();
+        throw new NotImplementedException();
     }
 }
 

@@ -16,7 +16,7 @@ public class ProtoActorRuntimeShellFeature : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddProtoActor();
+        throw new NotImplementedException();
     }
 }
 

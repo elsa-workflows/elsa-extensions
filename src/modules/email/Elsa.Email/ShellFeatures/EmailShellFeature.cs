@@ -1,5 +1,5 @@
 using CShells.Features;
-using Elsa.Email.Extensions;
+using Elsa.Email.Contracts;
 using Elsa.Email.Services;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;

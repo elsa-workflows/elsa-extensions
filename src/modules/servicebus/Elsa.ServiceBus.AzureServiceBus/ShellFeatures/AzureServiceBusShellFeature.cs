@@ -13,13 +13,13 @@ namespace Elsa.ServiceBus.AzureServiceBus.ShellFeatures;
 [UsedImplicitly]
 public class AzureServiceBusShellFeature : IShellFeature
 {
-    public string ConnectionString { get; set; } = string.Empty;
+    public string ConnectionStringOrName { get; set; } = string.Empty;
 
     public void ConfigureServices(IServiceCollection services)
     {
         // Service registration for Azure Service Bus
-        services.AddOptions<Elsa.ServiceBus.AzureServiceBus.Options.AzureServiceBusOptions>()
-            .Configure(options => options.ConnectionString = ConnectionString);
+        services.AddOptions<Options.AzureServiceBusOptions>()
+            .Configure(options => options.ConnectionStringOrName = ConnectionStringOrName);
     }
 }
 

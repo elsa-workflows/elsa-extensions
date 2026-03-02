@@ -75,6 +75,7 @@ public class MongoActivityExecutionLogStore(MongoDbStore<ActivityExecutionRecord
         return mongoDbStore.DeleteWhereAsync<string>(queryable => Filter(queryable, filter), x => x.Id, cancellationToken);
     }
 
+
     private IQueryable<ActivityExecutionRecord> Filter(IQueryable<ActivityExecutionRecord> queryable, ActivityExecutionRecordFilter filter)
     {
         return filter.Apply(queryable);

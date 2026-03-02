@@ -141,7 +141,13 @@
         <PackageVersion Include="Confluent.SchemaRegistry.Serdes.Avro" Version="2.12.0"/>
         <PackageVersion Include="coverlet.collector" Version="6.0.4"/>
         <PackageVersion Include="Cronos" Version="0.11.1"/>
-        <PackageVersion Include="CShells.Abstractions" Version="0.0.9"/>
+        <PackageVersion Include="CShells" Version="0.0.11"/>
+        <PackageVersion Include="CShells.Abstractions" Version="0.0.11"/>
+        <PackageVersion Include="CShells.AspNetCore" Version="0.0.11"/>
+        <PackageVersion Include="CShells.AspNetCore.Abstractions" Version="0.0.11"/>
+        <PackageVersion Include="CShells.FastEndpoints" Version="0.0.11"/>
+        <PackageVersion Include="CShells.FastEndpoints.Abstractions" Version="0.0.11"/>
+        <PackageVersion Include="CShells.Providers.FluentStorage" Version="0.0.11"/>
         <PackageVersion Include="CsvHelper" Version="33.1.0"/>
         <PackageVersion Include="Dapper" Version="2.1.66"/>
         <PackageVersion Include="DistributedLock" Version="2.7.1"/>

@@ -22,7 +22,7 @@ public class HangfireShellFeature : IShellFeature
 
     public void ConfigureServices(IServiceCollection services)
     {
-        var jobStorage = UseMemoryStorage ? new MemoryStorage() : null ?? new MemoryStorage();
+        var jobStorage = UseMemoryStorage ? new() : null ?? new MemoryStorage();
 
         services.AddHangfire(cfg =>
         {
@@ -35,7 +35,7 @@ public class HangfireShellFeature : IShellFeature
         {
             options.WorkerCount = WorkerCount;
             options.SchedulePollingInterval = TimeSpan.FromSeconds(SchedulePollingIntervalSeconds);
-        }, jobStorage);
+        });
     }
 }
 

@@ -1,5 +1,7 @@
 using CShells.Features;
 using Elsa.Extensions;
+using Elsa.Storage.Files.Services;
+using FluentStorage;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,12 +16,7 @@ namespace Elsa.Storage.Files.ShellFeatures;
 [UsedImplicitly]
 public class FileStorageShellFeature : IShellFeature
 {
-    private readonly string _storageDirectory;
-
-    public FileStorageShellFeature()
-    {
-        _storageDirectory = GetDefaultStorageDirectory();
-    }
+    private readonly string _storageDirectory = GetDefaultStorageDirectory();
 
     public void ConfigureServices(IServiceCollection services)
     {
