@@ -19,9 +19,13 @@ internal class RegisterJobsTask(ISchedulerFactory schedulerFactoryFactory, IJobK
 {
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        var scheduler = await schedulerFactoryFactory.GetScheduler(cancellationToken);
-        await CreateJobAsync<RunWorkflowJob>(scheduler, cancellationToken);
-        await CreateJobAsync<ResumeWorkflowJob>(scheduler, cancellationToken);
+        _ = Task.Delay(1000, cancellationToken).ContinueWith(async t =>
+        {
+            var scheduler = await schedulerFactoryFactory.GetScheduler(cancellationToken);
+            await CreateJobAsync<RunWorkflowJob>(scheduler, cancellationToken);
+            await CreateJobAsync<ResumeWorkflowJob>(scheduler, cancellationToken);
+        }, cancellationToken);
+        
     }
     
     private async Task CreateJobAsync<TJobType>(QuartzIScheduler scheduler, CancellationToken cancellationToken) where TJobType : IJob

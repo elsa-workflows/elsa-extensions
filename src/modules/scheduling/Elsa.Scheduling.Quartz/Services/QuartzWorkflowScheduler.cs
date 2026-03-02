@@ -125,6 +125,48 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             // We can safely ignore this and continue, as the trigger is already scheduled.
             logger.LogDebug("Trigger {TriggerKey} already exists, skipping scheduling. This is expected in clustered deployments during concurrent operations", trigger.Key);
         }
+        catch (JobPersistenceException ex) when (ex.Message.Contains("does not exist"))
+        {
+            // The job referenced by the trigger doesn't exist yet. This can happen during startup in clustered mode
+            // when triggers are being scheduled before the RegisterJobsTask has completed on all instances.
+            // Ensure the job exists and retry scheduling the trigger.
+            logger.LogDebug("Job {JobKey} does not exist yet, ensuring it is created before scheduling trigger {TriggerKey}", trigger.JobKey, trigger.Key);
+            await EnsureJobExistsAsync(scheduler, trigger.JobKey, cancellationToken);
+            await scheduler.ScheduleJob(trigger, cancellationToken);
+        }
+    }
+
+    private async Task EnsureJobExistsAsync(QuartzIScheduler scheduler, JobKey jobKey, CancellationToken cancellationToken)
+    {
+        // Check if job already exists
+        var jobExists = await scheduler.CheckExists(jobKey, cancellationToken);
+        if (jobExists)
+            return;
+
+        // Determine the job type based on the job key
+        var jobType = jobKey.Name switch
+        {
+            var name when name == jobKeyProvider.GetJobKey<RunWorkflowJob>().Name => typeof(RunWorkflowJob),
+            var name when name == jobKeyProvider.GetJobKey<ResumeWorkflowJob>().Name => typeof(ResumeWorkflowJob),
+            _ => throw new InvalidOperationException($"Unknown job type for job key: {jobKey}")
+        };
+
+        var job = JobBuilder.Create(jobType)
+            .WithIdentity(jobKey)
+            .StoreDurably()
+            .Build();
+
+        try
+        {
+            const bool replaceExisting = false;
+            await scheduler.AddJob(job, replaceExisting, cancellationToken);
+            logger.LogDebug("Created missing job {JobKey}", jobKey);
+        }
+        catch (ObjectAlreadyExistsException)
+        {
+            // Another instance created it between our check and add attempt - this is fine
+            logger.LogDebug("Job {JobKey} was created by another instance", jobKey);
+        }
     }
 
     private JobDataMap CreateJobDataMap(ScheduleNewWorkflowInstanceRequest request)

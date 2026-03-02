@@ -401,3 +401,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+src/workbench/Elsa.Server.Web/App_Data/

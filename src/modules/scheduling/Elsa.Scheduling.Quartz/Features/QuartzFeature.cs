@@ -93,7 +93,7 @@ public class QuartzFeature : FeatureBase
     public override void ConfigureHostedServices()
     {
         var type = Type.GetType("Quartz.QuartzHostedService, Quartz.Extensions.Hosting")!;
-        Module.ConfigureHostedService(type);
+        Module.ConfigureHostedService(type, -100);
 
         if (ConfigureQuartzHostedService != null)
             Services.Configure(ConfigureQuartzHostedService);
