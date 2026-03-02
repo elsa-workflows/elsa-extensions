@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\modules\devops\Elsa.DevOps.AzureDevOps\Elsa.DevOps.AzureDevOps.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Xunit.SkippableFact" />
+    </ItemGroup>
+
+</Project>

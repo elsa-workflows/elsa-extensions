@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Elsa.DevOps.AzureDevOps.UnitTests" />
+    </ItemGroup>
+
     <PropertyGroup>
 	    <Description>
 		    Provides integration with Azure DevOps.
