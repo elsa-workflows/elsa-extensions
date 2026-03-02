@@ -85,5 +85,6 @@ public class ListPullRequests : AzureDevOpsActivity
             searchCriteria.Status = status;
         var list = await gitClient.GetPullRequestsAsync(project, repositoryName, searchCriteria, null, skip, top, null, context.CancellationToken);
         context.Set(PullRequests, list ?? (IEnumerable<GitPullRequest>)Array.Empty<GitPullRequest>());
+        await context.CompleteActivityAsync();
     }
 }

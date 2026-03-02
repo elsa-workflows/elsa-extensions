@@ -69,5 +69,6 @@ public class QueueBuild : AzureDevOpsActivity
         var buildClient = connection.GetClient<BuildHttpClient>();
         var queued = await buildClient.QueueBuildAsync(build, project, null, null, null, context.CancellationToken);
         context.Set(QueuedBuild, queued);
+        await context.CompleteActivityAsync();
     }
 }

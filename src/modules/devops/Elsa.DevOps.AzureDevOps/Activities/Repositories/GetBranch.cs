@@ -71,5 +71,6 @@ public class GetBranch : AzureDevOpsActivity
             string.Equals(b.Name, branchName, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(b.Name, normalizedName, StringComparison.OrdinalIgnoreCase));
         context.Set(Branch, branch);
+        await context.CompleteActivityAsync();
     }
 }

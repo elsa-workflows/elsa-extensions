@@ -58,5 +58,6 @@ public class GetPullRequest : AzureDevOpsActivity
         else
             pr = await gitClient.GetPullRequestByIdAsync(pullRequestId, null, context.CancellationToken);
         context.Set(RetrievedPullRequest, pr);
+        await context.CompleteActivityAsync();
     }
 }

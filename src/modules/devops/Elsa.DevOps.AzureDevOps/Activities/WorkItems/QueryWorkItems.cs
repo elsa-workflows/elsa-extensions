@@ -72,10 +72,12 @@ public class QueryWorkItems : AzureDevOpsActivity
         if (workItemRefs == null || !workItemRefs.Any())
         {
             context.Set(WorkItems, Array.Empty<WorkItem>());
+            await context.CompleteActivityAsync();
             return;
         }
         var ids = workItemRefs.Select(wi => wi.Id).ToArray();
         var workItems = await witClient.GetWorkItemsAsync(project, ids, null, null, null, null, null, context.CancellationToken);
         context.Set(WorkItems, workItems ?? (IEnumerable<WorkItem>)Array.Empty<WorkItem>());
+        await context.CompleteActivityAsync();
     }
 }

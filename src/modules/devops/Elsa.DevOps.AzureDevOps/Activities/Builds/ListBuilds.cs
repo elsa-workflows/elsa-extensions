@@ -72,5 +72,6 @@ public class ListBuilds : AzureDevOpsActivity
             null, null, null, null, null, null, null, null, null,
             context.CancellationToken);
         context.Set(Builds, builds ?? (IEnumerable<Build>)Array.Empty<Build>());
+        await context.CompleteActivityAsync();
     }
 }

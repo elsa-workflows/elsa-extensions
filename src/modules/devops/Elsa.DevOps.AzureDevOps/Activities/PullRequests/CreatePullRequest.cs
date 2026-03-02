@@ -102,6 +102,7 @@ public class CreatePullRequest : AzureDevOpsActivity
         var gitClient = connection.GetClient<GitHttpClient>();
         var created = await gitClient.CreatePullRequestAsync(pr, project, repositoryName, null, null, context.CancellationToken);
         context.Set(CreatedPullRequest, created);
+        await context.CompleteActivityAsync();
     }
 
     private static string NormalizeRef(string refName)

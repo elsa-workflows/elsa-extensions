@@ -85,10 +85,12 @@ public class UpdateWorkItem : AzureDevOpsActivity
         {
             var existing = await client.GetWorkItemAsync(workItemId, null, null, null, context.CancellationToken);
             context.Set(UpdatedWorkItem, existing);
+            await context.CompleteActivityAsync();
             return;
         }
 
         var workItem = await client.UpdateWorkItemAsync(document, workItemId, null, null, null, null, context.CancellationToken);
         context.Set(UpdatedWorkItem, workItem);
+        await context.CompleteActivityAsync();
     }
 }
