@@ -11,7 +11,7 @@ public class GenerateFakeUsersTests
     public async Task Execute_WithDefaultCount_Generates10Records()
     {
         // Arrange
-        var result = new Output<ICollection<FakeUser>>();
+        var result = new Output<FakeUser[]>();
         var activity = new GenerateFakeUsers { Result = result };
 
         // Act
@@ -20,7 +20,7 @@ public class GenerateFakeUsersTests
         // Assert
         var users = context.Get(result);
         Assert.NotNull(users);
-        Assert.Equal(10, users.Count);
+        Assert.Equal(10, users.Length);
     }
 
     [Theory]
@@ -30,7 +30,7 @@ public class GenerateFakeUsersTests
     public async Task Execute_WithCustomCount_GeneratesExpectedCount(int count)
     {
         // Arrange
-        var result = new Output<ICollection<FakeUser>>();
+        var result = new Output<FakeUser[]>();
         var activity = new GenerateFakeUsers { Count = new Input<int>(count), Result = result };
 
         // Act
@@ -39,7 +39,7 @@ public class GenerateFakeUsersTests
         // Assert
         var users = context.Get(result);
         Assert.NotNull(users);
-        Assert.Equal(count, users.Count);
+        Assert.Equal(count, users.Length);
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class GenerateFakeUsersTests
         const int count = 5;
 
         // Arrange
-        var result1 = new Output<ICollection<FakeUser>>();
+        var result1 = new Output<FakeUser[]>();
         var activity1 = new GenerateFakeUsers
         {
             Count = new Input<int>(count),
@@ -57,7 +57,7 @@ public class GenerateFakeUsersTests
             Result = result1,
         };
 
-        var result2 = new Output<ICollection<FakeUser>>();
+        var result2 = new Output<FakeUser[]>();
         var activity2 = new GenerateFakeUsers
         {
             Count = new Input<int>(count),
@@ -86,7 +86,7 @@ public class GenerateFakeUsersTests
     public async Task Execute_GeneratesUsers_WithAllPropertiesPopulated()
     {
         // Arrange
-        var result = new Output<ICollection<FakeUser>>();
+        var result = new Output<FakeUser[]>();
         var activity = new GenerateFakeUsers
         {
             Count = new Input<int>(5),
