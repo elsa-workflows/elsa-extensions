@@ -45,7 +45,7 @@ public class GetWorkItem : AzureDevOpsActivity
         var workItemId = context.Get(WorkItemId);
         var connection = GetConnection(context);
         var witClient = connection.GetClient<Microsoft.TeamFoundation.WorkItemTracking.WebApi.WorkItemTrackingHttpClient>();
-        var workItem = await witClient.GetWorkItemAsync(workItemId, null, null, null, context.CancellationToken);
+        var workItem = await witClient.GetWorkItemAsync(workItemId, cancellationToken: context.CancellationToken);
         context.Set(RetrievedWorkItem, workItem);
         await context.CompleteActivityAsync();
     }

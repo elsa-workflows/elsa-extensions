@@ -65,7 +65,7 @@ public class GetBranch : AzureDevOpsActivity
         var branchName = context.Get(BranchName)!;
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
-        var branches = await gitClient.GetBranchesAsync(project, repositoryName, null, null, context.CancellationToken);
+        var branches = await gitClient.GetBranchesAsync(project, repositoryName, cancellationToken: context.CancellationToken);
         var normalizedName = branchName.StartsWith("refs/heads/", StringComparison.OrdinalIgnoreCase) ? branchName : "refs/heads/" + branchName;
         var branch = branches?.FirstOrDefault(b =>
             string.Equals(b.Name, branchName, StringComparison.OrdinalIgnoreCase) ||

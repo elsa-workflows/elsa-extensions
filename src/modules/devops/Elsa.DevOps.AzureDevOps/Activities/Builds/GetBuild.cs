@@ -55,7 +55,7 @@ public class GetBuild : AzureDevOpsActivity
         var buildId = context.Get(BuildId);
         var connection = GetConnection(context);
         var buildClient = connection.GetClient<BuildHttpClient>();
-        var build = await buildClient.GetBuildAsync(project, buildId, null, null, context.CancellationToken);
+        var build = await buildClient.GetBuildAsync(project, buildId, cancellationToken: context.CancellationToken);
         context.Set(RetrievedBuild, build);
         await context.CompleteActivityAsync();
     }

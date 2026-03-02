@@ -55,7 +55,7 @@ public class ListBranches : AzureDevOpsActivity
         var repositoryName = context.Get(RepositoryName)!;
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
-        var branches = await gitClient.GetBranchesAsync(project, repositoryName, null, null, context.CancellationToken);
+        var branches = await gitClient.GetBranchesAsync(project, repositoryName, cancellationToken: context.CancellationToken);
         context.Set(Branches, branches ?? (IEnumerable<GitBranchStats>)Array.Empty<GitBranchStats>());
         await context.CompleteActivityAsync();
     }

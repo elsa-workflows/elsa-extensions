@@ -55,7 +55,7 @@ public class GetRepository : AzureDevOpsActivity
         var repositoryName = context.Get(RepositoryName)!;
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
-        var repository = await gitClient.GetRepositoryAsync(project, repositoryName, null, context.CancellationToken);
+        var repository = await gitClient.GetRepositoryAsync(project, repositoryName, cancellationToken: context.CancellationToken);
         context.Set(RetrievedRepository, repository);
         await context.CompleteActivityAsync();
     }

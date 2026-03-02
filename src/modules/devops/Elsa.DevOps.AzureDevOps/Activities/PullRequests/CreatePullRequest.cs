@@ -100,7 +100,7 @@ public class CreatePullRequest : AzureDevOpsActivity
         };
         var connection = GetConnection(context);
         var gitClient = connection.GetClient<GitHttpClient>();
-        var created = await gitClient.CreatePullRequestAsync(pr, project, repositoryName, null, null, context.CancellationToken);
+        var created = await gitClient.CreatePullRequestAsync(pr, project, repositoryName, cancellationToken: context.CancellationToken);
         context.Set(CreatedPullRequest, created);
         await context.CompleteActivityAsync();
     }

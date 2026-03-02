@@ -67,7 +67,7 @@ public class QueryWorkItems : AzureDevOpsActivity
         var connection = GetConnection(context);
         var witClient = connection.GetClient<WorkItemTrackingHttpClient>();
         var wiql = new Wiql { Query = query };
-        var queryResult = await witClient.QueryByWiqlAsync(wiql, null, top, null, context.CancellationToken);
+        var queryResult = await witClient.QueryByWiqlAsync(wiql, top: top, cancellationToken: context.CancellationToken);
         var workItemRefs = queryResult?.WorkItems;
         if (workItemRefs == null || !workItemRefs.Any())
         {
@@ -76,7 +76,7 @@ public class QueryWorkItems : AzureDevOpsActivity
             return;
         }
         var ids = workItemRefs.Select(wi => wi.Id).ToArray();
-        var workItems = await witClient.GetWorkItemsAsync(project, ids, null, null, null, null, null, context.CancellationToken);
+        var workItems = await witClient.GetWorkItemsAsync(project, ids, cancellationToken: context.CancellationToken);
         context.Set(WorkItems, workItems ?? (IEnumerable<WorkItem>)Array.Empty<WorkItem>());
         await context.CompleteActivityAsync();
     }

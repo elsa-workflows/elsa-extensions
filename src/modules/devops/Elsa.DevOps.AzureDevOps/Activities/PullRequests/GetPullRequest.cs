@@ -54,9 +54,9 @@ public class GetPullRequest : AzureDevOpsActivity
         var gitClient = connection.GetClient<GitHttpClient>();
         GitPullRequest pr;
         if (!string.IsNullOrEmpty(project))
-            pr = await gitClient.GetPullRequestByIdAsync(project, pullRequestId, null, context.CancellationToken);
+            pr = await gitClient.GetPullRequestByIdAsync(project, pullRequestId, cancellationToken: context.CancellationToken);
         else
-            pr = await gitClient.GetPullRequestByIdAsync(pullRequestId, null, context.CancellationToken);
+            pr = await gitClient.GetPullRequestByIdAsync(pullRequestId, cancellationToken: context.CancellationToken);
         context.Set(RetrievedPullRequest, pr);
         await context.CompleteActivityAsync();
     }

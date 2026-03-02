@@ -90,7 +90,7 @@ public class CreateWorkItem : AzureDevOpsActivity
         }
         var connection = GetConnection(context);
         var witClient = connection.GetClient<Microsoft.TeamFoundation.WorkItemTracking.WebApi.WorkItemTrackingHttpClient>();
-        var workItem = await witClient.CreateWorkItemAsync(document, project, workItemType, null, null, null, null, context.CancellationToken);
+        var workItem = await witClient.CreateWorkItemAsync(document, project, workItemType, cancellationToken: context.CancellationToken);
         context.Set(CreatedWorkItem, workItem);
         await context.CompleteActivityAsync();
     }
