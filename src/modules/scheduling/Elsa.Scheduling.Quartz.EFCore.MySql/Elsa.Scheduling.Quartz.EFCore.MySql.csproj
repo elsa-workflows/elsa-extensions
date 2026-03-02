@@ -8,10 +8,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-		<PackageReference Include="AppAny.Quartz.EntityFrameworkCore.Migrations.MySql" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Include="AppAny.Quartz.EntityFrameworkCore.Migrations.MySql" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
-		<PackageReference Include="Quartz.Serialization.Json" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Include="Quartz.Serialization.Json" />
     </ItemGroup>
 
     <ItemGroup>

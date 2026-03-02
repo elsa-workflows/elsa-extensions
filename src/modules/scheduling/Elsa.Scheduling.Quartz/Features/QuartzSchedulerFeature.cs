@@ -2,6 +2,7 @@ using Elsa.Extensions;
 using Elsa.Features.Abstractions;
 using Elsa.Features.Attributes;
 using Elsa.Features.Services;
+using Elsa.Resilience.Features;
 using Elsa.Scheduling.Quartz.Handlers;
 using Elsa.Scheduling.Quartz.Options;
 using Elsa.Scheduling.Quartz.Services;
@@ -19,6 +20,7 @@ namespace Elsa.Scheduling.Quartz.Features;
 /// A feature that installs Quartz.NET implementations for <see cref="IWorkflowScheduler"/>.
 /// </summary>
 [DependsOn(typeof(SchedulingFeature))]
+[DependsOn(typeof(ResilienceFeature))]
 [UsedImplicitly]
 public class QuartzSchedulerFeature(IModule module) : FeatureBase(module)
 {

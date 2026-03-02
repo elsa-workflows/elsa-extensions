@@ -9,12 +9,11 @@
 
     <ItemGroup>
         <PackageReference Include="AppAny.Quartz.EntityFrameworkCore.Migrations.SqlServer" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Data.SqlClient" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
         <PackageReference Include="Quartz.Serialization.Json" />
-
-		<!-- Used to resolve the AppAny.Quartz.EntityFrameworkCore.Migrations.SqlServer package warning. -->
-		<PackageReference Include="Microsoft.Data.SqlClient" />
     </ItemGroup>
 
     <ItemGroup>

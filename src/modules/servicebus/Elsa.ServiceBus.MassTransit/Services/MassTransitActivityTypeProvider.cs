@@ -75,10 +75,11 @@ public class MassTransitActivityTypeProvider(IOptions<MassTransitActivityOptions
             },
             Constructor = context =>
             {
-                var activity = context.CreateActivity<MessageReceived>();
+                var result = context.CreateActivity<MessageReceived>();
+                var activity = result.Activity;
                 activity.Type = fullTypeName;
                 activity.MessageType = messageType;
-                return activity;
+                return result;
             }
         };
     }
@@ -117,10 +118,11 @@ public class MassTransitActivityTypeProvider(IOptions<MassTransitActivityOptions
             },
             Constructor = context =>
             {
-                var activity = context.CreateActivity<PublishMessage>();
+                var result = context.CreateActivity<PublishMessage>();
+                var activity = result.Activity;
                 activity.Type = fullTypeName;
                 activity.MessageType = messageType;
-                return activity;
+                return result;
             }
         };
     }

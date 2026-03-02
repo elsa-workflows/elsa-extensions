@@ -1,10 +1,8 @@
 using Elsa.Studio.Agents;
 using Elsa.Studio.Agents.Client;
-using Elsa.Studio.Agents.Services;
 using Elsa.Studio.Agents.UI.Providers;
 using Elsa.Studio.Contracts;
 using Elsa.Studio.Models;
-using Elsa.Studio.Workflows.Contracts;
 using Elsa.Studio.Workflows.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
