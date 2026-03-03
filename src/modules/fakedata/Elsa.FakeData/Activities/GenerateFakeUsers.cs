@@ -31,8 +31,8 @@ public class GenerateFakeUsers : GenerateFakeDataActivity<FakeUser>
             .RuleFor(u => u.Id, f => f.Random.Guid())
             .RuleFor(u => u.FirstName, f => f.Person.FirstName)
             .RuleFor(u => u.LastName, f => f.Person.LastName)
-            .RuleFor(u => u.Username, (f, u) => f.Person.UserName)
-            .RuleFor(u => u.Email, (f, u) => f.Person.Email)
+            .RuleFor(u => u.Username, f => f.Person.UserName)
+            .RuleFor(u => u.Email, f => f.Person.Email)
             .RuleFor(u => u.Avatar, f => f.Person.Avatar)
             .RuleFor(u => u.Roles, f => [f.PickRandom("Admin", "User", "Moderator", "Guest")])
             .RuleFor(u => u.CreatedAt, f => f.Date.Past(5));
