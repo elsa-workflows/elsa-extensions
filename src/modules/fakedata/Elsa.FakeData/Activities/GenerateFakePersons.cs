@@ -34,7 +34,7 @@ public class GenerateFakePersons : GenerateFakeDataActivity<FakePerson>
             .RuleFor(p => p.FullName, (f) => f.Person.FullName)
             .RuleFor(p => p.Email, (f, p) => f.Person.Email)
             .RuleFor(p => p.Phone, f => f.Phone.PhoneNumber())
-            .RuleFor(p => p.DateOfBirth, f => f.Date.Past(80, DateTime.Now.AddYears(-18)))
+            .RuleFor(p => p.DateOfBirth, f => f.Date.Past(80, new DateTime(2000, 1, 1)));
             .RuleFor(p => p.Gender, f => f.PickRandom("Male", "Female", "Non-binary"))
             .RuleFor(p => p.Address, f => f.Address.StreetAddress())
             .RuleFor(p => p.City, f => f.Address.City())

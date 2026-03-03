@@ -48,6 +48,10 @@ public abstract class GenerateFakeDataActivity<T> : CodeActivity<T[]> where T : 
     protected override ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
         var count = Count.Get(context);
+
+        if (count < 0)
+            throw new ArgumentOutOfRangeException(nameof(Count), count, "The number of records to generate must be zero or greater.");
+
         var locale = Locale.GetOrDefault(context) ?? "en";
         var seed = Seed.GetOrDefault(context, () => null);
 
@@ -57,6 +61,7 @@ public abstract class GenerateFakeDataActivity<T> : CodeActivity<T[]> where T : 
         context.Set(Result, items.ToArray());
 
         return ValueTask.CompletedTask;
+    }
     }
 
     /// <summary>
