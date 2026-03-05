@@ -97,7 +97,9 @@ public class HangfireWorkflowScheduler(
     private IEnumerable<string> GetRecurringJobIds<TJob>(string taskName)
     {
         using var connection = jobStorage.GetConnection();
-        var jobs = connection.GetRecurringJobs().Where(x => x.Job.Type == typeof(TJob) && (string)x.Job.Args[0] == taskName);
+        var jobs = connection.GetRecurringJobs()
+            .Where(x => x.Job is { Args.Count: > 0 } && x.Job.Type == typeof(TJob) && (string)x.Job.Args[0] == taskName);
+        
         return jobs.Select(x => x.Id).Distinct().ToList();
     }
 }
