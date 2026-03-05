@@ -49,6 +49,7 @@
 		<ProjectReference Include="..\..\modules\connections\Elsa.Connections.Persistence.EFCore\Elsa.Connections.Persistence.EFCore.csproj" />
 		<ProjectReference Include="..\..\modules\connections\Elsa.Connections.Persistence\Elsa.Connections.Persistence.csproj" />
 		<ProjectReference Include="..\..\modules\email\Elsa.Email\Elsa.Email.csproj" />
+		<ProjectReference Include="..\..\modules\fakedata\Elsa.FakeData\Elsa.FakeData.csproj" />
 		<ProjectReference Include="..\..\modules\http\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
 		<ProjectReference Include="..\..\modules\runtimes\Elsa.Workflows.Runtime.ProtoActor\Elsa.Workflows.Runtime.ProtoActor.csproj" />
 		<ProjectReference Include="..\..\modules\secrets\Elsa.Secrets.Persistence.EFCore.PostgreSql\Elsa.Secrets.Persistence.EFCore.PostgreSql.csproj" />

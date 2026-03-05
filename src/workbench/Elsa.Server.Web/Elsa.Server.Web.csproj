@@ -60,6 +60,7 @@
 	  <ProjectReference Include="..\..\modules\diagnostics\Elsa.OpenTelemetry\Elsa.OpenTelemetry.csproj" />
 	  <ProjectReference Include="..\..\modules\dropins\Elsa.DropIns\Elsa.DropIns.csproj" />
 	  <ProjectReference Include="..\..\modules\email\Elsa.Email\Elsa.Email.csproj" />
+	  <ProjectReference Include="..\..\modules\fakedata\Elsa.FakeData\Elsa.FakeData.csproj" />
 	  <ProjectReference Include="..\..\modules\http\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper.Migrations\Elsa.Persistence.Dapper.Migrations.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper\Elsa.Persistence.Dapper.csproj" />
