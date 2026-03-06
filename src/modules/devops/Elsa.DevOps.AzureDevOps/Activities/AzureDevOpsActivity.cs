@@ -1,0 +1,58 @@
+using Elsa.DevOps.AzureDevOps.Services;
+using Elsa.Workflows;
+using Elsa.Workflows.Attributes;
+using Elsa.Workflows.Models;
+using Microsoft.VisualStudio.Services.WebApi;
+
+namespace Elsa.DevOps.AzureDevOps.Activities;
+
+/// <summary>
+/// Generic base class inherited by all Azure DevOps activities.
+/// </summary>
+public abstract class AzureDevOpsActivity : Workflows.Activity
+{
+    /// <summary>
+    /// The Azure DevOps organization URL (e.g. https://dev.azure.com/myorg).
+    /// </summary>
+    [Input(Description = "The Azure DevOps organization URL (e.g. https://dev.azure.com/myorg).")]
+    public Input<string> OrganizationUrl { get; set; } = null!;
+
+    /// <summary>
+    /// The personal access token (PAT) for authentication.
+    /// </summary>
+    [Input(Description = "The personal access token (PAT) for authentication.")]
+    public Input<string> Token { get; set; } = null!;
+
+    /// <inheritdoc />
+    protected override ValueTask<bool> CanExecuteAsync(ActivityExecutionContext context)
+    {
+        var organizationUrl = context.Get(OrganizationUrl);
+        var token = context.Get(Token);
+        var (urlOk, urlError) = ActivityInputValidation.TryValidateUri(organizationUrl, nameof(OrganizationUrl));
+        if (!urlOk)
+        {
+            context.AddExecutionLogEntry("Precondition Failed", urlError);
+            return new ValueTask<bool>(false);
+        }
+        var (tokenOk, tokenError) = ActivityInputValidation.TryValidateRequired(token, nameof(Token));
+        if (!tokenOk)
+        {
+            context.AddExecutionLogEntry("Precondition Failed", tokenError);
+            return new ValueTask<bool>(false);
+        }
+        return base.CanExecuteAsync(context);
+    }
+
+    /// <summary>
+    /// Gets the Azure DevOps connection.
+    /// </summary>
+    protected VssConnection GetConnection(ActivityExecutionContext context)
+    {
+        var organizationUrl = context.Get(OrganizationUrl);
+        var token = context.Get(Token);
+        ActivityInputValidation.ThrowIfInvalidUri(organizationUrl, nameof(OrganizationUrl));
+        ActivityInputValidation.ThrowIfNullOrEmpty(token, nameof(Token));
+        var factory = context.GetRequiredService<AzureDevOpsConnectionFactory>();
+        return factory.GetConnection(organizationUrl!.Trim(), token!);
+    }
+}

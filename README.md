@@ -49,7 +49,7 @@ Below is the current status of each extension. Icons indicate implementation pro
 ### 🛠 DevOps & Monitoring
 | Status | Extension | Description | Module Name | Issue |
 |--------|------------|-------------|-------------|-------|
-| 🔲 | **Azure DevOps** | Pipelines, repositories, work items | `Elsa.AzureDevOps` | [Open Issue](https://github.com/elsa-workflows/elsa-extensions/issues/new) |
+| [🚧](https://github.com/elsa-workflows/elsa-extensions/tree/main/src/modules/devops/Elsa.DevOps.AzureDevOps/README.md) | **Azure DevOps** | Pipelines, repositories, work items | `Elsa.DevOps.AzureDevOps` | [View Issue](https://github.com/elsa-workflows/elsa-extensions/issues/124) |
 | [✅](https://github.com/elsa-workflows/elsa-extensions/tree/main/src/devops/Elsa.DevOps.GitHub/README.md) | **GitHub** | PR automation, repo events | `Elsa.DevOps.GitHub` | [Fixed Issue](https://github.com/elsa-workflows/elsa-extensions/issues/6) |
 | 🔲 | **GitLab** | CI/CD triggers and repo management | `Elsa.GitLab` | [Open Issue](https://github.com/elsa-workflows/elsa-extensions/issues/new) |
 | 🔲 | **Jenkins** | Pipeline automation and job execution | `Elsa.Jenkins` | [Open Issue](https://github.com/elsa-workflows/elsa-extensions/issues/new) |
