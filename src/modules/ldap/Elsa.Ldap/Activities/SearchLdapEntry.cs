@@ -1,10 +1,12 @@
 ﻿using System.DirectoryServices.Protocols;
 using Elsa.Ldap.Contracts;
 using Elsa.Ldap.Extensions;
+using Elsa.Ldap.UIHints;
 using Elsa.Workflows;
 using Elsa.Workflows.Activities.Flowchart.Attributes;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
+using Elsa.Workflows.UIHints;
 using Microsoft.Extensions.Logging;
 
 namespace Elsa.Ldap.Activities;
@@ -26,7 +28,9 @@ public class SearchLdapEntry : Activity<SearchResultEntry?>
 
     [Input(
         DisplayName = "Connection Name",
-        Description = "The name of the LDAP connection to use, as configured in the module options. Defaults to 'Default'.")]
+        Description = "The name of the LDAP connection to use, as configured in the module options. Defaults to 'Default'.",
+        UIHandler = typeof(LdapConnectionDropdownOptionsProvider),
+        UIHint = InputUIHints.DropDown)]
     public Input<string?> ConnectionName { get; set; } = default!;
 
     [Input(

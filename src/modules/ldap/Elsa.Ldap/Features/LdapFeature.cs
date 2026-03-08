@@ -4,6 +4,8 @@ using Elsa.Features.Services;
 using Elsa.Ldap.Contracts;
 using Elsa.Ldap.Options;
 using Elsa.Ldap.Services;
+using Elsa.Ldap.UIHints;
+using Elsa.Workflows;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Elsa.Ldap.Features;
@@ -34,6 +36,7 @@ public class LdapFeature : FeatureBase
     {
         Services
             .Configure(ConfigureOptions)
-            .AddScoped<ILdapConnectionFactory, LdapConnectionFactory>();
+            .AddScoped<ILdapConnectionFactory, LdapConnectionFactory>()
+            .AddScoped<IPropertyUIHandler, LdapConnectionDropdownOptionsProvider>();
     }
 }
