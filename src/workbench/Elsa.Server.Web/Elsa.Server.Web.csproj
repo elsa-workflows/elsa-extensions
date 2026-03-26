@@ -62,6 +62,9 @@
 	  <ProjectReference Include="..\..\modules\email\Elsa.Email\Elsa.Email.csproj" />
 	  <ProjectReference Include="..\..\modules\http\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper.Migrations\Elsa.Persistence.Dapper.Migrations.csproj" />
+	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper.PostgreSql\Elsa.Persistence.Dapper.PostgreSql.csproj" />
+	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper.Sqlite\Elsa.Persistence.Dapper.Sqlite.csproj" />
+	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper.SqlServer\Elsa.Persistence.Dapper.SqlServer.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.Dapper\Elsa.Persistence.Dapper.csproj" />
 	  <ProjectReference Include="..\..\modules\persistence\Elsa.Persistence.MongoDb\Elsa.Persistence.MongoDb.csproj" />
 	  <ProjectReference Include="..\..\modules\retention\Elsa.Retention\Elsa.Retention.csproj" />

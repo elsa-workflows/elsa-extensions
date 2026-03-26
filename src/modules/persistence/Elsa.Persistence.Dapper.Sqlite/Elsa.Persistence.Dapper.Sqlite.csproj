@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Description>
+			Provides Dapper implementations of SQLite.
+		</Description>
+		<PackageTags>elsa extension module persistence dapper sqlite</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Elsa.Persistence.Dapper\Elsa.Persistence.Dapper.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Data.Sqlite.Core" />
+	</ItemGroup>
+
+</Project>
