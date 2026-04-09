@@ -1,3 +1,5 @@
+using Elsa.Common.Entities;
+using Elsa.Common.Multitenancy;
 using Elsa.Extensions;
 using Elsa.ServiceBus.Kafka.Activities;
 using Elsa.ServiceBus.Kafka.Stimuli;
@@ -70,27 +72,47 @@ public class WorkerManager(IHasher hasher, IServiceScopeFactory scopeFactory) : 
 
     public async Task BindTriggersAsync(IEnumerable<StoredTrigger> triggers, CancellationToken cancellationToken = default)
     {
-        var triggerList = triggers.Where(x => x.Name == MessageReceivedActivityTypeName).ToList();
-        await using var scope = scopeFactory.CreateAsyncScope();
+        // Group by TenantId so we can set the correct tenant scope when resolving workflow
+        // definitions. Without this, FindWorkflowAsync runs with no tenant context and the
+        // EF Core tenant filter returns null for every tenant-specific workflow definition.
+        var triggerGroups = triggers.Where(x => x.Name == MessageReceivedActivityTypeName).GroupBy(t => ((Entity)t).TenantId);
 
-        // Bind triggers to workers.
-        var workflowDefinitionService = scope.ServiceProvider.GetRequiredService<IWorkflowDefinitionService>();
-        foreach (var trigger in triggerList)
+        foreach (var group in triggerGroups)
         {
-            var workflow = await workflowDefinitionService.FindWorkflowAsync(trigger.WorkflowDefinitionVersionId, cancellationToken);
+            await using var scope = scopeFactory.CreateAsyncScope();
+            var workflowDefinitionService = scope.ServiceProvider.GetRequiredService<IWorkflowDefinitionService>();
+            var tenantAccessor = scope.ServiceProvider.GetRequiredService<ITenantAccessor>();
 
-            if (workflow == null)
-                continue;
+            // Push tenant context so EF Core filter resolves to the correct tenant.
+            var tenantId = group.Key;
+            IDisposable? tenantCtx = null;
+            if (!string.IsNullOrEmpty(tenantId))
+                tenantCtx = tenantAccessor.PushContext(new Tenant { Id = tenantId, Name = tenantId });
 
-            var stimulus = trigger.GetPayload<MessageReceivedStimulus>();
-            var consumerDefinitionId = stimulus.ConsumerDefinitionId;
-            var worker = GetWorker(consumerDefinitionId);
+            try
+            {
+                foreach (var trigger in group)
+                {
+                    var workflow = await workflowDefinitionService.FindWorkflowAsync(trigger.WorkflowDefinitionVersionId, cancellationToken);
 
-            if (worker == null)
-                continue;
+                    if (workflow == null)
+                        continue;
 
-            var triggerBinding = new TriggerBinding(workflow, trigger.Id, trigger.ActivityId, stimulus);
-            worker.BindTrigger(triggerBinding);
+                    var stimulus = trigger.GetPayload<MessageReceivedStimulus>();
+                    var consumerDefinitionId = stimulus.ConsumerDefinitionId;
+                    var worker = GetWorker(consumerDefinitionId);
+
+                    if (worker == null)
+                        continue;
+
+                    var triggerBinding = new TriggerBinding(workflow, trigger.Id, trigger.ActivityId, stimulus);
+                    worker.BindTrigger(triggerBinding);
+                }
+            }
+            finally
+            {
+                tenantCtx?.Dispose();
+            }
         }
     }
 
@@ -106,7 +128,7 @@ public class WorkerManager(IHasher hasher, IServiceScopeFactory scopeFactory) : 
 
             worker?.RemoveTriggers(removedTriggerIds);
         }
-        
+
         return Task.CompletedTask;
     }
 
@@ -133,7 +155,7 @@ public class WorkerManager(IHasher hasher, IServiceScopeFactory scopeFactory) : 
 
         return Task.CompletedTask;
     }
-    
+
     public Task UnbindBookmarksAsync(IEnumerable<StoredBookmark> bookmarks, CancellationToken cancellationToken = default)
     {
         var bookmarkList = bookmarks.Where(x => x.Name == MessageReceivedActivityTypeName).ToList();
@@ -147,7 +169,7 @@ public class WorkerManager(IHasher hasher, IServiceScopeFactory scopeFactory) : 
 
             worker?.RemoveBookmarks(removedBookmarkIds);
         }
-        
+
         return Task.CompletedTask;
     }
 
@@ -165,12 +187,12 @@ public class WorkerManager(IHasher hasher, IServiceScopeFactory scopeFactory) : 
     private async Task<IWorker> CreateWorkerAsync(IServiceProvider serviceProvider, ConsumerDefinition consumerDefinition, CancellationToken cancellationToken)
     {
         var factoryType = consumerDefinition.FactoryType;
-        
-        if(factoryType == null!)
+
+        if (factoryType == null!)
             throw new InvalidOperationException("Worker factory type not specified.");
-        
+
         var consumerFactory = ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, factoryType) as IConsumerFactory;
-        
+
         if (consumerFactory == null)
             throw new InvalidOperationException($"Worker factory of type '{factoryType}' not found.");
 
@@ -191,12 +213,12 @@ public class WorkerManager(IHasher hasher, IServiceScopeFactory scopeFactory) : 
     {
         return hasher.Hash(consumerDefinition);
     }
-    
+
     private async Task<SchemaRegistryDefinition?> GetSchemaRegistryDefinitionAsync(IServiceProvider serviceProvider, string? id, CancellationToken cancellationToken = default)
     {
         if (id == null)
             return null;
-        
+
         var schemaRegistryDefinitionEnumerator = serviceProvider.GetRequiredService<ISchemaRegistryDefinitionEnumerator>();
         var schemaRegistryDefinitions = await schemaRegistryDefinitionEnumerator.EnumerateAsync(cancellationToken).ToList();
         return schemaRegistryDefinitions.FirstOrDefault(x => x.Id == id);
