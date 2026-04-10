@@ -105,7 +105,7 @@ public class WorkerManager(IHasher hasher, IServiceScopeFactory scopeFactory) : 
                     if (worker == null)
                         continue;
 
-                    var triggerBinding = new TriggerBinding(workflow, trigger.Id, trigger.ActivityId, stimulus);
+                    var triggerBinding = new TriggerBinding(workflow, trigger.Id, trigger.ActivityId, stimulus, tenantId);
                     worker.BindTrigger(triggerBinding);
                 }
             }

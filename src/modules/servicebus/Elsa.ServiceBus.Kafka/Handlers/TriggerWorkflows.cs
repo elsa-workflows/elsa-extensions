@@ -1,4 +1,5 @@
 using System.Text;
+using Elsa.Common.Multitenancy;
 using Elsa.Expressions.Contracts;
 using Elsa.Expressions.Models;
 using Elsa.Extensions;
@@ -29,6 +30,7 @@ public class TriggerWorkflows(
     IVariablePersistenceManager variablePersistenceManager,
     IExpressionEvaluator expressionEvaluator,
     IOptions<KafkaOptions> options,
+    ITenantAccessor tenantAccessor,
     IServiceProvider serviceProvider,
     ILogger<TriggerWorkflows> logger) : INotificationHandler<TransportMessageReceived>
 {
@@ -69,7 +71,19 @@ public class TriggerWorkflows(
                     [MessageReceived.InputKey] = transportMessage
                 }
             };
-            await triggerInvoker.InvokeAsync(invokeTriggerRequest, cancellationToken);
+
+            IDisposable? tenantCtx = null;
+            if (!string.IsNullOrEmpty(binding.TenantId))
+                tenantCtx = tenantAccessor.PushContext(new Tenant { Id = binding.TenantId, Name = binding.TenantId });
+
+            try
+            {
+                await triggerInvoker.InvokeAsync(invokeTriggerRequest, cancellationToken);
+            }
+            finally
+            {
+                tenantCtx?.Dispose();
+            }
         }
     }
 
@@ -122,6 +136,15 @@ public class TriggerWorkflows(
 
             if (stimulus.Topics.All(x => x != topic))
                 continue;
+
+            if (!string.IsNullOrEmpty(binding.TenantId))
+            {
+                var tenantHeaderKey = options.Value.TenantHeaderKey;
+                if (!transportMessage.Headers.TryGetValue(tenantHeaderKey, out var tenantHeaderBytes))
+                    continue;
+                if (Encoding.UTF8.GetString(tenantHeaderBytes) != binding.TenantId)
+                    continue;
+            }
 
             var isMatch = await EvaluatePredicateAsync(transportMessage, stimulus, null, cancellationToken);
 
