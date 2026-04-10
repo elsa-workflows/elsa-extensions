@@ -16,12 +16,12 @@ public class MessageReceived : Trigger<object>
     internal const string InputKey = "TransportMessage";
 
     /// <inheritdoc />
-    public MessageReceived([CallerFilePath] string? source = null, [CallerLineNumber] int? line = null) : base(source, line)
-    {
-    }
+    public MessageReceived([CallerFilePath] string? source = null, [CallerLineNumber] int? line = null)
+        : base(source, line) { }
 
     /// <inheritdoc />
-    public MessageReceived(Input<string> consumerDefinitionId, [CallerFilePath] string? source = null, [CallerLineNumber] int? line = null) : base(source, line)
+    public MessageReceived(Input<string> consumerDefinitionId, [CallerFilePath] string? source = null, [CallerLineNumber] int? line = null)
+        : base(source, line)
     {
         ConsumerDefinitionId = consumerDefinitionId;
     }
@@ -29,30 +29,16 @@ public class MessageReceived : Trigger<object>
     /// <summary>
     /// The consumer to read from.
     /// </summary>
-    [Input(
-        DisplayName = "Consumer",
-        Description = "The consumer to connect to.",
-        UIHandler = typeof(ConsumerDefinitionsDropdownOptionsProvider),
-        UIHint = InputUIHints.DropDown
-    )]
+    [Input(DisplayName = "Consumer", Description = "The consumer to connect to.", UIHandler = typeof(ConsumerDefinitionsDropdownOptionsProvider), UIHint = InputUIHints.DropDown)]
     public Input<string> ConsumerDefinitionId { get; set; } = null!;
 
     /// <summary>
     /// The topics to read from.
     /// </summary>
-    [Input(
-        DisplayName = "Topics",
-        Description = "The topics to read from.",
-        UIHint = InputUIHints.MultiText
-    )]
+    [Input(DisplayName = "Topics", Description = "The topics to read from.", UIHint = InputUIHints.MultiText)]
     public Input<ICollection<string>> Topics { get; set; } = null!;
 
-    [Input(
-        Description = "Optional. A predicate to filter messages.",
-        AutoEvaluate = false,
-        DefaultSyntax = "JavaScript",
-        UIHint = InputUIHints.ExpressionEditor
-    )]
+    [Input(Description = "Optional. A predicate to filter messages.", AutoEvaluate = false, DefaultSyntax = "JavaScript", UIHint = InputUIHints.ExpressionEditor)]
     public Input<bool> Predicate { get; set; } = null!;
 
     [Input(DisplayName = "Local", Description = "Whether the event is local to the workflow. When checked, only events delivered to this workflow instance will resume this activity.")]

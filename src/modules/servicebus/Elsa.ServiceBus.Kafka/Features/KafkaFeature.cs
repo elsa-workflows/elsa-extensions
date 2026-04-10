@@ -22,13 +22,14 @@ public class KafkaFeature(IModule module) : FeatureBase(module)
         return this;
     }
 
-    public KafkaFeature WithCorrelationStrategy<T>() where T : class, ICorrelationStrategy
+    public KafkaFeature WithCorrelationStrategy<T>()
+        where T : class, ICorrelationStrategy
     {
         Services.AddScoped<T>();
         _correlationStrategyFactory = sp => sp.GetRequiredService<T>();
         return this;
     }
-    
+
     public KafkaFeature WithCorrelationStrategy(Func<IServiceProvider, ICorrelationStrategy> correlationStrategyFactory)
     {
         _correlationStrategyFactory = correlationStrategyFactory;
@@ -81,7 +82,6 @@ public class KafkaFeature(IModule module) : FeatureBase(module)
             .AddConsumerFactory<ExpandoObjectConsumerFactory>()
             .AddConsumerFactory<AvroConsumerFactory>()
             .AddProducerFactory<DefaultProducerFactory>()
-            .AddProducerFactory<ExpandoObjectProducerFactory>()
-            ;
+            .AddProducerFactory<ExpandoObjectProducerFactory>();
     }
 }
