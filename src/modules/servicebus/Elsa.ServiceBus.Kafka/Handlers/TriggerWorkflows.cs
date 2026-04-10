@@ -3,10 +3,10 @@ using Elsa.Common.Multitenancy;
 using Elsa.Expressions.Contracts;
 using Elsa.Expressions.Models;
 using Elsa.Extensions;
+using Elsa.Mediator.Contracts;
 using Elsa.ServiceBus.Kafka.Activities;
 using Elsa.ServiceBus.Kafka.Notifications;
 using Elsa.ServiceBus.Kafka.Stimuli;
-using Elsa.Mediator.Contracts;
 using Elsa.Workflows;
 using Elsa.Workflows.Helpers;
 using Elsa.Workflows.Management;
@@ -32,7 +32,8 @@ public class TriggerWorkflows(
     IOptions<KafkaOptions> options,
     ITenantAccessor tenantAccessor,
     IServiceProvider serviceProvider,
-    ILogger<TriggerWorkflows> logger) : INotificationHandler<TransportMessageReceived>
+    ILogger<TriggerWorkflows> logger
+) : INotificationHandler<TransportMessageReceived>
 {
     private static readonly string MessageReceivedActivityTypeName = ActivityTypeNameHelper.GenerateTypeName<MessageReceived>();
 
@@ -53,10 +54,7 @@ public class TriggerWorkflows(
 
     private async Task InvokeTriggersAsync(IEnumerable<TriggerBinding> matchingTriggers, KafkaTransportMessage transportMessage, CancellationToken cancellationToken)
     {
-        var input = new Dictionary<string, object>
-        {
-            [MessageReceived.InputKey] = transportMessage
-        };
+        var input = new Dictionary<string, object> { [MessageReceived.InputKey] = transportMessage };
 
         foreach (var binding in matchingTriggers)
         {
@@ -66,10 +64,7 @@ public class TriggerWorkflows(
                 ActivityId = binding.TriggerActivityId,
                 CorrelationId = GetCorrelationId(transportMessage),
                 Input = input,
-                Properties = new Dictionary<string, object>
-                {
-                    [MessageReceived.InputKey] = transportMessage
-                }
+                Properties = new Dictionary<string, object> { [MessageReceived.InputKey] = transportMessage }
             };
 
             IDisposable? tenantCtx = null;
@@ -89,15 +84,9 @@ public class TriggerWorkflows(
 
     private async Task InvokeBookmarksAsync(IEnumerable<BookmarkBinding> matchingBookmarks, KafkaTransportMessage transportMessage, CancellationToken cancellationToken)
     {
-        var input = new Dictionary<string, object>
-        {
-            [MessageReceived.InputKey] = transportMessage
-        };
+        var input = new Dictionary<string, object> { [MessageReceived.InputKey] = transportMessage };
 
-        var properties = new Dictionary<string, object>
-        {
-            [MessageReceived.InputKey] = transportMessage
-        };
+        var properties = new Dictionary<string, object> { [MessageReceived.InputKey] = transportMessage };
 
         foreach (var binding in matchingBookmarks)
         {
@@ -105,22 +94,14 @@ public class TriggerWorkflows(
             {
                 WorkflowInstanceId = binding.WorkflowInstanceId,
                 BookmarkId = binding.BookmarkId,
-                Options = new ResumeBookmarkOptions
-                {
-                    Input = input,
-                    Properties = properties
-                },
+                Options = new ResumeBookmarkOptions { Input = input, Properties = properties },
                 ActivityTypeName = MessageReceivedActivityTypeName
             };
             await bookmarkQueue.EnqueueAsync(bookmarkQueueItem, cancellationToken);
         }
     }
 
-    private async Task<IEnumerable<TriggerBinding>> GetMatchingTriggerBindingsAsync(
-        IEnumerable<TriggerBinding> boundTriggers,
-        string consumerDefinitionId,
-        KafkaTransportMessage transportMessage,
-        CancellationToken cancellationToken)
+    private async Task<IEnumerable<TriggerBinding>> GetMatchingTriggerBindingsAsync(IEnumerable<TriggerBinding> boundTriggers, string consumerDefinitionId, KafkaTransportMessage transportMessage, CancellationToken cancellationToken)
     {
         var matchingTriggers = new List<TriggerBinding>();
         var topic = transportMessage.Topic;
@@ -155,11 +136,7 @@ public class TriggerWorkflows(
         return matchingTriggers;
     }
 
-    private async Task<IEnumerable<BookmarkBinding>> GetMatchingBookmarkBindingsAsync(
-        IEnumerable<BookmarkBinding> boundBookmarks,
-        string consumerDefinitionId,
-        KafkaTransportMessage transportMessage,
-        CancellationToken cancellationToken)
+    private async Task<IEnumerable<BookmarkBinding>> GetMatchingBookmarkBindingsAsync(IEnumerable<BookmarkBinding> boundBookmarks, string consumerDefinitionId, KafkaTransportMessage transportMessage, CancellationToken cancellationToken)
     {
         var matchingBookmarks = new List<BookmarkBinding>();
         var topic = transportMessage.Topic;
@@ -190,7 +167,7 @@ public class TriggerWorkflows(
                         continue;
                 }
             }
-            
+
             var isMatch = await EvaluatePredicateAsync(transportMessage, stimulus, binding, cancellationToken);
 
             if (isMatch)
@@ -206,8 +183,8 @@ public class TriggerWorkflows(
 
         if (predicate == null)
             return true;
-        
-        if(string.IsNullOrWhiteSpace(predicate.Value as string))
+
+        if (string.IsNullOrWhiteSpace(predicate.Value as string))
             return true;
 
         var expressionExecutionContext = await GetExpressionExecutionContextAsync(transportMessage, binding, cancellationToken);
@@ -222,31 +199,31 @@ public class TriggerWorkflows(
             return false;
         }
     }
-    
+
     private async Task<ExpressionExecutionContext> GetExpressionExecutionContextAsync(KafkaTransportMessage transportMessage, BookmarkBinding? binding, CancellationToken cancellationToken)
     {
         var memory = new MemoryRegister();
         var expressionExecutionContext = new ExpressionExecutionContext(serviceProvider, memory, cancellationToken: cancellationToken);
         var transportMessageVariable = new Variable("transportMessage", transportMessage);
         var messageVariable = new Variable("message", transportMessage.Value);
-        
+
         transportMessageVariable.Set(expressionExecutionContext, transportMessage);
         messageVariable.Set(expressionExecutionContext, transportMessage.Value);
-        
-        if(binding == null)
+
+        if (binding == null)
         {
             return new ExpressionExecutionContext(serviceProvider, memory, cancellationToken: cancellationToken);
         }
-        
+
         var boundWorkflowInstanceId = binding.WorkflowInstanceId;
         var boundWorkflowInstance = await workflowInstanceStore.FindAsync(boundWorkflowInstanceId, cancellationToken);
-            
+
         if (boundWorkflowInstance == null)
         {
             logger.LogWarning("Could not find workflow instance with ID {WorkflowInstanceId}", boundWorkflowInstanceId);
             throw new InvalidOperationException($"Could not find workflow instance with ID {boundWorkflowInstanceId}");
         }
-        
+
         var workflowExecutionContext = await CreateWorkflowExecutionContextAsync(boundWorkflowInstance, cancellationToken);
         var bookmark = workflowExecutionContext.Bookmarks.FirstOrDefault(x => x.Id == binding.BookmarkId) ?? throw new InvalidOperationException($"Could not find bookmark with ID {binding.BookmarkId}");
         var activityInstanceId = bookmark.ActivityInstanceId!;
@@ -254,7 +231,7 @@ public class TriggerWorkflows(
         var parentExecutionContext = activityExecutionContext.ExpressionExecutionContext;
         expressionExecutionContext.ParentContext = parentExecutionContext;
         await variablePersistenceManager.LoadVariablesAsync(workflowExecutionContext);
-        
+
         return expressionExecutionContext;
     }
 
@@ -268,7 +245,7 @@ public class TriggerWorkflows(
     {
         return correlationStrategy.GetCorrelationId(transportMessage);
     }
-    
+
     private async Task<WorkflowExecutionContext> CreateWorkflowExecutionContextAsync(WorkflowInstance workflowInstance, CancellationToken cancellationToken)
     {
         var workflowDefinition = await workflowDefinitionService.FindWorkflowGraphAsync(workflowInstance.DefinitionVersionId, cancellationToken);
