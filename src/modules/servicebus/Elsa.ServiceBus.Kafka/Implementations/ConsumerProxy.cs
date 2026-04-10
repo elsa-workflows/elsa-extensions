@@ -7,6 +7,4 @@ namespace Elsa.ServiceBus.Kafka.Implementations;
 /// The transformer also returns an optional schema full name so that Avro schema identity is
 /// preserved as first-class metadata on the message rather than being derived from the value type.
 /// </summary>
-public record ConsumerProxy(
-    object Consumer,
-    Func<object?, (object? Value, string? SchemaFullName)>? ValueTransformer = null) : IConsumer;
+public record ConsumerProxy(object Consumer, Func<object?, (object? Value, string? SchemaFullName)>? ValueTransformer = null) : IConsumer;

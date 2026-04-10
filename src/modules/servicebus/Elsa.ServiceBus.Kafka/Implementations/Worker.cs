@@ -1,7 +1,7 @@
 using Confluent.Kafka;
 using Elsa.Extensions;
-using Elsa.ServiceBus.Kafka.Notifications;
 using Elsa.Mediator.Contracts;
+using Elsa.ServiceBus.Kafka.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -90,7 +90,7 @@ public class Worker<TKey, TValue>(WorkerContext workerContext, IConsumer<TKey, T
             return;
 
         _subscribedTopics = topicList.ToHashSet();
-        if(_subscribedTopics.Any())
+        if (_subscribedTopics.Any())
             consumer.Subscribe(_subscribedTopics);
         else
             consumer.Unsubscribe();
