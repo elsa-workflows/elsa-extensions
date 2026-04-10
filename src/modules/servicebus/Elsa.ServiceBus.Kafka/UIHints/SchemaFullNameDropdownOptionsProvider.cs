@@ -1,6 +1,7 @@
 using System.Reflection;
 using Confluent.SchemaRegistry;
 using Elsa.Workflows.UIHints.Dropdown;
+using Microsoft.Extensions.Options;
 
 namespace Elsa.ServiceBus.Kafka.UIHints;
 
@@ -9,7 +10,7 @@ namespace Elsa.ServiceBus.Kafka.UIHints;
 /// schema registries. Always includes a leading "(any)" option so the user can leave filtering disabled.
 /// Fails gracefully when no schema registries are configured or a registry is unreachable.
 /// </summary>
-public class SchemaFullNameDropdownOptionsProvider(ISchemaRegistryDefinitionEnumerator registryEnumerator) : DropDownOptionsProviderBase
+public class SchemaFullNameDropdownOptionsProvider(ISchemaRegistryDefinitionEnumerator registryEnumerator, IOptions<KafkaOptions> options) : DropDownOptionsProviderBase
 {
     private static readonly SelectListItem AnyOption = new("(any)", "");
 
@@ -18,6 +19,7 @@ public class SchemaFullNameDropdownOptionsProvider(ISchemaRegistryDefinitionEnum
         var items = new List<SelectListItem> { AnyOption };
         var registries = await registryEnumerator.EnumerateAsync(cancellationToken);
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var prefix = options.Value.SchemaFullNamePrefix;
 
         foreach (var registry in registries)
         {
@@ -50,7 +52,13 @@ public class SchemaFullNameDropdownOptionsProvider(ISchemaRegistryDefinitionEnum
 
                         var fullName = recordSchema.Fullname;
 
-                        if (!string.IsNullOrWhiteSpace(fullName) && seen.Add(fullName))
+                        if (string.IsNullOrWhiteSpace(fullName))
+                            continue;
+
+                        if (!string.IsNullOrEmpty(prefix) && !fullName.StartsWith(prefix, StringComparison.Ordinal))
+                            continue;
+
+                        if (seen.Add(fullName))
                             items.Add(new SelectListItem(fullName, fullName));
                     }
                     catch
@@ -68,4 +76,3 @@ public class SchemaFullNameDropdownOptionsProvider(ISchemaRegistryDefinitionEnum
         return items;
     }
 }
-
