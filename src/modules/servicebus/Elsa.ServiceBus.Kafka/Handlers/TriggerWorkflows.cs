@@ -129,7 +129,7 @@ public class TriggerWorkflows(
 
             if (!string.IsNullOrWhiteSpace(stimulus.SchemaFullName))
             {
-                if (transportMessage.Value is not Avro.Generic.GenericRecord record || record.Schema.Fullname != stimulus.SchemaFullName)
+                if (transportMessage.SchemaFullName != stimulus.SchemaFullName)
                     continue;
             }
 
@@ -164,7 +164,7 @@ public class TriggerWorkflows(
 
             if (!string.IsNullOrWhiteSpace(stimulus.SchemaFullName))
             {
-                if (transportMessage.Value is not Avro.Generic.GenericRecord record || record.Schema.Fullname != stimulus.SchemaFullName)
+                if (transportMessage.SchemaFullName != stimulus.SchemaFullName)
                     continue;
             }
 
