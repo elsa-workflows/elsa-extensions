@@ -127,6 +127,12 @@ public class TriggerWorkflows(
                     continue;
             }
 
+            if (!string.IsNullOrWhiteSpace(stimulus.SchemaFullName))
+            {
+                if (transportMessage.Value is not Avro.Generic.GenericRecord record || record.Schema.Fullname != stimulus.SchemaFullName)
+                    continue;
+            }
+
             var isMatch = await EvaluatePredicateAsync(transportMessage, stimulus, null, cancellationToken);
 
             if (isMatch)
@@ -155,6 +161,12 @@ public class TriggerWorkflows(
 
             if (stimulus.Topics.All(x => x != topic))
                 continue;
+
+            if (!string.IsNullOrWhiteSpace(stimulus.SchemaFullName))
+            {
+                if (transportMessage.Value is not Avro.Generic.GenericRecord record || record.Schema.Fullname != stimulus.SchemaFullName)
+                    continue;
+            }
 
             if (stimulus.IsLocal)
             {
