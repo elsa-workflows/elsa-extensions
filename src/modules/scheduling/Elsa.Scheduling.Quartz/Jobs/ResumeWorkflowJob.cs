@@ -3,6 +3,7 @@ using Elsa.Common.Multitenancy;
 using Elsa.Extensions;
 using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
+using Elsa.Scheduling.Quartz.Handlers;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Messages;
@@ -57,7 +58,7 @@ public class ResumeWorkflowJob(
             catch (Exception e)
             {
                 logger.LogError(e, "An error occurred while resuming workflow instance {WorkflowInstanceId}", workflowInstanceId);
-                await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
+                await context.DeleteJob(context.JobDetail.Key, cancellationToken);
             }
         }
     }
