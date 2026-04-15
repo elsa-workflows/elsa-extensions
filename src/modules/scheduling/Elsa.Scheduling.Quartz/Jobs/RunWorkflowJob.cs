@@ -2,7 +2,6 @@ using Elsa.Common.Multitenancy;
 using Elsa.Extensions;
 using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
-using Elsa.Scheduling.Quartz.Handlers;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Exceptions;
@@ -59,7 +58,7 @@ public class RunWorkflowJob(
             catch (WorkflowGraphNotFoundException e)
             {
                 logger.LogWarning(e, "Could not find workflow graph for workflow definition handle {WorkflowDefinitionHandle}", startRequest.WorkflowDefinitionHandle);
-                await context.DeleteJob(context.JobDetail.Key, cancellationToken);
+                await context.Scheduler.UnscheduleJob(context.Trigger.Key, cancellationToken);
             }
             catch (Exception e) when (transientExceptionDetector.IsTransient(e))
             {

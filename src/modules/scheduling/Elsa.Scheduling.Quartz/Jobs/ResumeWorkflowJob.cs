@@ -3,7 +3,6 @@ using Elsa.Common.Multitenancy;
 using Elsa.Extensions;
 using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
-using Elsa.Scheduling.Quartz.Handlers;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Messages;
