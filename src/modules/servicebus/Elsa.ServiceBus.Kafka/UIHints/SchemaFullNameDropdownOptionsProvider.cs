@@ -1,6 +1,7 @@
 using System.Reflection;
 using Confluent.SchemaRegistry;
 using Elsa.Workflows.UIHints.Dropdown;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Elsa.ServiceBus.Kafka.UIHints;
@@ -10,7 +11,7 @@ namespace Elsa.ServiceBus.Kafka.UIHints;
 /// schema registries. Always includes a leading "(any)" option so the user can leave filtering disabled.
 /// Fails gracefully when no schema registries are configured or a registry is unreachable.
 /// </summary>
-public class SchemaFullNameDropdownOptionsProvider(ISchemaRegistryDefinitionEnumerator registryEnumerator, IOptions<KafkaOptions> options) : DropDownOptionsProviderBase
+public class SchemaFullNameDropdownOptionsProvider(ISchemaRegistryDefinitionEnumerator registryEnumerator, IOptions<KafkaOptions> options, ILogger<SchemaFullNameDropdownOptionsProvider> logger) : DropDownOptionsProviderBase
 {
     private static readonly SelectListItem AnyOption = new("(any)", "");
 
@@ -61,15 +62,17 @@ public class SchemaFullNameDropdownOptionsProvider(ISchemaRegistryDefinitionEnum
                         if (seen.Add(fullName))
                             items.Add(new SelectListItem(fullName, fullName));
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         // Subject schema unreachable or unparseable; skip it.
+                        logger.LogWarning(ex, "Failed to fetch or parse schema for subject '{Subject}' in registry '{RegistryId}'.", subject, registry.Id);
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Registry unreachable or misconfigured; skip it and keep the "(any)" option.
+                logger.LogWarning(ex, "Failed to enumerate schemas from registry '{RegistryId}'. The dropdown will not include schemas from this registry.", registry.Id);
             }
         }
 
