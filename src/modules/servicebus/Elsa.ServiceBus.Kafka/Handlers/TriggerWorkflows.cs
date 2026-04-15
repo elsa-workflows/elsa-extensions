@@ -228,7 +228,20 @@ public class TriggerWorkflows(
         }
 
         var boundWorkflowInstanceId = binding.WorkflowInstanceId;
-        var boundWorkflowInstance = await workflowInstanceStore.FindAsync(boundWorkflowInstanceId, cancellationToken);
+
+        IDisposable? tenantCtx = null;
+        if (!string.IsNullOrEmpty(binding.TenantId))
+            tenantCtx = tenantAccessor.PushContext(new Tenant { Id = binding.TenantId, Name = binding.TenantId });
+
+        WorkflowInstance? boundWorkflowInstance;
+        try
+        {
+            boundWorkflowInstance = await workflowInstanceStore.FindAsync(boundWorkflowInstanceId, cancellationToken);
+        }
+        finally
+        {
+            tenantCtx?.Dispose();
+        }
 
         if (boundWorkflowInstance == null)
         {

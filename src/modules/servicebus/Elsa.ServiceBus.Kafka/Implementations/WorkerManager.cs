@@ -149,7 +149,7 @@ public class WorkerManager(IHasher hasher, IServiceScopeFactory scopeFactory) : 
             if (worker == null)
                 continue;
 
-            var bookmarkBinding = new BookmarkBinding(bookmark.WorkflowInstanceId, bookmark.CorrelationId, bookmark.Id, stimulus);
+            var bookmarkBinding = new BookmarkBinding(bookmark.WorkflowInstanceId, bookmark.CorrelationId, bookmark.Id, stimulus, ((Entity)bookmark).TenantId);
             worker.BindBookmark(bookmarkBinding);
         }
 
