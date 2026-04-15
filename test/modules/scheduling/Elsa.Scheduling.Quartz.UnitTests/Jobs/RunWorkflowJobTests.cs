@@ -65,7 +65,7 @@ public class RunWorkflowJobTests
 
         await _job.Execute(context);
 
-        scheduler.VerifyDeleted();
+        scheduler.VerifyUnscheduled();
     }
 
     [Theory]

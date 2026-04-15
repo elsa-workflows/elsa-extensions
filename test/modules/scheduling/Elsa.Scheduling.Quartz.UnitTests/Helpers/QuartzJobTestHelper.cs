@@ -130,6 +130,12 @@ public static class QuartzJobTestHelper
         /// </summary>
         public void VerifyDeleted() =>
             scheduler.Verify(s => s.DeleteJob(It.IsAny<JobKey>(), It.IsAny<CancellationToken>()), Times.Once);
+
+        /// <summary>
+        /// Verifies that the scheduler unscheduled a job exactly once.
+        /// </summary>
+        public void VerifyUnscheduled() =>
+            scheduler.Verify(s => s.UnscheduleJob(It.IsAny<TriggerKey>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
