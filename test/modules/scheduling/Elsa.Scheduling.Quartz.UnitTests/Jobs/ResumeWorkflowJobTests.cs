@@ -65,17 +65,22 @@ public class ResumeWorkflowJobTests
     }
 
     [Theory]
-    [InlineData(typeof(InvalidOperationException))]
-    [InlineData(typeof(ArgumentException))]
-    public async Task Execute_NonTransientException_DeletesJob(Type exceptionType)
+    [InlineData(typeof(InvalidOperationException), null)]
+    [InlineData(typeof(ArgumentException), null)]
+    [InlineData(typeof(InvalidOperationException), "ResumeWorkflowJob")]
+    [InlineData(typeof(ArgumentException), "ResumeWorkflowJob")]
+    public async Task Execute_NonTransientException_DeletesJob(Type exceptionType, string? jobKeyName)
     {
-        var (context, scheduler) = CreateJobExecutionContext();
+        var (context, scheduler) = CreateJobExecutionContext(jobKeyName: jobKeyName);
         _transientDetector.SetupIsTransient(false);
         _workflowRuntime.SetupCreateClientThrows((Exception)Activator.CreateInstance(exceptionType)!);
 
         await _job.Execute(context);
 
-        scheduler.VerifyDeleted();
+        if (string.IsNullOrEmpty(jobKeyName))
+            scheduler.VerifyDeleted();
+        else
+            scheduler.VerifyNotDeleted();
     }
 
     [Fact]
@@ -121,7 +126,8 @@ public class ResumeWorkflowJobTests
         Assert.Equal("activity-123", capturedRequest.ActivityHandle?.ActivityId);
     }
 
-    private static (IJobExecutionContext, Mock<QuartzScheduler>) CreateJobExecutionContext(string? activityHandle = null)
+    private static (IJobExecutionContext, Mock<QuartzScheduler>) CreateJobExecutionContext(string? activityHandle = null,
+        string? jobKeyName = null)
     {
         var jobData = new Dictionary<string, object>
         {
@@ -132,6 +138,6 @@ public class ResumeWorkflowJobTests
         if (activityHandle != null)
             jobData.Add("ActivityHandle", activityHandle);
 
-        return QuartzJobTestHelper.CreateJobExecutionContext(jobData);
+        return QuartzJobTestHelper.CreateJobExecutionContext(jobData, jobKeyName);
     }
 }

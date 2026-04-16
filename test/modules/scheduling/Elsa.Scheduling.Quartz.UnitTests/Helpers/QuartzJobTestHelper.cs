@@ -20,10 +20,11 @@ public static class QuartzJobTestHelper
     /// Creates a mock job execution context with the specified job data.
     /// </summary>
     public static (IJobExecutionContext Context, Mock<QuartzScheduler> Scheduler) CreateJobExecutionContext(
-        IDictionary<string, object> jobData)
+        IDictionary<string, object> jobData,
+        string? jobKeyName = null)
     {
         var jobDataMap = new JobDataMap(jobData);
-        var jobKey = new JobKey("test-job");
+        var jobKey = new JobKey(jobKeyName ?? "test-job");
         var triggerKey = new TriggerKey("test-trigger");
 
         var jobDetail = new Mock<IJobDetail>();
@@ -130,6 +131,12 @@ public static class QuartzJobTestHelper
         /// </summary>
         public void VerifyDeleted() =>
             scheduler.Verify(s => s.DeleteJob(It.IsAny<JobKey>(), It.IsAny<CancellationToken>()), Times.Once);
+
+        /// <summary>
+        /// Verifies that the scheduler did not delete a job.
+        /// </summary>
+        public void VerifyNotDeleted() =>
+            scheduler.Verify(s => s.DeleteJob(It.IsAny<JobKey>(), It.IsAny<CancellationToken>()), Times.Never);
 
         /// <summary>
         /// Verifies that the scheduler unscheduled a job exactly once.
