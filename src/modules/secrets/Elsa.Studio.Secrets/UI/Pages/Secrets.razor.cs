@@ -99,7 +99,7 @@ public partial class Secrets
 
     private async Task OnDeleteClicked(SecretModel model)
     {
-        var result = await DialogService.ShowMessageBox("Delete Secret?", "Are you sure you want to delete this secret?", yesText: "Delete", cancelText: "Cancel");
+        var result = await DialogService.ShowMessageBoxAsync("Delete Secret?", "Are you sure you want to delete this secret?", yesText: "Delete", cancelText: "Cancel");
 
         if (result != true)
             return;
@@ -112,7 +112,7 @@ public partial class Secrets
 
     private async Task OnBulkDeleteClicked()
     {
-        var result = await DialogService.ShowMessageBox("Delete Selected Secrets?", "Are you sure you want to delete the selected secrets?", yesText: "Delete", cancelText: "Cancel");
+        var result = await DialogService.ShowMessageBoxAsync("Delete Selected Secrets?", "Are you sure you want to delete the selected secrets?", yesText: "Delete", cancelText: "Cancel");
 
         if (result != true)
             return;
