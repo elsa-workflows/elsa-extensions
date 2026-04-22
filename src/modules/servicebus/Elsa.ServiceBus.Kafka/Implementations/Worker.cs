@@ -1,7 +1,7 @@
 using Confluent.Kafka;
 using Elsa.Extensions;
-using Elsa.ServiceBus.Kafka.Notifications;
 using Elsa.Mediator.Contracts;
+using Elsa.ServiceBus.Kafka.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -90,7 +90,7 @@ public class Worker<TKey, TValue>(WorkerContext workerContext, IConsumer<TKey, T
             return;
 
         _subscribedTopics = topicList.ToHashSet();
-        if(_subscribedTopics.Any())
+        if (_subscribedTopics.Any())
             consumer.Subscribe(_subscribedTopics);
         else
             consumer.Unsubscribe();
@@ -138,7 +138,14 @@ public class Worker<TKey, TValue>(WorkerContext workerContext, IConsumer<TKey, T
         var message = consumeResult.Message;
         var topic = consumeResult.Topic;
         var headers = message.Headers.ToDictionary(x => x.Key, x => x.GetValueBytes());
-        var notification = new TransportMessageReceived(this, new KafkaTransportMessage(message.Key, message.Value, topic, headers));
+
+        object? value = message.Value;
+        string? schemaFullName = null;
+
+        if (workerContext.ValueTransformer != null)
+            (value, schemaFullName) = workerContext.ValueTransformer(value);
+
+        var notification = new TransportMessageReceived(this, new KafkaTransportMessage(message.Key, value, topic, headers, schemaFullName));
         await using var scope = workerContext.ScopeFactory.CreateAsyncScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
         await mediator.SendAsync(notification, cancellationToken);

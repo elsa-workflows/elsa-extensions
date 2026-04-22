@@ -22,13 +22,14 @@ public class KafkaFeature(IModule module) : FeatureBase(module)
         return this;
     }
 
-    public KafkaFeature WithCorrelationStrategy<T>() where T : class, ICorrelationStrategy
+    public KafkaFeature WithCorrelationStrategy<T>()
+        where T : class, ICorrelationStrategy
     {
         Services.AddScoped<T>();
         _correlationStrategyFactory = sp => sp.GetRequiredService<T>();
         return this;
     }
-    
+
     public KafkaFeature WithCorrelationStrategy(Func<IServiceProvider, ICorrelationStrategy> correlationStrategyFactory)
     {
         _correlationStrategyFactory = correlationStrategyFactory;
@@ -72,14 +73,15 @@ public class KafkaFeature(IModule module) : FeatureBase(module)
             .AddScoped<IPropertyUIHandler, ConsumerDefinitionsDropdownOptionsProvider>()
             .AddScoped<IPropertyUIHandler, ProducerDefinitionsDropdownOptionsProvider>()
             .AddScoped<IPropertyUIHandler, TopicDefinitionsDropdownOptionsProvider>()
+            .AddScoped<IPropertyUIHandler, SchemaFullNameDropdownOptionsProvider>()
             .AddScoped<HeaderCorrelationStrategy>()
             .AddScoped<NullCorrelationStrategy>()
             .AddScoped(_correlationStrategyFactory)
             .AddHandlersFrom<KafkaFeature>()
             .AddConsumerFactory<DefaultConsumerFactory>()
             .AddConsumerFactory<ExpandoObjectConsumerFactory>()
+            .AddConsumerFactory<AvroConsumerFactory>()
             .AddProducerFactory<DefaultProducerFactory>()
-            .AddProducerFactory<ExpandoObjectProducerFactory>()
-            ;
+            .AddProducerFactory<ExpandoObjectProducerFactory>();
     }
 }
