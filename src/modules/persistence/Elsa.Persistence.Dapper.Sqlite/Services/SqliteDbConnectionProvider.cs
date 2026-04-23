@@ -1,12 +1,12 @@
 using System.Data;
 using Dapper;
 using Elsa.Persistence.Dapper.Contracts;
-using Elsa.Persistence.Dapper.Dialects;
-using Elsa.Persistence.Dapper.TypeHandlers.Sqlite;
+using Elsa.Persistence.Dapper.Sqlite.Dialects;
+using Elsa.Persistence.Dapper.Sqlite.TypeHandlers;
 using JetBrains.Annotations;
 using Microsoft.Data.Sqlite;
 
-namespace Elsa.Persistence.Dapper.Services;
+namespace Elsa.Persistence.Dapper.Sqlite.Services;
 
 /// <summary>
 /// Provides a SQLite connection to the database.
@@ -19,6 +19,7 @@ public class SqliteDbConnectionProvider : IDbConnectionProvider
     static SqliteDbConnectionProvider()
     {
         // See: https://learn.microsoft.com/en-us/dotnet/standard/data/sqlite/dapper-limitations#data-types
+        SqlMapper.AddTypeHandler(new GuidHandler());
         SqlMapper.AddTypeHandler(new DateTimeOffsetHandler());
         SqlMapper.AddTypeHandler(new TimeSpanHandler());
     }
@@ -52,5 +53,5 @@ public class SqliteDbConnectionProvider : IDbConnectionProvider
     }
 
     /// <inheritdoc />
-    public ISqlDialect Dialect => new SqliteDialect();
+    public ISqlDialect Dialect { get; } = new SqliteDialect();
 }

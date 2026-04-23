@@ -6,7 +6,7 @@ using Elsa.Persistence.Dapper.Contracts;
 namespace Elsa.Persistence.Dapper.Abstractions;
 
 /// <summary>
-/// Provides a base implementation of <see cref="ISqlDialect"/>, where the dialect defaults to SQLite.
+/// Provides a base implementation of <see cref="ISqlDialect"/>, where the dialect defaults to SQL Server.
 /// </summary>
 public abstract class SqlDialectBase : ISqlDialect
 {
