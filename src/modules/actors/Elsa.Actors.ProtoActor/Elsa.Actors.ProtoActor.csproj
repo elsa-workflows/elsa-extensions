@@ -25,6 +25,7 @@
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Tenants"/>
         <PackageReference Include="Elsa.Workflows.Core"/>
+    <PackageReference Include="OpenTelemetry.Api" />
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
