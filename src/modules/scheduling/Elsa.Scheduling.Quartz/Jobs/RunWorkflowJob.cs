@@ -58,7 +58,7 @@ public class RunWorkflowJob(
             catch (WorkflowGraphNotFoundException e)
             {
                 logger.LogWarning(e, "Could not find workflow graph for workflow definition handle {WorkflowDefinitionHandle}", startRequest.WorkflowDefinitionHandle);
-                await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
+                await context.Scheduler.UnscheduleJob(context.Trigger.Key, cancellationToken);
             }
             catch (Exception e) when (transientExceptionDetector.IsTransient(e))
             {
@@ -68,7 +68,7 @@ public class RunWorkflowJob(
             catch (Exception e)
             {
                 logger.LogError(e, "An error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
-                await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
+                await context.DeleteJob(context.JobDetail.Key, cancellationToken);
             }
         }
     }

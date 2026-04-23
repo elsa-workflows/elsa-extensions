@@ -57,7 +57,7 @@ public class ResumeWorkflowJob(
             catch (Exception e)
             {
                 logger.LogError(e, "An error occurred while resuming workflow instance {WorkflowInstanceId}", workflowInstanceId);
-                await context.Scheduler.DeleteJob(context.JobDetail.Key, cancellationToken);
+                await context.DeleteJob(context.JobDetail.Key, cancellationToken);
             }
         }
     }
