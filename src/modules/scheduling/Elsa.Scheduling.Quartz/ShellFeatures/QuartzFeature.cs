@@ -1,5 +1,5 @@
 using CShells.Features;
-using CShells.Hosting;
+using CShells.Lifecycle;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
@@ -59,7 +59,7 @@ public class QuartzFeature : IShellFeature
             };
         });
 
-        services.AddSingleton<IShellActivatedHandler>(sp => sp.GetRequiredService<QuartzShellLifecycleHandler>());
-        services.AddSingleton<IShellDeactivatingHandler>(sp => sp.GetRequiredService<QuartzShellLifecycleHandler>());
+        services.AddSingleton<IShellInitializer>(sp => sp.GetRequiredService<QuartzShellLifecycleHandler>());
+        services.AddSingleton<IDrainHandler>(sp => sp.GetRequiredService<QuartzShellLifecycleHandler>());
     }
 }

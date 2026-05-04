@@ -1,5 +1,5 @@
 using CShells.Features;
-using CShells.Hosting;
+using CShells.Lifecycle;
 using Elsa.Scheduling.Quartz.EFCore.MySql;
 using Elsa.Scheduling.Quartz.ShellFeatures;
 using JetBrains.Annotations;
@@ -35,7 +35,7 @@ public class QuartzMySqlFeature : IShellFeature
         else
             services.AddDbContextFactory<MySqlQuartzDbContext>(Configure);
 
-        services.AddSingleton<IShellActivatedHandler>(sp =>
+        services.AddTransient<IShellInitializer>(sp =>
             new EfCoreMigrationHandler(sp.GetRequiredService<IDbContextFactory<MySqlQuartzDbContext>>()));
 
         services.AddQuartz(quartz =>
@@ -58,10 +58,9 @@ public class QuartzMySqlFeature : IShellFeature
 
 
 /// Runs EF Core migrations before the Quartz scheduler starts on shell activation.
-[ShellHandlerOrder(-100)]
-file sealed class EfCoreMigrationHandler(IDbContextFactory<MySqlQuartzDbContext> factory) : IShellActivatedHandler
+file sealed class EfCoreMigrationHandler(IDbContextFactory<MySqlQuartzDbContext> factory) : IShellInitializer
 {
-    public async Task OnActivatedAsync(CancellationToken cancellationToken = default)
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await factory.CreateDbContextAsync(cancellationToken);
         await db.Database.MigrateAsync(cancellationToken);

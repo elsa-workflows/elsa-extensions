@@ -1,4 +1,4 @@
-using CShells.Hosting;
+using CShells.Lifecycle;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using IQuartzScheduler = Quartz.IScheduler;
@@ -19,7 +19,7 @@ public class QuartzShellLifecycleHandler(
     IQuartzSchedulerFactory schedulerFactory,
     IHostApplicationLifetime appLifetime,
     ILogger<QuartzShellLifecycleHandler> logger)
-    : IShellActivatedHandler, IShellDeactivatingHandler
+    : IShellInitializer, IDrainHandler
 {
     private IQuartzScheduler? _scheduler;
     private Task? _startupTask;
@@ -37,7 +37,7 @@ public class QuartzShellLifecycleHandler(
     public bool WaitForJobsToComplete { get; set; } = true;
 
     /// <inheritdoc />
-    public async Task OnActivatedAsync(CancellationToken cancellationToken = default)
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Starting Quartz scheduler for shell");
         try
@@ -55,7 +55,7 @@ public class QuartzShellLifecycleHandler(
     }
 
     /// <inheritdoc />
-    public async Task OnDeactivatingAsync(CancellationToken cancellationToken = default)
+    public async Task DrainAsync(IDrainExtensionHandle extensionHandle, CancellationToken cancellationToken)
     {
         if (_scheduler is null || _startupTask is null) return;
 
@@ -89,5 +89,3 @@ public class QuartzShellLifecycleHandler(
             await _scheduler!.Start(cancellationToken).ConfigureAwait(false);
     }
 }
-
-

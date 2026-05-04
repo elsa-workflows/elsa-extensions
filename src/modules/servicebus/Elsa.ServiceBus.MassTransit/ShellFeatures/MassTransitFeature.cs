@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Reflection;
 using CShells.Features;
-using CShells.Hosting;
+using CShells.Lifecycle;
 using Elsa.ServiceBus.MassTransit.Configurators;
 using Elsa.ServiceBus.MassTransit.Contracts;
 using Elsa.ServiceBus.MassTransit.Extensions;
@@ -68,12 +68,11 @@ public class MassTransitFeature(ShellFeatureContext context) : IShellFeature, IP
             }
         });
 
-        // Register shell activation handler to start/stop the bus when shell activates/deactivates.
+        // Register shell lifecycle handler to start/stop the bus when shell activates/deactivates.
         // This is necessary because MassTransit's hosted service is registered in the shell's
         // service collection, but only hosted services in the root container are started by the host.
-        services.AddSingleton<MassTransitShellActivatedHandler>();
-        services.AddSingleton<IShellActivatedHandler>(sp => sp.GetRequiredService<MassTransitShellActivatedHandler>());
-        services.AddSingleton<IShellDeactivatingHandler>(sp => sp.GetRequiredService<MassTransitShellActivatedHandler>());
+        services.AddTransient<IShellInitializer, MassTransitShellLifecycleHandler>();
+        services.AddTransient<IDrainHandler, MassTransitShellLifecycleHandler>();
     }
 
     /// <inheritdoc />

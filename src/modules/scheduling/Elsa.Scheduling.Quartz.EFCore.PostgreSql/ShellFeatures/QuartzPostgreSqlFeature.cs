@@ -1,5 +1,5 @@
 using CShells.Features;
-using CShells.Hosting;
+using CShells.Lifecycle;
 using Elsa.Scheduling.Quartz.EFCore.PostgreSql;
 using Elsa.Scheduling.Quartz.ShellFeatures;
 using JetBrains.Annotations;
@@ -35,7 +35,7 @@ public class QuartzPostgreSqlFeature : IShellFeature
         else
             services.AddDbContextFactory<PostgreSqlQuartzDbContext>(Configure);
 
-        services.AddSingleton<IShellActivatedHandler>(sp =>
+        services.AddTransient<IShellInitializer>(sp =>
             new EfCoreMigrationHandler(sp.GetRequiredService<IDbContextFactory<PostgreSqlQuartzDbContext>>()));
 
         services.AddQuartz(quartz =>
@@ -61,10 +61,9 @@ public class QuartzPostgreSqlFeature : IShellFeature
 }
 
 /// Runs EF Core migrations before the Quartz scheduler starts on shell activation.
-[ShellHandlerOrder(-100)]
-file sealed class EfCoreMigrationHandler(IDbContextFactory<PostgreSqlQuartzDbContext> factory) : IShellActivatedHandler
+file sealed class EfCoreMigrationHandler(IDbContextFactory<PostgreSqlQuartzDbContext> factory) : IShellInitializer
 {
-    public async Task OnActivatedAsync(CancellationToken cancellationToken = default)
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await factory.CreateDbContextAsync(cancellationToken);
         await db.Database.MigrateAsync(cancellationToken);

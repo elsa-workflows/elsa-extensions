@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup Label="ProtoActor">
+        <PackageReference Include="OpenTelemetry.Api"/>
         <PackageReference Include="Proto.Actor"/>
         <PackageReference Include="Proto.Cluster"/>
         <PackageReference Include="Proto.Cluster.TestProvider"/>

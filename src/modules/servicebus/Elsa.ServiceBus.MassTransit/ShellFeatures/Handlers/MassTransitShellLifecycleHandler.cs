@@ -1,4 +1,4 @@
-using CShells.Hosting;
+using CShells.Lifecycle;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
@@ -19,12 +19,12 @@ namespace Elsa.ServiceBus.MassTransit.ShellFeatures.Handlers;
 /// for shell-scoped MassTransit instances.
 /// </para>
 /// </remarks>
-public class MassTransitShellActivatedHandler(IBus bus, ILogger<MassTransitShellActivatedHandler> logger) : IShellActivatedHandler, IShellDeactivatingHandler
+public class MassTransitShellLifecycleHandler(IBus bus, ILogger<MassTransitShellLifecycleHandler> logger) : IShellInitializer, IDrainHandler
 {
     private readonly IBusControl _busControl = (IBusControl)bus;
 
     /// <inheritdoc />
-    public async Task OnActivatedAsync(CancellationToken cancellationToken = default)
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -40,7 +40,7 @@ public class MassTransitShellActivatedHandler(IBus bus, ILogger<MassTransitShell
     }
 
     /// <inheritdoc />
-    public async Task OnDeactivatingAsync(CancellationToken cancellationToken = default)
+    public async Task DrainAsync(IDrainExtensionHandle extensionHandle, CancellationToken cancellationToken)
     {
         try
         {

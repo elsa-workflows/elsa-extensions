@@ -24,7 +24,8 @@
 
   <!--Overridden for vulnerability reasons with dependencies referencing older versions.-->
   <ItemGroup>
-    <PackageReference Include="System.Formats.Asn1" Version="10.0.0" />
+    <PackageReference Include="NuGet.Packaging" Version="7.0.3" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.6" />
   </ItemGroup>
 
 </Project>
