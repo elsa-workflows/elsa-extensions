@@ -13,7 +13,7 @@ namespace Elsa.Scheduling.Quartz.ShellFeatures;
     DisplayName = "Quartz Scheduler",
     Description = "Enables Quartz.NET for background job scheduling")]
 [UsedImplicitly]
-public class QuartzFeature : IShellFeature
+public class QuartzFeature : IShellFeature, IPostConfigureShellServices
 {
     /// <summary>
     /// Optional delay before the scheduler begins processing jobs after shell activation.
@@ -59,7 +59,11 @@ public class QuartzFeature : IShellFeature
             };
         });
 
-        services.AddSingleton<IShellInitializer>(sp => sp.GetRequiredService<QuartzShellLifecycleHandler>());
         services.AddSingleton<IDrainHandler>(sp => sp.GetRequiredService<QuartzShellLifecycleHandler>());
+    }
+
+    public void PostConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton<IShellInitializer>(sp => sp.GetRequiredService<QuartzShellLifecycleHandler>());
     }
 }
