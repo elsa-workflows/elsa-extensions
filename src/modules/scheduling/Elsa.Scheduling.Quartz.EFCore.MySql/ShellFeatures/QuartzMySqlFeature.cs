@@ -35,8 +35,7 @@ public class QuartzMySqlFeature : IShellFeature
         else
             services.AddDbContextFactory<MySqlQuartzDbContext>(Configure);
 
-        services.AddTransient<IShellInitializer>(sp =>
-            new EfCoreMigrationHandler(sp.GetRequiredService<IDbContextFactory<MySqlQuartzDbContext>>()));
+        services.AddShellInitializer<EfCoreMigrationHandler>(LifecyclePhase.Prepare, order: 100);
 
         services.AddQuartz(quartz =>
         {

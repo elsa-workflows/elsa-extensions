@@ -2,6 +2,7 @@ using CShells.Features;
 using CShells.Lifecycle;
 using Elsa.Scheduling.Quartz.ShellFeatures;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Elsa.Scheduling.Quartz.UnitTests.ShellFeatures;
 
@@ -24,6 +25,16 @@ public class QuartzFeatureTests
         Assert.Equal(2, initializerRegistrations.Count);
         Assert.Equal(typeof(DependentInitializer), initializerRegistrations[0].ImplementationType);
         Assert.NotNull(initializerRegistrations[1].ImplementationFactory);
+    }
+
+    [Fact]
+    public void SchedulerInitializer_RunsInStartPhase()
+    {
+        var order = typeof(QuartzShellLifecycleHandler).GetCustomAttribute<LifecycleOrderAttribute>();
+
+        Assert.NotNull(order);
+        Assert.Equal(LifecyclePhase.Start, order.Phase);
+        Assert.Equal(100, order.Order);
     }
 
     private sealed class DependentInitializer : IShellInitializer

@@ -35,8 +35,7 @@ public class QuartzPostgreSqlFeature : IShellFeature
         else
             services.AddDbContextFactory<PostgreSqlQuartzDbContext>(Configure);
 
-        services.AddTransient<IShellInitializer>(sp =>
-            new EfCoreMigrationHandler(sp.GetRequiredService<IDbContextFactory<PostgreSqlQuartzDbContext>>()));
+        services.AddShellInitializer<EfCoreMigrationHandler>(LifecyclePhase.Prepare, order: 100);
 
         services.AddQuartz(quartz =>
         {

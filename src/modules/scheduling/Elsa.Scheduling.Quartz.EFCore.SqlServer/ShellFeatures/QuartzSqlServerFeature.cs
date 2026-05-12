@@ -35,8 +35,7 @@ public class QuartzSqlServerFeature : IShellFeature
         else
             services.AddDbContextFactory<SqlServerQuartzDbContext>(Configure);
 
-        services.AddTransient<IShellInitializer>(sp =>
-            new EfCoreMigrationHandler(sp.GetRequiredService<IDbContextFactory<SqlServerQuartzDbContext>>()));
+        services.AddShellInitializer<EfCoreMigrationHandler>(LifecyclePhase.Prepare, order: 100);
 
         // AddQuartz is additive — layers the persistent store onto the base
         // AddQuartz call already made by QuartzFeature (which ran first via DependsOn).

@@ -15,6 +15,7 @@ namespace Elsa.Scheduling.Quartz.ShellFeatures;
 /// so the <c>AwaitApplicationStarted</c> deferral logic from <c>QuartzHostedService</c>
 /// is intentionally omitted — it is irrelevant in this context.
 /// </remarks>
+[LifecycleOrder(LifecyclePhase.Start, 100)]
 public class QuartzShellLifecycleHandler(
     IQuartzSchedulerFactory schedulerFactory,
     IHostApplicationLifetime appLifetime,
