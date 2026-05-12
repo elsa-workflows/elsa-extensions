@@ -38,9 +38,7 @@ public class QuartzSqliteFeature : IShellFeature, IPostConfigureShellServices
         else
             services.AddDbContextFactory<SqliteQuartzDbContext>(Configure);
 
-        services.AddTransient<IShellInitializer>(sp =>
-            new EfCoreMigrationHandler(
-                sp.GetRequiredService<IDbContextFactory<SqliteQuartzDbContext>>()));
+        services.AddShellInitializer<EfCoreMigrationHandler>(LifecyclePhase.Prepare, order: 100);
     }
 
     public void PostConfigureServices(IServiceCollection services)
