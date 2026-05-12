@@ -32,12 +32,12 @@ jobs:
     name: ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             8.x
             9.x
             10.x
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: 'Run: Compile, Test, Pack'
         run: ./build.cmd Compile Test Pack
