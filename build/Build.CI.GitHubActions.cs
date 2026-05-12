@@ -49,7 +49,7 @@ class GitHubActionsSetupDotNetStep : GitHubActionsStep
 
     public override void Write(CustomFileWriter writer)
     {
-        writer.WriteLine("- uses: actions/setup-dotnet@v4");
+        writer.WriteLine("- uses: actions/setup-dotnet@v5");
 
         using (writer.Indent())
         {
