@@ -15,7 +15,7 @@ namespace Elsa.Scheduling.Quartz.EFCore.Sqlite.ShellFeatures;
 [ShellFeature(
     DisplayName = "Quartz SQLite Store",
     Description = "Configures Quartz.NET to persist jobs and triggers in SQLite",
-    DependsOn = [typeof(QuartzFeature)])]
+    DependsOn = [typeof(QuartzSchedulerFeature)])]
 [UsedImplicitly]
 public class QuartzSqliteFeature : IShellFeature, IPostConfigureShellServices
 {

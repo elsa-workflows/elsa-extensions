@@ -15,7 +15,7 @@ namespace Elsa.Scheduling.Quartz.EFCore.PostgreSql.ShellFeatures;
 [ShellFeature(
     DisplayName = "Quartz PostgreSQL Store",
     Description = "Configures Quartz.NET to persist jobs and triggers in PostgreSQL",
-    DependsOn = [typeof(QuartzFeature)])]
+    DependsOn = [typeof(QuartzSchedulerFeature)])]
 [UsedImplicitly]
 public class QuartzPostgreSqlFeature : IShellFeature
 {

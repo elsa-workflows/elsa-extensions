@@ -15,7 +15,7 @@ namespace Elsa.Scheduling.Quartz.EFCore.MySql.ShellFeatures;
 [ShellFeature(
     DisplayName = "Quartz MySQL Store",
     Description = "Configures Quartz.NET to persist jobs and triggers in MySQL",
-    DependsOn = [typeof(QuartzFeature)])]
+    DependsOn = [typeof(QuartzSchedulerFeature)])]
 [UsedImplicitly]
 public class QuartzMySqlFeature : IShellFeature
 {

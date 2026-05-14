@@ -15,7 +15,7 @@ namespace Elsa.Scheduling.Quartz.EFCore.SqlServer.ShellFeatures;
 [ShellFeature(
     DisplayName = "Quartz SQL Server Store",
     Description = "Configures Quartz.NET to persist jobs and triggers in SQL Server",
-    DependsOn = [typeof(QuartzFeature)])]
+    DependsOn = [typeof(QuartzSchedulerFeature)])]
 [UsedImplicitly]
 public class QuartzSqlServerFeature : IShellFeature
 {
