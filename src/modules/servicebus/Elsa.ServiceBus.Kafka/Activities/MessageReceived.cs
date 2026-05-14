@@ -16,12 +16,12 @@ public class MessageReceived : Trigger<object>
     internal const string InputKey = "TransportMessage";
 
     /// <inheritdoc />
-    public MessageReceived([CallerFilePath] string? source = null, [CallerLineNumber] int? line = null) : base(source, line)
-    {
-    }
+    public MessageReceived([CallerFilePath] string? source = null, [CallerLineNumber] int? line = null)
+        : base(source, line) { }
 
     /// <inheritdoc />
-    public MessageReceived(Input<string> consumerDefinitionId, [CallerFilePath] string? source = null, [CallerLineNumber] int? line = null) : base(source, line)
+    public MessageReceived(Input<string> consumerDefinitionId, [CallerFilePath] string? source = null, [CallerLineNumber] int? line = null)
+        : base(source, line)
     {
         ConsumerDefinitionId = consumerDefinitionId;
     }
@@ -29,34 +29,28 @@ public class MessageReceived : Trigger<object>
     /// <summary>
     /// The consumer to read from.
     /// </summary>
-    [Input(
-        DisplayName = "Consumer",
-        Description = "The consumer to connect to.",
-        UIHandler = typeof(ConsumerDefinitionsDropdownOptionsProvider),
-        UIHint = InputUIHints.DropDown
-    )]
+    [Input(DisplayName = "Consumer", Description = "The consumer to connect to.", UIHandler = typeof(ConsumerDefinitionsDropdownOptionsProvider), UIHint = InputUIHints.DropDown)]
     public Input<string> ConsumerDefinitionId { get; set; } = null!;
 
     /// <summary>
     /// The topics to read from.
     /// </summary>
-    [Input(
-        DisplayName = "Topics",
-        Description = "The topics to read from.",
-        UIHint = InputUIHints.MultiText
-    )]
+    [Input(DisplayName = "Topics", Description = "The topics to read from.", UIHint = InputUIHints.MultiText)]
     public Input<ICollection<string>> Topics { get; set; } = null!;
 
-    [Input(
-        Description = "Optional. A predicate to filter messages.",
-        AutoEvaluate = false,
-        DefaultSyntax = "JavaScript",
-        UIHint = InputUIHints.ExpressionEditor
-    )]
+    [Input(Description = "Optional. A predicate to filter messages.", AutoEvaluate = false, DefaultSyntax = "JavaScript", UIHint = InputUIHints.ExpressionEditor)]
     public Input<bool> Predicate { get; set; } = null!;
 
     [Input(DisplayName = "Local", Description = "Whether the event is local to the workflow. When checked, only events delivered to this workflow instance will resume this activity.")]
     public Input<bool> IsLocal { get; set; } = null!;
+
+    /// <summary>
+    /// Optional. When set, only Avro messages whose schema full name matches this value will trigger the activity.
+    /// Requires the consumer to use <see cref="Factories.AvroConsumerFactory"/>.
+    /// Example: <c>com.example.OrderPlaced</c>
+    /// </summary>
+    [Input(DisplayName = "Schema Full Name", Description = "Optional. Only process messages whose Avro schema full name matches this value. Requires an Avro consumer. Leave empty to process all messages.", UIHandler = typeof(SchemaFullNameDropdownOptionsProvider), UIHint = InputUIHints.DropDown)]
+    public Input<string?> SchemaFullName { get; set; } = null!;
 
     /// <summary>
     /// The received transport message.
@@ -106,6 +100,7 @@ public class MessageReceived : Trigger<object>
         var inputDescriptor = activityDescriptor.GetWrappedInputPropertyDescriptor(activity, nameof(Predicate));
         var predicateInput = (Input?)inputDescriptor!.ValueGetter(activity);
         var predicateExpression = predicateInput?.Expression;
+        var schemaFullName = SchemaFullName.GetOrDefault(context);
 
         return new MessageReceivedStimulus
         {
@@ -113,6 +108,7 @@ public class MessageReceived : Trigger<object>
             Topics = topics.Distinct().ToList(),
             IsLocal = isLocal,
             Predicate = predicateExpression,
+            SchemaFullName = string.IsNullOrWhiteSpace(schemaFullName) ? null : schemaFullName,
         };
     }
 }
