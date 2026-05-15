@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Description>
+			Provides Dapper implementations of PostgreSQL.
+		</Description>
+		<PackageTags>elsa extension module persistence dapper postgresql</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Elsa.Persistence.Dapper\Elsa.Persistence.Dapper.csproj"/>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Npgsql"/>
+	</ItemGroup>
+
+</Project>

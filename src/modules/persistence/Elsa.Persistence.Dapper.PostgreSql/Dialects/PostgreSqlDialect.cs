@@ -1,9 +1,9 @@
 using Elsa.Persistence.Dapper.Abstractions;
 
-namespace Elsa.Persistence.Dapper.Dialects;
+namespace Elsa.Persistence.Dapper.PostgreSql.Dialects;
 
 /// <summary>
-/// Represents a SQL Server dialect.
+/// Represents a PostgreSQL dialect.
 /// </summary>
 public class PostgreSqlDialect : SqlDialectBase
 {

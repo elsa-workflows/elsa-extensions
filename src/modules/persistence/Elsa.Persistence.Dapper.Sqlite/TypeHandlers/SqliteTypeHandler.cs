@@ -1,7 +1,7 @@
 using System.Data;
 using Dapper;
 
-namespace Elsa.Persistence.Dapper.TypeHandlers.Sqlite;
+namespace Elsa.Persistence.Dapper.Sqlite.TypeHandlers;
 
 /// <summary>
 /// Represents a SQLite type handler.

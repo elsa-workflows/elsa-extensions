@@ -2,7 +2,7 @@ using System.Text;
 using Elsa.Common.Models;
 using Elsa.Persistence.Dapper.Abstractions;
 
-namespace Elsa.Persistence.Dapper.Dialects;
+namespace Elsa.Persistence.Dapper.Sqlite.Dialects;
 
 /// <summary>
 /// Represents a SQLite dialect.
