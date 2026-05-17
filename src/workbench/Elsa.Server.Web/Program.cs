@@ -8,6 +8,7 @@ using Elsa.Common.RecurringTasks;
 using Elsa.DropIns.Extensions;
 using Elsa.Expressions.Helpers;
 using Elsa.Extensions;
+using Elsa.FakeData.Extensions;
 using Elsa.Features.Services;
 using Elsa.Identity.Multitenancy;
 using Elsa.OpenTelemetry.Middleware;
@@ -487,6 +488,7 @@ services
                     alterations.UseMassTransitDispatcher();
                 }
             })
+            .UseFakeData()
             .UseOpenTelemetry(otel => otel.UseNewRootActivityForRemoteParent = true)
             .UseWorkflowContexts();
 

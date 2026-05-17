@@ -1,6 +1,7 @@
 using Elsa.Agents;
 using Elsa.Expressions.JavaScript.Libraries.Extensions;
 using Elsa.Extensions;
+using Elsa.FakeData.Extensions;
 using Elsa.Persistence.EFCore.Extensions;
 using Elsa.Persistence.EFCore.Modules.Management;
 using Elsa.Persistence.EFCore.Modules.Runtime;
@@ -139,6 +140,7 @@ services
             .UseEmail(email => email.ConfigureOptions = options => configuration.GetSection("Smtp").Bind(options))
             .UseWebhooks(webhooks => webhooks.ConfigureSinks = options => builder.Configuration.GetSection("Webhooks:Sinks").Bind(options))
             .UseWorkflowsApi()
+            .UseFakeData()
             .AddActivitiesFrom<Program>()
             .AddWorkflowsFrom<Program>();
 
