@@ -1,0 +1,16 @@
+{
+  "features": [
+    {
+      "clrTypeName": "Elsa.ServiceBus.MassTransit.RabbitMq.ShellFeatures.MassTransitRabbitMqFeature",
+      "infrastructure": [
+        {
+          "id": "rabbitmq-broker",
+          "kind": "message-broker",
+          "reason": "Configures MassTransit to use RabbitMQ as its transport.",
+          "providers": [ "RabbitMQ" ],
+          "configurationKeys": [ "RabbitMq" ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 using CShells.Features;
 using CShells.Lifecycle;
+using Elsa.PackageManifest.Generator.Hints;
 using Elsa.Scheduling.Quartz.EFCore.MySql;
 using Elsa.Scheduling.Quartz.ShellFeatures;
 using JetBrains.Annotations;
@@ -20,12 +21,31 @@ namespace Elsa.Scheduling.Quartz.EFCore.MySql.ShellFeatures;
 public class QuartzMySqlFeature : IShellFeature
 {
     /// <summary>The MySQL connection string.</summary>
+    [ManifestSetting(
+        DisplayName = "Connection string",
+        Description = "The MySQL connection string used by the Quartz persistent job store.",
+        Category = "Persistence",
+        Secret = true,
+        Required = true,
+        HasRequired = true,
+        RestartRequired = true)]
     public string ConnectionString { get; set; } = "Server=localhost;Database=quartz;User=root;Password=root;";
 
     /// <summary>Enable Quartz clustering. Defaults to <c>true</c>.</summary>
+    [ManifestSetting(
+        DisplayName = "Use clustering",
+        Description = "Enable Quartz clustering.",
+        Category = "Persistence",
+        RestartRequired = true)]
     public bool UseClustering { get; set; } = true;
 
     /// <summary>Use a pooled <c>IDbContextFactory</c>. Defaults to <c>false</c>.</summary>
+    [ManifestSetting(
+        DisplayName = "Use context pooling",
+        Description = "Use a pooled EF Core IDbContextFactory.",
+        Category = "Persistence",
+        Advanced = true,
+        RestartRequired = true)]
     public bool UseContextPooling { get; set; }
 
     public void ConfigureServices(IServiceCollection services)

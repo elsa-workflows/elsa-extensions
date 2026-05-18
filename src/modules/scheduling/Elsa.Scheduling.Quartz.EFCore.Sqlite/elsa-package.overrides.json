@@ -1,0 +1,16 @@
+{
+  "features": [
+    {
+      "clrTypeName": "Elsa.Scheduling.Quartz.EFCore.Sqlite.ShellFeatures.QuartzSqliteFeature",
+      "infrastructure": [
+        {
+          "id": "sqlite-database",
+          "kind": "database",
+          "reason": "Stores Quartz scheduler data in SQLite.",
+          "providers": [ "SQLite" ],
+          "configurationKeys": [ "ConnectionString" ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 using CShells.Features;
 using CShells.Lifecycle;
+using Elsa.PackageManifest.Generator.Hints;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
@@ -18,21 +19,42 @@ public class QuartzFeature : IShellFeature, IPostConfigureShellServices
     /// <summary>
     /// Optional delay before the scheduler begins processing jobs after shell activation.
     /// </summary>
+    [ManifestSetting(
+        DisplayName = "Start delay",
+        Description = "Optional delay before the scheduler begins processing jobs after shell activation.",
+        Category = "Scheduler",
+        Advanced = true,
+        RestartRequired = true)]
     public TimeSpan? StartDelay { get; set; }
 
     /// <summary>
     /// Whether to wait for running jobs to complete before the scheduler shuts down on
     /// shell deactivation. Defaults to <c>true</c>.
     /// </summary>
+    [ManifestSetting(
+        DisplayName = "Wait for jobs to complete",
+        Description = "Wait for running jobs to complete before the scheduler shuts down on shell deactivation.",
+        Category = "Scheduler",
+        RestartRequired = true)]
     public bool WaitForJobsToComplete { get; set; } = true;
 
     /// <summary>
     /// The Quartz scheduler instance ID. Use <c>"AUTO"</c> (default) for automatic
     /// generation, which is required for clustering.
     /// </summary>
+    [ManifestSetting(
+        DisplayName = "Scheduler ID",
+        Description = "The Quartz scheduler instance ID. Use AUTO for automatic generation, which is required for clustering.",
+        Category = "Scheduler",
+        RestartRequired = true)]
     public string SchedulerId { get; set; } = "AUTO";
 
     /// <summary>The Quartz scheduler name. Defaults to <c>"ElsaScheduler"</c>.</summary>
+    [ManifestSetting(
+        DisplayName = "Scheduler name",
+        Description = "The Quartz scheduler name.",
+        Category = "Scheduler",
+        RestartRequired = true)]
     public string SchedulerName { get; set; } = "ElsaScheduler";
 
     public void ConfigureServices(IServiceCollection services)

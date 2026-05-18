@@ -17,4 +17,8 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)/ShellFeatures')">
+    <PackageReference Include="Elsa.PackageManifest.Generator" PrivateAssets="all" />
+  </ItemGroup>
+
 </Project>

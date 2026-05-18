@@ -1,4 +1,5 @@
 using CShells.Features;
+using Elsa.PackageManifest.Generator.Hints;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,11 @@ namespace Elsa.ServiceBus.Kafka.ShellFeatures;
 [UsedImplicitly]
 public class KafkaShellFeature : IShellFeature
 {
+    [ManifestSetting(
+        DisplayName = "Workflow instance ID header key",
+        Description = "The Kafka message header key used to carry the workflow instance ID.",
+        Category = "Headers",
+        RestartRequired = true)]
     public string WorkflowInstanceIdHeaderKey { get; set; } = "localhost:9092";
 
     public void ConfigureServices(IServiceCollection services)
@@ -25,4 +31,3 @@ public class KafkaShellFeature : IShellFeature
             });
     }
 }
-

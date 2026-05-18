@@ -1,4 +1,5 @@
 using CShells.Features;
+using Elsa.PackageManifest.Generator.Hints;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,14 @@ namespace Elsa.ServiceBus.AzureServiceBus.ShellFeatures;
 [UsedImplicitly]
 public class AzureServiceBusShellFeature : IShellFeature
 {
+    [ManifestSetting(
+        DisplayName = "Connection string or name",
+        Description = "The Azure Service Bus connection string or configured connection string name.",
+        Category = "Connection",
+        Secret = true,
+        Required = true,
+        HasRequired = true,
+        RestartRequired = true)]
     public string ConnectionStringOrName { get; set; } = string.Empty;
 
     public void ConfigureServices(IServiceCollection services)
@@ -22,4 +31,3 @@ public class AzureServiceBusShellFeature : IShellFeature
             .Configure(options => options.ConnectionStringOrName = ConnectionStringOrName);
     }
 }
-

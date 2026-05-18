@@ -1,0 +1,19 @@
+{
+  "features": [
+    {
+      "clrTypeName": "Elsa.ServiceBus.MassTransit.AzureServiceBus.ShellFeatures.MassTransitAzureServiceBusFeature",
+      "infrastructure": [
+        {
+          "id": "azure-service-bus",
+          "kind": "service-bus",
+          "reason": "Configures MassTransit to use Azure Service Bus as its transport.",
+          "providers": [ "Azure Service Bus" ],
+          "configurationKeys": [
+            "MassTransitAzureServiceBus:ConnectionStringOrName",
+            "MassTransitAzureServiceBusCleanup"
+          ]
+        }
+      ]
+    }
+  ]
+}
