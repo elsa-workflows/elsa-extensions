@@ -1,5 +1,6 @@
 using CShells.Configuration;
 using CShells.Features;
+using Elsa.PackageManifest.Generator.Hints;
 using Elsa.ServiceBus.MassTransit.Contracts;
 using Elsa.ServiceBus.MassTransit.RabbitMq.Configurators;
 using Elsa.ServiceBus.MassTransit.RabbitMq.Options;
@@ -25,6 +26,7 @@ namespace Elsa.ServiceBus.MassTransit.RabbitMq.ShellFeatures;
     Description = "Configures MassTransit to use RabbitMQ as the message transport",
     DependsOn = [typeof(MassTransitFeature)])]
 [UsedImplicitly]
+[ManifestInfrastructure("rabbitmq-broker", "message-broker", Reason = "Configures MassTransit to use RabbitMQ as its transport.", Providers = new[] { "RabbitMQ" }, ConfigurationKeys = new[] { "MassTransitRabbitMq" })]
 public class MassTransitRabbitMqFeature : IShellFeature
 {
     public void ConfigureServices(IServiceCollection services)

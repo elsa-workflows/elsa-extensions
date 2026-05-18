@@ -1,4 +1,5 @@
 using CShells.Features;
+using Elsa.PackageManifest.Generator.Hints;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,9 +12,15 @@ namespace Elsa.ServiceBus.Kafka.ShellFeatures;
     DisplayName = "Kafka Service Bus",
     Description = "Enables Apache Kafka for message publishing and handling")]
 [UsedImplicitly]
+[ManifestInfrastructure("kafka-broker", "message-broker", Reason = "Publishes and consumes workflow messages through Apache Kafka.", Providers = new[] { "Apache Kafka" }, ConfigurationKeys = new[] { "WorkflowInstanceIdHeaderKey" })]
 public class KafkaShellFeature : IShellFeature
 {
-    public string WorkflowInstanceIdHeaderKey { get; set; } = "localhost:9092";
+    [ManifestSetting(
+        DisplayName = "Workflow instance ID header key",
+        Description = "The Kafka message header key used to carry the workflow instance ID.",
+        Category = "Headers",
+        RestartRequired = true)]
+    public string WorkflowInstanceIdHeaderKey { get; set; } = "x-workflow-instance-id";
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -25,4 +32,3 @@ public class KafkaShellFeature : IShellFeature
             });
     }
 }
-

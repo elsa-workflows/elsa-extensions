@@ -16,7 +16,10 @@ namespace Elsa.Scheduling.Quartz.ShellFeatures;
 /// <summary>
 /// A feature that installs Quartz.NET implementations for <see cref="IWorkflowScheduler"/>.
 /// </summary>
-[ShellFeature(DependsOn = [
+[ShellFeature(
+    DisplayName = "Quartz Workflow Scheduler",
+    Description = "Uses Quartz.NET to schedule workflow execution.",
+    DependsOn = [
     typeof(QuartzFeature), 
     typeof(SchedulingFeature), 
     typeof(ResilienceFeature)])]

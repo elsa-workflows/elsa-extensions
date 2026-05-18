@@ -1,6 +1,7 @@
 using Azure.Messaging.ServiceBus.Administration;
 using CShells.Configuration;
 using CShells.Features;
+using Elsa.PackageManifest.Generator.Hints;
 using Elsa.ServiceBus.MassTransit.AzureServiceBus.Configurators;
 using Elsa.ServiceBus.MassTransit.AzureServiceBus.Handlers;
 using Elsa.ServiceBus.MassTransit.AzureServiceBus.HostedServices;
@@ -30,12 +31,19 @@ namespace Elsa.ServiceBus.MassTransit.AzureServiceBus.ShellFeatures;
     Description = "Configures MassTransit to use Azure Service Bus as the message transport",
     DependsOn = [typeof(MassTransitFeature)])]
 [UsedImplicitly]
+[ManifestInfrastructure("azure-service-bus", "service-bus", Reason = "Configures MassTransit to use Azure Service Bus as its transport.", Providers = new[] { "Azure Service Bus" }, ConfigurationKeys = new[] { "MassTransitAzureServiceBus:ConnectionStringOrName", "MassTransitAzureServiceBusCleanup" })]
 public class MassTransitAzureServiceBusFeature : IShellFeature
 {
     /// <summary>
     /// When <c>true</c>, registers a hosted service that periodically removes orphaned
     /// subscriptions whose connected queues no longer exist.
     /// </summary>
+    [ManifestSetting(
+        DisplayName = "Enable automated subscription cleanup",
+        Description = "Periodically removes orphaned Azure Service Bus subscriptions whose connected queues no longer exist.",
+        Category = "Cleanup",
+        Advanced = true,
+        RestartRequired = true)]
     public bool EnableAutomatedSubscriptionCleanup { get; set; }
 
     public void ConfigureServices(IServiceCollection services)
