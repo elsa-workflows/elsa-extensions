@@ -18,6 +18,7 @@ namespace Elsa.Scheduling.Quartz.EFCore.SqlServer.ShellFeatures;
     Description = "Configures Quartz.NET to persist jobs and triggers in SQL Server",
     DependsOn = [typeof(QuartzSchedulerFeature)])]
 [UsedImplicitly]
+[ManifestInfrastructure("sqlserver-database", "database", Reason = "Stores Quartz scheduler data in SQL Server.", Providers = new[] { "SQL Server" }, ConfigurationKeys = new[] { "ConnectionString" })]
 public class QuartzSqlServerFeature : IShellFeature
 {
     /// <summary>The SQL Server connection string.</summary>

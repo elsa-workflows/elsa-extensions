@@ -18,6 +18,7 @@ namespace Elsa.Scheduling.Quartz.EFCore.MySql.ShellFeatures;
     Description = "Configures Quartz.NET to persist jobs and triggers in MySQL",
     DependsOn = [typeof(QuartzSchedulerFeature)])]
 [UsedImplicitly]
+[ManifestInfrastructure("mysql-database", "database", Reason = "Stores Quartz scheduler data in MySQL.", Providers = new[] { "MySQL" }, ConfigurationKeys = new[] { "ConnectionString" })]
 public class QuartzMySqlFeature : IShellFeature
 {
     /// <summary>The MySQL connection string.</summary>

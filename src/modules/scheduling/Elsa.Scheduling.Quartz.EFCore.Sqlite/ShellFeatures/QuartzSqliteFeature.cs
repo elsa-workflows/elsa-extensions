@@ -18,6 +18,7 @@ namespace Elsa.Scheduling.Quartz.EFCore.Sqlite.ShellFeatures;
     Description = "Configures Quartz.NET to persist jobs and triggers in SQLite",
     DependsOn = [typeof(QuartzSchedulerFeature)])]
 [UsedImplicitly]
+[ManifestInfrastructure("sqlite-database", "database", Reason = "Stores Quartz scheduler data in SQLite.", Providers = new[] { "SQLite" }, ConfigurationKeys = new[] { "ConnectionString" })]
 public class QuartzSqliteFeature : IShellFeature, IPostConfigureShellServices
 {
     /// <summary>The SQLite connection string.</summary>

@@ -12,6 +12,7 @@ namespace Elsa.ServiceBus.Kafka.ShellFeatures;
     DisplayName = "Kafka Service Bus",
     Description = "Enables Apache Kafka for message publishing and handling")]
 [UsedImplicitly]
+[ManifestInfrastructure("kafka-broker", "message-broker", Reason = "Publishes and consumes workflow messages through Apache Kafka.", Providers = new[] { "Apache Kafka" }, ConfigurationKeys = new[] { "WorkflowInstanceIdHeaderKey" })]
 public class KafkaShellFeature : IShellFeature
 {
     [ManifestSetting(

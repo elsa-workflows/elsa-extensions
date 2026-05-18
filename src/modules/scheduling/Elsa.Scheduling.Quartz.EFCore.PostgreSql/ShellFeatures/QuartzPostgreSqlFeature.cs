@@ -18,6 +18,7 @@ namespace Elsa.Scheduling.Quartz.EFCore.PostgreSql.ShellFeatures;
     Description = "Configures Quartz.NET to persist jobs and triggers in PostgreSQL",
     DependsOn = [typeof(QuartzSchedulerFeature)])]
 [UsedImplicitly]
+[ManifestInfrastructure("postgresql-database", "database", Reason = "Stores Quartz scheduler data in PostgreSQL.", Providers = new[] { "PostgreSQL" }, ConfigurationKeys = new[] { "ConnectionString" })]
 public class QuartzPostgreSqlFeature : IShellFeature
 {
     /// <summary>The PostgreSQL connection string.</summary>

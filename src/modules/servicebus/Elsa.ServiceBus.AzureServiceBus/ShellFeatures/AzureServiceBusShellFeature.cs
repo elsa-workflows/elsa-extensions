@@ -12,6 +12,7 @@ namespace Elsa.ServiceBus.AzureServiceBus.ShellFeatures;
     DisplayName = "Azure Service Bus",
     Description = "Enables Azure Service Bus for message publishing and handling")]
 [UsedImplicitly]
+[ManifestInfrastructure("azure-service-bus", "service-bus", Reason = "Publishes and consumes workflow messages through Azure Service Bus.", Providers = new[] { "Azure Service Bus" }, ConfigurationKeys = new[] { "ConnectionStringOrName" })]
 public class AzureServiceBusShellFeature : IShellFeature
 {
     [ManifestSetting(

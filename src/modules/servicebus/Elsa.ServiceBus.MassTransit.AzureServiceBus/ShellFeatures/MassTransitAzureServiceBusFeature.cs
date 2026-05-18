@@ -31,6 +31,7 @@ namespace Elsa.ServiceBus.MassTransit.AzureServiceBus.ShellFeatures;
     Description = "Configures MassTransit to use Azure Service Bus as the message transport",
     DependsOn = [typeof(MassTransitFeature)])]
 [UsedImplicitly]
+[ManifestInfrastructure("azure-service-bus", "service-bus", Reason = "Configures MassTransit to use Azure Service Bus as its transport.", Providers = new[] { "Azure Service Bus" }, ConfigurationKeys = new[] { "MassTransitAzureServiceBus:ConnectionStringOrName", "MassTransitAzureServiceBusCleanup" })]
 public class MassTransitAzureServiceBusFeature : IShellFeature
 {
     /// <summary>
