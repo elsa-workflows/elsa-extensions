@@ -8,7 +8,7 @@
           "kind": "message-broker",
           "reason": "Configures MassTransit to use RabbitMQ as its transport.",
           "providers": [ "RabbitMQ" ],
-          "configurationKeys": [ "RabbitMq" ]
+          "configurationKeys": [ "MassTransitRabbitMq" ]
         }
       ]
     }

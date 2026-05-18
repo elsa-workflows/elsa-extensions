@@ -19,7 +19,7 @@ public class KafkaShellFeature : IShellFeature
         Description = "The Kafka message header key used to carry the workflow instance ID.",
         Category = "Headers",
         RestartRequired = true)]
-    public string WorkflowInstanceIdHeaderKey { get; set; } = "localhost:9092";
+    public string WorkflowInstanceIdHeaderKey { get; set; } = "x-workflow-instance-id";
 
     public void ConfigureServices(IServiceCollection services)
     {
