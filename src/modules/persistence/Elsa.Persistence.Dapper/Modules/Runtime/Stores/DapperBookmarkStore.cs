@@ -53,6 +53,8 @@ internal class DapperBookmarkStore(Store<StoredBookmarkRecord> store, IPayloadSe
     private void ApplyFilter(ParameterizedQuery query, BookmarkFilter filter)
     {
         query
+            .Is(nameof(StoredBookmarkRecord.Id), filter.BookmarkId)
+            .In(nameof(StoredBookmarkRecord.Id), filter.BookmarkIds)
             .Is(nameof(StoredBookmarkRecord.Hash), filter.Hash)
             .In(nameof(StoredBookmarkRecord.Hash), filter.Hashes)
             .Is(nameof(StoredBookmarkRecord.WorkflowInstanceId), filter.WorkflowInstanceId)
