@@ -184,6 +184,7 @@ public static class ParameterizedQueryBuilderExtensions
     /// <summary>
     /// Appends an AND clause to the query if the value is not null.
     /// </summary>
+    /// <remarks>If the values field is empty but not null, this adds an always false filter.</remarks>
     /// <param name="query">The query.</param>
     /// <param name="field">The field.</param>
     /// <param name="values">The values.</param>
@@ -191,7 +192,13 @@ public static class ParameterizedQueryBuilderExtensions
     {
         var valueList = values?.ToList();
 
-        if (valueList == null || !valueList.Any()) return query;
+        if (valueList == null) return query;
+
+        if (valueList.Count == 0)
+        {
+            query.Sql.AppendLine("and 1=0");
+            return query;
+        }
 
         var fieldParamNames = valueList
             .Select((_, index) => $"@{field}{index}")
