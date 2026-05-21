@@ -44,7 +44,7 @@ public static class TenantScopeMiddleware
         async Task Sender(ISenderContext context, PID target, MessageEnvelope envelope)
         {
             var tenantAccessor = sp.GetRequiredService<ITenantAccessor>();
-            if (tenantAccessor.Tenant != null) envelope.WithHeader(HeaderNames.TenantId, tenantAccessor.Tenant.Id);
+            envelope.WithHeader(HeaderNames.TenantId, tenantAccessor.TenantId);
             await next(context, target, envelope);
         }
 

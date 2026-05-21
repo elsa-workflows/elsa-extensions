@@ -525,8 +525,7 @@ public class Store<T>(IDbConnectionProvider dbConnectionProvider, ITenantAccesso
         if (tenantAgnostic)
             return;
 
-        var tenant = tenantAccessor.Tenant;
-        var tenantId = tenant?.Id;
+        var tenantId = tenantAccessor.TenantId;
         query.Is(nameof(Record.TenantId), (object?)tenantId ?? DBNull.Value);
     }
 
@@ -535,8 +534,7 @@ public class Store<T>(IDbConnectionProvider dbConnectionProvider, ITenantAccesso
         if (record is not Record recordWithTenant)
             return;
 
-        var tenant = tenantAccessor.Tenant;
-        var tenantId = tenant?.Id;
+        var tenantId = tenantAccessor.TenantId;
         recordWithTenant.TenantId = tenantId;
     }
 }
