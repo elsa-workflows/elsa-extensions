@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Elsa.Expressions.Models;
 using Elsa.Extensions;
 using Elsa.Sql.Contracts;
+using Elsa.Sql.Handlers;
 using Elsa.Sql.UIHints;
 using Elsa.Workflows;
 using Elsa.Workflows.Attributes;
@@ -52,14 +53,23 @@ public class SqlQuery : Activity
     )]
     public Input<string?> Query { get; set; } = null!;
 
+    /// <summary>
+    /// Type of the result. The result type determines how the raw query result will be handled and returned. For example, if the result type is set to "DataSet", the raw query result will be returned as a DataSet object. If the result type is set to "RecordSet", the raw query result will be transformed into an array of records, where each record is represented as a dictionary of column names and values.
+    /// </summary>
+    [Input(
+        Description = "The type of the result.",
+        UIHint = InputUIHints.DropDown,
+        UIHandler = typeof(SqlClientResultTypesDropDownProvider),
+        DefaultValue = SqlClientDataSetResultHandler.Name)]
+    public Input<string?> ResultType { get; set; } = new(SqlClientDataSetResultHandler.Name);
 
     /// <summary>
     /// <see cref="DataSet"/> of queried results.
     /// </summary>
     [Output(
-        Description = "DataSet of queried results.",
+        Description = "Queried results.",
         IsSerializable = false)]
-    public Output<DataSet?> Results { get; set; } = null!;
+    public Output<object?> Results { get; set; } = null!;
 
 
     /// <summary>
@@ -78,12 +88,17 @@ public class SqlQuery : Activity
         var evaluatedQuery = await evaluator.EvaluateAsync(query, context.ExpressionExecutionContext, new ExpressionEvaluatorOptions(), context.CancellationToken);
 
         // Create client
-        var factory = context.GetRequiredService<ISqlClientFactory>();
-        var client = factory.CreateClient(Client.GetOrDefault(context), ConnectionString.GetOrDefault(context));
+        var clientFactory = context.GetRequiredService<ISqlClientFactory>();
+        var client = clientFactory.CreateClient(Client.GetOrDefault(context), ConnectionString.GetOrDefault(context));
 
         // Execute query
         var results = await client.ExecuteQueryAsync(evaluatedQuery);
-        context.Set(Results, results);
+
+        // Query Result
+        var resultTypeFactory = context.GetRequiredService<ISqlClientResultTypeFactory>();
+        var resultTypeHandler = resultTypeFactory.CreateHandle(ResultType.GetOrDefault(context) ?? SqlClientDataSetResultHandler.Name);
+        var handledResult = await resultTypeHandler.HandleAsync(results, context.CancellationToken);
+        context.Set(Results, handledResult);
 
         await CompleteAsync(context);
     }

@@ -1,14 +1,23 @@
-﻿using Elsa.Sql.Client;
+﻿using System.Net.Sockets;
+using Elsa.Sql.Client;
+using Elsa.Sql.Contracts;
 
 namespace Elsa.Sql.Services;
 public class ClientStore
 {
     private readonly Dictionary<string, Type> clients = new();
 
+    private readonly Dictionary<string, Type> resultTypes = new();
+
     /// <summary>
     /// Dictionary of registered clients and their type.
     /// </summary>
     public IReadOnlyDictionary<string, Type> Clients => clients;
+
+    /// <summary>
+    /// Dictionary of registered result type handlers and their type.
+    /// </summary>
+    public IReadOnlyDictionary<string, Type> ResultTypes => resultTypes;
 
     /// <summary>
     /// Registers the specified client type <typeparamref name="TClient"/> with the store.
@@ -32,5 +41,12 @@ public class ClientStore
         var key = string.IsNullOrEmpty(name) ? nameof(TClient) : name;
         if (clients.ContainsKey(key)) { throw new InvalidOperationException($"Client with key '{name}' is already registered."); }
         clients.Add(key, typeof(TClient));
+    }
+
+    public void RegisterResultHandler<TResultHandler>(string? name) where TResultHandler : class, ISqlClientResultTypeHandler
+    {
+        var key = string.IsNullOrEmpty(name) ? nameof(TResultHandler) : name;
+        if (resultTypes.ContainsKey(key)) { throw new InvalidOperationException($"Result type handler with key '{key}' is already registered."); }
+        resultTypes.Add(key, typeof(TResultHandler));
     }
 }
