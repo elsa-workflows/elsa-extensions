@@ -54,14 +54,14 @@ public class SqlQuery : Activity
     public Input<string?> Query { get; set; } = null!;
 
     /// <summary>
-    /// Type of the result. The result type determines how the raw query result will be handled and returned. For example, if the result type is set to "DataSet", the raw query result will be returned as a DataSet object. If the result type is set to "RecordSet", the raw query result will be transformed into an array of records, where each record is represented as a dictionary of column names and values.
+    /// Type of the results. The results type determines how the raw query result will be handled and returned. For example, if the results type is set to "DataSet", the raw query result will be returned as a DataSet object. If the results type is set to "RecordSet", the raw query result will be transformed into an array of records, where each record is represented as a dictionary of column names and values.
     /// </summary>
     [Input(
-        Description = "The type of the result.",
+        Description = "The type (format) to return the queried results in.",
         UIHint = InputUIHints.DropDown,
         UIHandler = typeof(SqlClientResultTypesDropDownProvider),
         DefaultValue = SqlClientDataSetResultHandler.Name)]
-    public Input<string?> ResultType { get; set; } = new(SqlClientDataSetResultHandler.Name);
+    public Input<string?> ResultsType { get; set; } = new(SqlClientDataSetResultHandler.Name);
 
     /// <summary>
     /// <see cref="DataSet"/> of queried results.
@@ -96,7 +96,7 @@ public class SqlQuery : Activity
 
         // Query Result
         var resultTypeFactory = context.GetRequiredService<ISqlClientResultTypeFactory>();
-        var resultTypeHandler = resultTypeFactory.CreateHandle(ResultType.GetOrDefault(context) ?? SqlClientDataSetResultHandler.Name);
+        var resultTypeHandler = resultTypeFactory.CreateHandle(ResultsType.GetOrDefault(context) ?? SqlClientDataSetResultHandler.Name);
         var handledResult = await resultTypeHandler.HandleAsync(results, context.CancellationToken);
         context.Set(Results, handledResult);
 
