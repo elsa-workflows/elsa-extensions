@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\modules\sql\Elsa.Sql\Elsa.Sql.csproj" />
+  </ItemGroup>
+</Project>
