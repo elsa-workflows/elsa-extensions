@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Provides OpenAI integration activities for Elsa Workflows</Description>
+        <PackageTags>elsa extension module openai ai chat completion</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Elsa" />
+        <PackageReference Include="OpenAI" />
+    </ItemGroup>
+
+</Project>
