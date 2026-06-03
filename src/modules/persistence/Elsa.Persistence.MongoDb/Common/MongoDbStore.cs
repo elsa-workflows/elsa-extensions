@@ -437,7 +437,9 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
         {
             var tenant = tenantAccessor.Tenant;
             var tenantId = tenant?.Id.EmptyToNull();
-            queryable = queryable.Where(x => (x as Entity)!.TenantId == tenantId);
+            // Include tenant-agnostic ("*") rows so global entities (e.g. CLR workflow
+            // definitions) remain visible under a specific tenant, matching the EFCore provider.
+            queryable = queryable.Where(x => (x as Entity)!.TenantId == tenantId || (x as Entity)!.TenantId == Tenant.AgnosticTenantId);
         }
 
         return queryable;
@@ -448,7 +450,8 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
         var tenant = tenantAccessor.Tenant;
         var tenantId = tenant?.Id;
 
-        if (document is Entity tenantDocument)
+        // Don't overwrite tenant-agnostic ("*") entities; only stamp tenant-specific ones.
+        if (document is Entity tenantDocument && tenantDocument.TenantId != Tenant.AgnosticTenantId)
             tenantDocument.TenantId = tenantId.EmptyToNull();
     }
 
@@ -459,7 +462,8 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
 
         foreach (var document in documents)
         {
-            if (document is Entity tenantDocument)
+            // Don't overwrite tenant-agnostic ("*") entities; only stamp tenant-specific ones.
+            if (document is Entity tenantDocument && tenantDocument.TenantId != Tenant.AgnosticTenantId)
                 tenantDocument.TenantId = tenantId.EmptyToNull();
         }
     }
