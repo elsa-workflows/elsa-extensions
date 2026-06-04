@@ -374,7 +374,8 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
     /// <returns>The number of documents deleted.</returns>
     public async Task<long> DeleteWhereAsync(Expression<Func<TDocument, bool>> predicate, string key, bool tenantAgnostic = false, CancellationToken cancellationToken = default)
     {
-        var queryable = GetQueryableCollection(tenantAgnostic);
+        // Strict tenant scoping on delete: never match shared "*" entities under a concrete tenant.
+        var queryable = GetQueryableCollection(tenantAgnostic, includeTenantAgnostic: false);
         var documentsToDelete = await queryable.Where(predicate).ToListAsync(cancellationToken);
         var count = documentsToDelete.LongCount();
         var filter = documentsToDelete.BuildIdFilterForList(key);
@@ -417,7 +418,8 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
     /// <returns>The number of documents deleted.</returns>
     public async Task<long> DeleteWhereAsync(Func<IQueryable<TDocument>, IQueryable<TDocument>> query, string key = nameof(Entity.Id), bool tenantAgnostic = false, CancellationToken cancellationToken = default)
     {
-        var queryable = GetQueryableCollection(tenantAgnostic);
+        // Strict tenant scoping on delete: never match shared "*" entities under a concrete tenant.
+        var queryable = GetQueryableCollection(tenantAgnostic, includeTenantAgnostic: false);
         var documentsToDelete = await query(queryable).ToListAsync(cancellationToken);
         var count = documentsToDelete.LongCount();
         var filter = documentsToDelete.BuildIdFilterForList(key);
@@ -426,7 +428,7 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
         return count;
     }
 
-    private IQueryable<TDocument> GetQueryableCollection(bool tenantAgnostic = false)
+    private IQueryable<TDocument> GetQueryableCollection(bool tenantAgnostic = false, bool includeTenantAgnostic = true)
     {
         var queryable = collection.AsQueryable();
 
@@ -437,9 +439,13 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
         {
             var tenant = tenantAccessor.Tenant;
             var tenantId = tenant?.Id.EmptyToNull();
-            // Include tenant-agnostic ("*") rows so global entities (e.g. CLR workflow
+            // Reads include tenant-agnostic ("*") rows so global entities (e.g. CLR workflow
             // definitions) remain visible under a specific tenant, matching the EFCore provider.
-            queryable = queryable.Where(x => (x as Entity)!.TenantId == tenantId || (x as Entity)!.TenantId == Tenant.AgnosticTenantId);
+            // Deletes pass includeTenantAgnostic: false so a tenant-scoped delete cannot remove a
+            // shared "*" entity (the Dapper store keeps tenant-scoped deletes strict).
+            queryable = includeTenantAgnostic
+                ? queryable.Where(x => (x as Entity)!.TenantId == tenantId || (x as Entity)!.TenantId == Tenant.AgnosticTenantId)
+                : queryable.Where(x => (x as Entity)!.TenantId == tenantId);
         }
 
         return queryable;
