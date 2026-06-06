@@ -1,5 +1,5 @@
 using CShells.Features;
-using Elsa.PackageManifest.Generator.Hints;
+using Elsa.Platform.PackageManifest.Generator.Hints;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
