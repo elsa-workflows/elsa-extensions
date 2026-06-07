@@ -1,10 +1,10 @@
 using System.Data;
 using Elsa.Persistence.Dapper.Contracts;
-using Elsa.Persistence.Dapper.Dialects;
+using Elsa.Persistence.Dapper.PostgreSql.Dialects;
 using JetBrains.Annotations;
 using Npgsql;
 
-namespace Elsa.Persistence.Dapper.Services;
+namespace Elsa.Persistence.Dapper.PostgreSql.Services;
 
 /// <summary>
 /// Provides a PostgreSql connection to the database.
@@ -44,5 +44,5 @@ public class PostgreSqlDbConnectionProvider : IDbConnectionProvider
     }
 
     /// <inheritdoc />
-    public ISqlDialect Dialect => new PostgreSqlDialect();
+    public ISqlDialect Dialect { get; } = new PostgreSqlDialect();
 }

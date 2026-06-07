@@ -1,13 +1,13 @@
 using System.Data;
 using Elsa.Persistence.Dapper.Contracts;
-using Elsa.Persistence.Dapper.Dialects;
+using Elsa.Persistence.Dapper.SqlServer.Dialects;
 using JetBrains.Annotations;
 using Microsoft.Data.SqlClient;
 
-namespace Elsa.Persistence.Dapper.Services;
+namespace Elsa.Persistence.Dapper.SqlServer.Services;
 
 /// <summary>
-/// Provides a SQLite connection to the database.
+/// Provides a SQL Server connection to the database.
 /// </summary>
 [PublicAPI]
 public class SqlServerDbConnectionProvider : IDbConnectionProvider
@@ -29,9 +29,9 @@ public class SqlServerDbConnectionProvider : IDbConnectionProvider
     {
         _connectionString = connectionString;
     }
-    
+
     /// <inheritdoc />
-    public string GetConnectionString() =>_connectionString;
+    public string GetConnectionString() => _connectionString;
 
     /// <inheritdoc />
     public IDbConnection GetConnection()
@@ -43,5 +43,5 @@ public class SqlServerDbConnectionProvider : IDbConnectionProvider
     }
 
     /// <inheritdoc />
-    public ISqlDialect Dialect => new SqlServerDialect();
+    public ISqlDialect Dialect { get; } = new SqlServerDialect();
 }
