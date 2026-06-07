@@ -1,6 +1,6 @@
 using CShells.Features;
 using CShells.Lifecycle;
-using Elsa.PackageManifest.Generator.Hints;
+using Elsa.Platform.PackageManifest.Generator.Hints;
 using Elsa.Scheduling.Quartz.EFCore.PostgreSql;
 using Elsa.Scheduling.Quartz.ShellFeatures;
 using JetBrains.Annotations;

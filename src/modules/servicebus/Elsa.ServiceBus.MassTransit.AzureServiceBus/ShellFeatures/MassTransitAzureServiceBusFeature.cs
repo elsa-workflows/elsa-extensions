@@ -1,7 +1,7 @@
 using Azure.Messaging.ServiceBus.Administration;
 using CShells.Configuration;
 using CShells.Features;
-using Elsa.PackageManifest.Generator.Hints;
+using Elsa.Platform.PackageManifest.Generator.Hints;
 using Elsa.ServiceBus.MassTransit.AzureServiceBus.Configurators;
 using Elsa.ServiceBus.MassTransit.AzureServiceBus.Handlers;
 using Elsa.ServiceBus.MassTransit.AzureServiceBus.HostedServices;

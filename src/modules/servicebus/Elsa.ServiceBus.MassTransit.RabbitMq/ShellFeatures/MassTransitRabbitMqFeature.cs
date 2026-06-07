@@ -1,6 +1,6 @@
 using CShells.Configuration;
 using CShells.Features;
-using Elsa.PackageManifest.Generator.Hints;
+using Elsa.Platform.PackageManifest.Generator.Hints;
 using Elsa.ServiceBus.MassTransit.Contracts;
 using Elsa.ServiceBus.MassTransit.RabbitMq.Configurators;
 using Elsa.ServiceBus.MassTransit.RabbitMq.Options;
