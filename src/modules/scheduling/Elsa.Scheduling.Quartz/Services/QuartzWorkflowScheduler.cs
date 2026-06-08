@@ -130,7 +130,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
     private JobDataMap CreateJobDataMap(ScheduleNewWorkflowInstanceRequest request)
     {
         return new JobDataMap()
-                .AddIfNotEmpty("TenantId", tenantAccessor.Tenant?.Id)
+                .AddIfNotEmpty("TenantId", tenantAccessor.TenantId)
                 .AddIfNotEmpty(nameof(ScheduleNewWorkflowInstanceRequest.CorrelationId), request.CorrelationId)
                 .AddIfNotEmpty(nameof(ScheduleNewWorkflowInstanceRequest.WorkflowDefinitionHandle.DefinitionVersionId), request.WorkflowDefinitionHandle.DefinitionVersionId)
                 .AddIfNotEmpty(nameof(ScheduleNewWorkflowInstanceRequest.TriggerActivityId), request.TriggerActivityId)
@@ -145,7 +145,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
         var serializedActivityHandle = request.ActivityHandle != null ? jsonSerializer.Serialize(request.ActivityHandle) : null;
 
         return new JobDataMap()
-            .AddIfNotEmpty("TenantId", tenantAccessor.Tenant?.Id)
+            .AddIfNotEmpty("TenantId", tenantAccessor.TenantId)
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.WorkflowInstanceId), request.WorkflowInstanceId)
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.Input), request.Input)
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.Properties), request.Properties)

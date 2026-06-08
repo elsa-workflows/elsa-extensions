@@ -20,9 +20,9 @@ public class ResumeWorkflowJob(IWorkflowRuntime workflowRuntime, ITenantFinder t
     /// <param name="cancellationToken">The cancellation token.</param>
     // ReSharper disable once UnusedParameter.Global
     [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail)]
-    public async Task ExecuteAsync(string taskName, ScheduleExistingWorkflowInstanceRequest request, string? tenantId, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(string taskName, ScheduleExistingWorkflowInstanceRequest request, string tenantId, CancellationToken cancellationToken)
     {
-        var tenant = tenantId != null ? await tenantFinder.FindByIdAsync(tenantId, cancellationToken) : null;
+        var tenant = await tenantFinder.FindByIdAsync(tenantId, cancellationToken);
         using var scope = tenantAccessor.PushContext(tenant);
         var client = await workflowRuntime.CreateClientAsync(request.WorkflowInstanceId, cancellationToken);
         var runRequest = new RunWorkflowInstanceRequest
