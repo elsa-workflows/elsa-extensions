@@ -11,7 +11,7 @@
 *.sln.docstates
 .idea
 .DS_Store
-elsa.sqlite.db
+elsa.sqlite.db*
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
