@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup>
+        <!-- Pomelo.EntityFrameworkCore.MySql 9.0.0 doesn't support EF Core 10; no Pomelo 10.x exists yet -->
+        <NoWarn>$(NoWarn);NU1608</NoWarn>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Azure.Messaging.ServiceBus" />
         <PackageReference Include="JetBrains.Annotations" />

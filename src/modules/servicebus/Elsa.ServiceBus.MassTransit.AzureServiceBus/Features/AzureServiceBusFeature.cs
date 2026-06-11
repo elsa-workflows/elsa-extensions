@@ -173,8 +173,18 @@ public class AzureServiceBusFeature : FeatureBase
     private static string GetConnectionString(IServiceProvider serviceProvider)
     {
         var options = serviceProvider.GetRequiredService<IOptions<AzureServiceBusOptions>>().Value;
+        
+        if (string.IsNullOrWhiteSpace(options.ConnectionStringOrName))
+            throw new InvalidOperationException("Azure Service Bus connection string or name is not configured.");
+        
         var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-        return configuration.GetConnectionString(options.ConnectionStringOrName) ?? options.ConnectionStringOrName;
+        var connectionString = configuration.GetConnectionString(options.ConnectionStringOrName) 
+                          ?? options.ConnectionStringOrName;
+        
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException("Azure Service Bus connection string could not be resolved.");
+        
+        return connectionString;
     }
 
     private void RegisterConsumers(List<ConsumerTypeDefinition> consumers)

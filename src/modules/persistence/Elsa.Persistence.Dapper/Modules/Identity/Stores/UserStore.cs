@@ -5,6 +5,7 @@ using Elsa.Persistence.Dapper.Services;
 using Elsa.Identity.Contracts;
 using Elsa.Identity.Entities;
 using Elsa.Identity.Models;
+using Open.Linq.AsyncExtensions;
 
 namespace Elsa.Persistence.Dapper.Modules.Identity.Stores;
 
@@ -31,6 +32,13 @@ internal class DapperUserStore(Store<UserRecord> store) : IUserStore
     {
         var record = await store.FindAsync(q => ApplyFilter(q, filter), cancellationToken);
         return record == null ? null : Map(record);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<User>> FindManyAsync(UserFilter filter, CancellationToken cancellationToken = default)
+    {
+        var records = await store.FindManyAsync(q => ApplyFilter(q, filter), cancellationToken).ToList();
+        return records.Select(Map);
     }
 
     private static void ApplyFilter(ParameterizedQuery query, UserFilter filter)

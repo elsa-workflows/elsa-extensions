@@ -103,7 +103,7 @@ public partial class Agents
 
     private async Task OnDeleteClicked(AgentModel agent)
     {
-        var result = await DialogService.ShowMessageBox("Delete Agent?", "Are you sure you want to delete this agent?", yesText: "Delete", cancelText: "Cancel");
+        var result = await DialogService.ShowMessageBoxAsync("Delete Agent?", "Are you sure you want to delete this agent?", yesText: "Delete", cancelText: "Cancel");
 
         if (result != true)
             return;
@@ -118,7 +118,7 @@ public partial class Agents
 
     private async Task OnBulkDeleteClicked()
     {
-        var result = await DialogService.ShowMessageBox("Delete Selected Agents?", $"Are you sure you want to delete the selected agents?", yesText: "Delete", cancelText: "Cancel");
+        var result = await DialogService.ShowMessageBoxAsync("Delete Selected Agents?", $"Are you sure you want to delete the selected agents?", yesText: "Delete", cancelText: "Cancel");
 
         if (result != true)
             return;

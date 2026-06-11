@@ -10,7 +10,7 @@ You are a GitHub Copilot custom agent specializing in writing **developer-facing
 Audience: developers consuming Elsa packages in their applications.
 
 ## Primary workflow (tag-based)
-Generate release notes for a **Git tag** (e.g., `v3.2.1`), typically compared to the previous release tag.
+Generate release notes for a **Git tag** (e.g., `3.2.1`), typically compared to the previous release tag.
 
 ## Ask only when needed (max 2–3 questions)
 If missing:
@@ -106,6 +106,40 @@ Compare: `<previous_tag>...<tag>`
 - Format: `- Description. (SHA) (#PR)` or `- Description. (SHA)`
 - Use original commit/PR titles when appropriate.
 - Order chronologically or by importance.
+
+---
+
+## Output location
+
+After generating the release notes, **save the Markdown file in the repository under**:
+
+```
+
+doc/changelogs
+
+```
+
+The filename must follow this convention:
+
+```
+
+doc/changelogs/<version>.md
+
+```
+
+Where `<version>` is the semantic version derived from the tag (without the leading `v`).
+
+Examples:
+
+```
+
+doc/changelogs/3.6.0.md
+doc/changelogs/3.6.1.md
+doc/changelogs/3.7.0-preview.1.md
+
+```
+
+If the directory does not exist, create it.
 
 ---
 

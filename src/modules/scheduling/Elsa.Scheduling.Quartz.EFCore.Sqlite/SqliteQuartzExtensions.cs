@@ -17,7 +17,7 @@ public static class SqliteQuartzExtensions
     /// <summary>
     /// Configures the <see cref="QuartzFeature"/> to use the SQLite job store.
     /// </summary>
-    public static QuartzFeature UseSqlite(this QuartzFeature feature, string connectionString = Constants.DefaultConnectionString, bool useContextPooling = false)
+    public static QuartzFeature UseSqlite(this QuartzFeature feature, string connectionString = Constants.DefaultConnectionString, bool useContextPooling = false, bool useClustering = false)
     {
         if (useContextPooling)
             feature.Services.AddPooledDbContextFactory<SqliteQuartzDbContext>(options => UseSqlite(connectionString, options));
@@ -30,6 +30,9 @@ public static class SqliteQuartzExtensions
             {
                 store.UseNewtonsoftJsonSerializer();
                 store.UseMicrosoftSQLite(connectionString);
+                
+                if (useClustering)
+                    store.UseClustering();
             });
         };
 

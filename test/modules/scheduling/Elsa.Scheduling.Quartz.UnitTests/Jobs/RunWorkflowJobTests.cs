@@ -65,7 +65,7 @@ public class RunWorkflowJobTests
 
         await _job.Execute(context);
 
-        scheduler.VerifyDeleted();
+        scheduler.VerifyUnscheduled();
     }
 
     [Theory]
@@ -83,17 +83,22 @@ public class RunWorkflowJobTests
     }
 
     [Theory]
-    [InlineData(typeof(InvalidOperationException))]
-    [InlineData(typeof(ArgumentException))]
-    public async Task Execute_NonTransientException_DeletesJob(Type exceptionType)
+    [InlineData(typeof(InvalidOperationException), null)]
+    [InlineData(typeof(ArgumentException), null)]
+    [InlineData(typeof(InvalidOperationException), "RunWorkflowJob")]
+    [InlineData(typeof(ArgumentException), "RunWorkflowJob")]
+    public async Task Execute_NonTransientException_DeletesJob(Type exceptionType, string? jobKeyName)
     {
-        var (context, scheduler) = CreateJobExecutionContext();
+        var (context, scheduler) = CreateJobExecutionContext(jobKeyName);
         _transientDetector.SetupIsTransient(false);
         _workflowStarter.SetupStartWorkflowThrows((Exception)Activator.CreateInstance(exceptionType)!);
 
         await _job.Execute(context);
 
-        scheduler.VerifyDeleted();
+        if (string.IsNullOrEmpty(jobKeyName))
+            scheduler.VerifyDeleted();
+        else
+            scheduler.VerifyNotDeleted();
     }
 
     [Fact]
@@ -111,11 +116,11 @@ public class RunWorkflowJobTests
         Assert.Equal("workflow-def-123", capturedRequest.WorkflowDefinitionHandle.DefinitionVersionId);
     }
 
-    private static (IJobExecutionContext, Mock<QuartzScheduler>) CreateJobExecutionContext() =>
+    private static (IJobExecutionContext, Mock<QuartzScheduler>) CreateJobExecutionContext(string? jobKeyName = null) =>
         QuartzJobTestHelper.CreateJobExecutionContext(new Dictionary<string, object>
         {
             { "DefinitionVersionId", "workflow-def-123" },
             { "CorrelationId", "corr-123" },
             { "TriggerActivityId", "trigger-123" }
-        });
+        }, jobKeyName);
 }

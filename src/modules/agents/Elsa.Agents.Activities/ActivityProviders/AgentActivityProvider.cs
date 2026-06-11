@@ -52,11 +52,12 @@ public class AgentActivityProvider(
 
         activityDescriptor.Constructor = context =>
         {
-            var activity = context.CreateActivity<AgentActivity>();
+            var result = context.CreateActivity<AgentActivity>();
+            var activity = result.Activity;
             activity.Type = activityTypeName;
             activity.AgentName = agentConfig.Name;
             activity.RunAsynchronously = true;
-            return activity;
+            return result;
         };
 
         activityDescriptor.Inputs.Clear();

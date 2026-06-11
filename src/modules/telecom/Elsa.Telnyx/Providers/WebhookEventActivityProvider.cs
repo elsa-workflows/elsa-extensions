@@ -55,11 +55,11 @@ public class WebhookEventActivityProvider(IActivityDescriber activityDescriber) 
             Outputs = { outputPropertyDescriptor },
             Constructor = context =>
             {
-                var activity = context.CreateActivity<WebhookEvent>();
+                var result = context.CreateActivity<WebhookEvent>();
+                var activity = result.Activity;
                 activity.Type = typeName;
                 activity.EventType = webhookAttribute!.EventType;
-
-                return activity;
+                return result;
             }
         };
     }

@@ -12,11 +12,13 @@
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="CShells.Abstractions" />
         <PackageReference Include="Elsa.Hosting.Management" />
         <PackageReference Include="Elsa.Workflows.Runtime" />
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+      <ProjectReference Include="..\..\..\..\..\cshells\src\CShells.Abstractions\CShells.Abstractions.csproj" />
       <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Hosting.Management\Elsa.Hosting.Management.csproj" />
       <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Runtime\Elsa.Workflows.Runtime.csproj" />
     </ItemGroup>

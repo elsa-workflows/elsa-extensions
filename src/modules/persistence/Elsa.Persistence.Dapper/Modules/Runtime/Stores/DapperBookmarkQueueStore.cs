@@ -68,6 +68,8 @@ internal class DapperBookmarkQueueStore(Store<BookmarkQueueItemRecord> store, IP
     private void ApplyFilter(ParameterizedQuery query, BookmarkQueueFilter filter)
     {
         query
+            .Is(nameof(BookmarkQueueItemRecord.Id), filter.Id)
+            .In(nameof(BookmarkQueueItemRecord.Id), filter.Ids)
             .Is(nameof(BookmarkQueueItemRecord.WorkflowInstanceId), filter.WorkflowInstanceId)
             .Is(nameof(BookmarkQueueItemRecord.BookmarkId), filter.BookmarkId)
             .Is(nameof(BookmarkQueueItemRecord.StimulusHash), filter.BookmarkHash)

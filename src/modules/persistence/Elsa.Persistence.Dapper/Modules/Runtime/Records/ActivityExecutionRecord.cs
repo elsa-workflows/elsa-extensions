@@ -63,6 +63,11 @@ internal class ActivityExecutionRecordRecord : Record
     public string? SerializedProperties { get; set; }
 
     /// <summary>
+    /// Lightweight metadata associated with the activity execution.
+    /// </summary>
+    public string? SerializedMetadata { get; set; }
+
+    /// <summary>
     /// Gets or sets the time at which the activity execution began.
     /// </summary>
     public DateTimeOffset StartedAt { get; set; }
@@ -76,9 +81,34 @@ internal class ActivityExecutionRecordRecord : Record
     /// Gets or sets the status of the activity.
     /// </summary>
     public string Status { get; set; } = null!;
-    
+
+    /// <summary>
+    /// Gets or sets the aggregated count of faults encountered during the execution of the activity instance and its descendants.
+    /// </summary>
+    public int AggregateFaultCount { get; set; }
+
     /// <summary>
     /// Gets or sets the time at which the activity execution completed.
     /// </summary>
     public DateTimeOffset? CompletedAt { get; set; }
+
+    /// <summary>
+    /// The ID of the activity execution context that scheduled this activity execution.
+    /// </summary>
+    public string? SchedulingActivityExecutionId { get; set; }
+
+    /// <summary>
+    /// The ID of the activity that scheduled this activity execution (denormalized).
+    /// </summary>
+    public string? SchedulingActivityId { get; set; }
+
+    /// <summary>
+    /// The workflow instance ID of the workflow that scheduled this activity execution.
+    /// </summary>
+    public string? SchedulingWorkflowInstanceId { get; set; }
+
+    /// <summary>
+    /// The depth of this activity in the call stack (0 for root activities).
+    /// </summary>
+    public int? CallStackDepth { get; set; }
 }

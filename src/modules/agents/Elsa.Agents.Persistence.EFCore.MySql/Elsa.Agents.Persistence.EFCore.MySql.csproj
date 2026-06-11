@@ -3,6 +3,8 @@
     <PropertyGroup>
         <Description>Provides an EF Core migrations for MySQL for the Agents Persistence module.</Description>
         <PackageTags>elsa extension module agents semantic kernel llm ai persistence efcore entity framework core mysql</PackageTags>
+        <!-- Pomelo.EntityFrameworkCore.MySql 9.0.0 doesn't support EF Core 10; no Pomelo 10.x exists yet -->
+        <NoWarn>$(NoWarn);NU1608</NoWarn>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0'">

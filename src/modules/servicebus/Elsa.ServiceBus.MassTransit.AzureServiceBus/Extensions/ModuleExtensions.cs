@@ -55,7 +55,10 @@ public static class ModuleExtensions
 
             void Configure(AzureServiceBusFeature bus)
             {
-                bus.ServiceBusAdministrationClientFactory += _ => serviceBusAdministrationClient;
+                // Don't concatenate factory delegates, because that would cause multiple creations of the client.
+                bus.ServiceBusAdministrationClientFactory = _ => serviceBusAdministrationClient;
+                
+                // But it's OK to concatenate multiple configuration delegates.
                 bus.ConfigureTransportBus +=  (_, configurator) => configurator.Host(hostAddress, serviceBusClient, serviceBusAdministrationClient);
                 configure?.Invoke(bus);
             }
