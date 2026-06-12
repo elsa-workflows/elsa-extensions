@@ -59,9 +59,8 @@ public abstract class GenerateFakeDataActivity<T> : CodeActivity<T[]> where T : 
         var items = faker.Generate(count);
 
         context.Set(Result, items.ToArray());
-
+        
         return ValueTask.CompletedTask;
-    }
     }
 
     /// <summary>
