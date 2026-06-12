@@ -4,6 +4,7 @@ using Elsa.Features.Services;
 using Elsa.Mqtt.Contracts;
 using Elsa.Mqtt.Options;
 using Elsa.Mqtt.Services;
+using Elsa.Mqtt.Tasks;
 using Elsa.Mqtt.UIHints;
 using Elsa.Workflows;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +38,9 @@ public class MqttFeature : FeatureBase
         Services
             .Configure(ConfigureOptions)
             .AddSingleton<IMqttConnectionFactory, MqttConnectionFactory>()
-            .AddScoped<IPropertyUIHandler, MqttConnectionDropdownOptionsProvider>();
+            .AddSingleton<IMqttSubscriberManager, MqttSubscriberManager>()
+            .AddBackgroundTask<StartMqttSubscriptionsTask>()
+            .AddScoped<IPropertyUIHandler, MqttConnectionDropdownOptionsProvider>()
+            .AddHandlersFrom<MqttFeature>();
     }
 }

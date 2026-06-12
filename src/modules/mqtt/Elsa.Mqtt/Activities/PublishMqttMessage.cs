@@ -1,4 +1,5 @@
-﻿using Elsa.Mqtt.Contracts;
+﻿using System.Runtime.CompilerServices;
+using Elsa.Mqtt.Contracts;
 using Elsa.Mqtt.UIHints;
 using Elsa.Workflows;
 using Elsa.Workflows.Activities.Flowchart.Attributes;
@@ -23,6 +24,11 @@ public class PublishMqttMessage : Activity<bool>
 {
     private const string OutcomeSuccess = "Success";
     private const string OutcomeFailure = "Failure";
+
+    /// <inheritdoc />
+    public PublishMqttMessage([CallerFilePath] string? source = null, [CallerLineNumber] int? line = null) : base(source, line)
+    {
+    }
 
     [Input(
         DisplayName = "Connection Name",

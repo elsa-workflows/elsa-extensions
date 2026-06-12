@@ -7,6 +7,8 @@ namespace Elsa.Mqtt.Options;
 /// </summary>
 public class MqttOptions
 {
+    internal const string DefaultConnectionName = "Default";
+
     /// <summary>
     /// Named MQTT connections. The key is the connection name used in activities.
     /// A connection named <c>Default</c> is used when no connection name is specified.
@@ -34,10 +36,10 @@ public class MqttOptions
     /// <summary>
     /// Registers the default MQTT connection (name <c>Default</c>).
     /// </summary>
-    public MqttOptions AddDefaultConnection(MqttClientOptions options) => AddConnection("Default", options);
+    public MqttOptions AddDefaultConnection(MqttClientOptions options) => AddConnection(DefaultConnectionName, options);
 
     /// <summary>
     /// Registers the default MQTT connection (name <c>Default</c>).
     /// </summary>
-    public MqttOptions AddDefaultConnection(MqttConnectionOptions options) => AddConnection("Default", options.GenerateMqttClientOptions());
+    public MqttOptions AddDefaultConnection(MqttConnectionOptions options) => AddConnection(DefaultConnectionName, options.GenerateMqttClientOptions());
 }

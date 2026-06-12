@@ -19,7 +19,7 @@ internal class MqttConnectionFactory : IMqttConnectionFactory
     /// <inheritdoc/>
     public async Task<IMqttConnection> CreateConnectionAsync(string? connectionName = null, CancellationToken cancellationToken = default)
     {
-        connectionName ??= "Default";
+        connectionName ??= MqttOptions.DefaultConnectionName;
 
         await _semaphore.WaitAsync(cancellationToken);
 
@@ -52,7 +52,7 @@ internal class MqttConnectionFactory : IMqttConnectionFactory
     /// </summary>
     public MqttClientOptions ResolveConnection(string? connectionName)
     {
-        var name = connectionName ?? "Default";
+        var name = connectionName ?? MqttOptions.DefaultConnectionName;
 
         if (!_options.Connections.TryGetValue(name, out var connectionOptions))
         {
