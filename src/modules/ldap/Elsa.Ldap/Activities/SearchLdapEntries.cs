@@ -3,6 +3,7 @@ using Elsa.Ldap.Contracts;
 using Elsa.Ldap.Extensions;
 using Elsa.Ldap.UIHints;
 using Elsa.Workflows;
+using Elsa.Workflows.Activities.Flowchart.Attributes;
 using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.UIHints;
@@ -19,8 +20,13 @@ namespace Elsa.Ldap.Activities;
     DisplayName = "Search all LDAP entries",
     Description = "Search for all matching entries in LDAP directory.",
     Kind = ActivityKind.Task)]
+[FlowNode(OutcomeNoEntriesFound, OutcomeOneEntryFound, OutcomeMultipleEntriesFound)]
 public class SearchLdapEntries : Activity<IEnumerable<SearchResultEntry>>
 {
+    private const string OutcomeNoEntriesFound = "No entries found";
+    private const string OutcomeOneEntryFound = "One entry found";
+    private const string OutcomeMultipleEntriesFound = "Multiple entries found";
+
     [Input(
         DisplayName = "Connection Name",
         Description = "The name of the LDAP connection to use, as configured in the module options. Defaults to 'Default'.",
@@ -88,5 +94,14 @@ public class SearchLdapEntries : Activity<IEnumerable<SearchResultEntry>>
 
         context.JournalData.Add("ResultCode", response.ResultCode);
         context.JournalData.Add("MatchCount", result.Count);
+
+        var outcome = result.Count switch
+        {
+            0 => OutcomeNoEntriesFound,
+            1 => OutcomeOneEntryFound,
+            _ => OutcomeMultipleEntriesFound,
+        };
+
+        await context.CompleteActivityWithOutcomesAsync(outcome);
     }
 }
