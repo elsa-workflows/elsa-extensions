@@ -69,7 +69,17 @@ public class PublishMqttMessage : Activity<bool>
         var qualityOfServiceLevel = context.Get(QualityOfServiceLevel);
         var retain = context.Get(Retain);
 
-        // TODO: add validation
+        if (string.IsNullOrWhiteSpace(topic))
+        {
+            context.AddExecutionLogEntry("Precondition Failed", "The topic name is required (cannot be null or whitespace).");
+            await context.CompleteActivityWithOutcomesAsync(OutcomeFailure);
+        }
+
+        if (message == null)
+        {
+            context.AddExecutionLogEntry("Precondition Failed", "The message is required (cannot be null).");
+            await context.CompleteActivityWithOutcomesAsync(OutcomeFailure);
+        }
 
         var connection = await ldapConnectionFactory.CreateConnectionAsync(connectionName);
 
@@ -86,8 +96,8 @@ public class PublishMqttMessage : Activity<bool>
 
         context.JournalData.Add("ReasonCode", response.ReasonCode);
         context.JournalData.Add("ReasonString", response.ReasonString);
-        context.JournalData.Add("Topic", topic);
-        context.JournalData.Add("Message", message);
+        context.JournalData.Add("Topic", topic!);
+        context.JournalData.Add("Message", message!);
 
         await context.CompleteActivityWithOutcomesAsync(result ? OutcomeSuccess : OutcomeFailure);
     }

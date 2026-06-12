@@ -81,7 +81,10 @@ public class MqttMessageReceived : Trigger<object>
         var connectionName = ConnectionName.GetOrDefault(context) ?? MqttOptions.DefaultConnectionName;
         var topics = Topics.GetOrDefault(context) ?? [];
 
-        // TODO: add validation
+        if (topics.Count == 0)
+        {
+            throw new InvalidOperationException("At least one topic filter must be specified.");
+        }
 
         return new MqttMessageReceivedStimulus
         {
