@@ -144,6 +144,27 @@ public class MqttSubscriberTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task UnbindBookmarksAsync_RemovesBookmarkBinding()
+    {
+        await _subscriber.BindBookmarkAsync(MakeBookmarkBinding("bm1", ["events/alert"]));
+
+        await _subscriber.UnbindBookmarksAsync(["bm1"]);
+
+        Assert.False(_subscriber.BookmarkBindings.ContainsKey("bm1"));
+    }
+
+    [Fact]
+    public async Task UnbindBookmarksAsync_KeepsTopicSubscribedWhenTriggerStillUsesIt()
+    {
+        await _subscriber.BindTriggerAsync(MakeTriggerBinding("t1", ["shared/topic"]));
+        await _subscriber.BindBookmarkAsync(MakeBookmarkBinding("bm1", ["shared/topic"]));
+
+        await _subscriber.UnbindBookmarksAsync(["bm1"]);
+
+        await _mqttClient.DidNotReceive().UnsubscribeAsync(Arg.Any<MqttClientUnsubscribeOptions>(), Arg.Any<CancellationToken>());
+    }
+
     // ---------- Helpers ----------
 
     private static MqttTriggerBinding MakeTriggerBinding(string triggerId, ICollection<string> topics) =>
