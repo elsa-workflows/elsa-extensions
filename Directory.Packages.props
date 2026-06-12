@@ -84,6 +84,7 @@
         <PackageVersion Include="Npgsql" Version="9.0.4"/>
         <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
         <PackageVersion Include="Oracle.EntityFrameworkCore" Version="9.23.26000"/>
+        <PackageVersion Include="SharpCompress" Version="0.49.1" />
         <PackageVersion Include="System.DirectoryServices.Protocols" Version="9.0.13"/>
         <PackageVersion Include="System.Formats.Asn1" Version="9.0.13"/>
         <PackageVersion Include="System.Text.Json" Version="9.0.13"/>
