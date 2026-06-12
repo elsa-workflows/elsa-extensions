@@ -2,6 +2,7 @@ using System.DirectoryServices.Protocols;
 using Elsa.Agents;
 using Elsa.Expressions.JavaScript.Libraries.Extensions;
 using Elsa.Extensions;
+using Elsa.FakeData.Extensions;
 using Elsa.Ldap.Extensions;
 using Elsa.Persistence.EFCore.Extensions;
 using Elsa.Persistence.EFCore.Modules.Management;
@@ -155,6 +156,7 @@ services
                 };
             })
             .UseWorkflowsApi()
+            .UseFakeData()
             .AddActivitiesFrom<Program>()
             .AddWorkflowsFrom<Program>();
 
