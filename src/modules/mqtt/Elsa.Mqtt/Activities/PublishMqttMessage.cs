@@ -50,7 +50,9 @@ public class PublishMqttMessage : Activity<bool>
 
     [Input(
         DisplayName = "QoS",
-        Description = "The quality of service level to publish the message with.")]
+        Description = "The quality of service level to publish the message with.",
+        UIHandler = typeof(MqttQosLevelDropdownOptionsProvider),
+        UIHint = InputUIHints.DropDown)]
     public Input<MqttQualityOfServiceLevel> QualityOfServiceLevel { get; set; } = default!;
 
     [Input(

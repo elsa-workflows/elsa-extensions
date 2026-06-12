@@ -41,6 +41,7 @@ public class MqttFeature : FeatureBase
             .AddSingleton<IMqttSubscriberManager, MqttSubscriberManager>()
             .AddBackgroundTask<StartMqttSubscriptionsTask>()
             .AddScoped<IPropertyUIHandler, MqttConnectionDropdownOptionsProvider>()
+            .AddScoped<IPropertyUIHandler, MqttQosLevelDropdownOptionsProvider>()
             .AddHandlersFrom<MqttFeature>();
     }
 }
