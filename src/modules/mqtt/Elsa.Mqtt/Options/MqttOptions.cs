@@ -42,4 +42,16 @@ public class MqttOptions
     /// Registers the default MQTT connection (name <c>Default</c>).
     /// </summary>
     public MqttOptions AddDefaultConnection(MqttConnectionOptions options) => AddConnection(DefaultConnectionName, options.GenerateMqttClientOptions());
+
+    /// <summary>
+    /// Maximum number of reconnect attempts after an unexpected disconnection.
+    /// Set to <c>0</c> for unlimited retries (default).
+    /// </summary>
+    public int MaxReconnectAttempts { get; set; } = 0;
+
+    /// <summary>
+    /// Base delay for the first reconnect attempt. Subsequent attempts use exponential
+    /// back-off capped at 5 minutes. Defaults to 5 seconds.
+    /// </summary>
+    public TimeSpan ReconnectBaseDelay { get; set; } = TimeSpan.FromSeconds(5);
 }

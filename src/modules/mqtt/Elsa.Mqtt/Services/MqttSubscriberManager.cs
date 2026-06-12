@@ -181,7 +181,13 @@ internal class MqttSubscriberManager : IMqttSubscriberManager
         await client.ConnectAsync(mqttClientOptions, cancellationToken);
 
         var subscriberLogger = _loggerFactory.CreateLogger<MqttSubscriber>();
-        var subscriber = new MqttSubscriber(connectionName, client, _scopeFactory, subscriberLogger);
+        var subscriber = new MqttSubscriber(
+            connectionName: connectionName,
+            mqttClient: client,
+            scopeFactory: _scopeFactory,
+            logger: subscriberLogger,
+            maxReconnectAttempts: _options.MaxReconnectAttempts,
+            reconnectBaseDelay: _options.ReconnectBaseDelay);
 
         _subscribers[connectionName] = subscriber;
 

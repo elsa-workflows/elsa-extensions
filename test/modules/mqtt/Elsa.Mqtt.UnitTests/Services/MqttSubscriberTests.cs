@@ -17,7 +17,13 @@ public class MqttSubscriberTests
 
     public MqttSubscriberTests()
     {
-        _subscriber = new MqttSubscriber("Default", _mqttClient, _scopeFactory, _logger);
+        _subscriber = new MqttSubscriber(
+            connectionName: "Default",
+            mqttClient: _mqttClient,
+            scopeFactory: _scopeFactory,
+            logger: _logger,
+            maxReconnectAttempts: 10,
+            reconnectBaseDelay: TimeSpan.FromMilliseconds(100));
     }
 
     // ---------- BindTriggerAsync ----------

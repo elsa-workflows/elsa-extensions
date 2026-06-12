@@ -23,19 +23,26 @@ public class MqttSubscriber : IDisposable
     private readonly SemaphoreSlim _subscriptionSemaphore = new(1, 1);
     private readonly ConcurrentDictionary<string, MqttTriggerBinding> _triggerBindings = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, MqttBookmarkBinding> _bookmarkBindings = new(StringComparer.OrdinalIgnoreCase);
+    private readonly int _maxReconnectAttempts;
+    private readonly TimeSpan _reconnectBaseDelay;
     private HashSet<string> _subscribedTopics = [];
+    private int _reconnectAttempts;
     private bool _disposed;
 
     public MqttSubscriber(
         string connectionName,
         IMqttClient mqttClient,
         IServiceScopeFactory scopeFactory,
-        ILogger<MqttSubscriber> logger)
+        ILogger<MqttSubscriber> logger,
+        int maxReconnectAttempts,
+        TimeSpan reconnectBaseDelay)
     {
         _connectionName = connectionName;
         _mqttClient = mqttClient;
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _maxReconnectAttempts = maxReconnectAttempts;
+        _reconnectBaseDelay = reconnectBaseDelay;
 
         _mqttClient.ApplicationMessageReceivedAsync += OnApplicationMessageReceivedAsync;
         _mqttClient.DisconnectedAsync += OnDisconnectedAsync;
@@ -56,9 +63,9 @@ public class MqttSubscriber : IDisposable
         }
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
@@ -182,25 +189,55 @@ public class MqttSubscriber : IDisposable
 
     private async Task OnDisconnectedAsync(MqttClientDisconnectedEventArgs args)
     {
-        if (!args.ClientWasConnected)
+        if (!args.ClientWasConnected || _disposed)
         {
             return;
         }
 
-        _logger.LogWarning("MQTT connection '{Connection}' was lost. Attempting to reconnect in 5 seconds.", _connectionName);
-        await Task.Delay(TimeSpan.FromSeconds(5));
-
-        try
+        while (true)
         {
-            await _mqttClient.ReconnectAsync();
+            var attempt = Interlocked.Increment(ref _reconnectAttempts);
 
-            _logger.LogInformation("Reconnected to MQTT broker on connection '{Connection}'. Restoring topic subscriptions.", _connectionName);
-            
-            await UpdateTopicSubscriptionsAsync(resubscribeAll: true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to reconnect to MQTT broker on connection '{Connection}'.", _connectionName);
+            if (_maxReconnectAttempts > 0 && attempt > _maxReconnectAttempts)
+            {
+                _logger.LogError(
+                    "MQTT connection '{Connection}' could not be re-established after {MaxAttempts} attempt(s). Giving up.",
+                    _connectionName, _maxReconnectAttempts);
+                return;
+            }
+
+            // Exponential back-off: base * 2^(attempt-1), capped at 5 minutes.
+            var delaySeconds = Math.Min(_reconnectBaseDelay.TotalSeconds * Math.Pow(2, attempt - 1), 300);
+            _logger.LogWarning(
+                "MQTT connection '{Connection}' was lost (attempt {Attempt}). Reconnecting in {Delay:F0}s.",
+                _connectionName, attempt, delaySeconds);
+
+            await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+
+            if (_disposed)
+            {
+                return;
+            }
+
+            try
+            {
+                await _mqttClient.ReconnectAsync();
+
+                Interlocked.Exchange(ref _reconnectAttempts, 0);
+                _logger.LogInformation(
+                    "Reconnected to MQTT broker on connection '{Connection}'. Restoring topic subscriptions.",
+                    _connectionName);
+
+                await UpdateTopicSubscriptionsAsync(resubscribeAll: true);
+
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Failed to reconnect to MQTT broker on connection '{Connection}' (attempt {Attempt}).",
+                    _connectionName, attempt);
+            }
         }
     }
 

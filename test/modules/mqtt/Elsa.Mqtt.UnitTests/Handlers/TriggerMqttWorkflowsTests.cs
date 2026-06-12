@@ -1,4 +1,3 @@
-using Elsa.Mediator.Contracts;
 using Elsa.Mqtt.Activities;
 using Elsa.Mqtt.Handlers;
 using Elsa.Mqtt.Models;
@@ -6,7 +5,6 @@ using Elsa.Mqtt.Notifications;
 using Elsa.Mqtt.Services;
 using Elsa.Mqtt.Stimuli;
 using Elsa.Workflows.Runtime;
-using Elsa.Workflows.Runtime.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
@@ -31,7 +29,13 @@ public class TriggerMqttWorkflowsTests
         var mqttClient = Substitute.For<IMqttClient>();
         var scopeFactory = Substitute.For<IServiceScopeFactory>();
         var logger = Substitute.For<ILogger<MqttSubscriber>>();
-        _subscriber = new MqttSubscriber("Default", mqttClient, scopeFactory, logger);
+        _subscriber = new MqttSubscriber(
+            connectionName: "Default",
+            mqttClient: mqttClient,
+            scopeFactory: scopeFactory,
+            logger: logger,
+            maxReconnectAttempts: 10,
+            reconnectBaseDelay: TimeSpan.FromMilliseconds(100));
     }
 
     // ---------- Trigger routing ----------
