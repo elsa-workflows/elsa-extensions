@@ -84,6 +84,7 @@
         <PackageVersion Include="Npgsql" Version="9.0.4"/>
         <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
         <PackageVersion Include="Oracle.EntityFrameworkCore" Version="9.23.26000"/>
+        <PackageVersion Include="System.DirectoryServices.Protocols" Version="9.0.13"/>
         <PackageVersion Include="System.Formats.Asn1" Version="9.0.13"/>
         <PackageVersion Include="System.Text.Json" Version="9.0.13"/>
     </ItemGroup>
@@ -119,6 +120,7 @@
         <PackageVersion Include="Npgsql" Version="10.0.0"/>
         <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0"/>
         <PackageVersion Include="Oracle.EntityFrameworkCore" Version="10.23.26000"/>
+        <PackageVersion Include="System.DirectoryServices.Protocols" Version="10.0.3"/>
         <PackageVersion Include="System.Formats.Asn1" Version="10.0.3"/>
         <PackageVersion Include="System.Text.Json" Version="10.0.3"/>
     </ItemGroup>
