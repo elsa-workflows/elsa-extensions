@@ -53,6 +53,7 @@
 		<ProjectReference Include="..\..\modules\email\Elsa.Email\Elsa.Email.csproj" />
 		<ProjectReference Include="..\..\modules\http\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
 		<ProjectReference Include="..\..\modules\ldap\Elsa.Ldap\Elsa.Ldap.csproj" />
+		<ProjectReference Include="..\..\modules\mqtt\Elsa.Mqtt\Elsa.Mqtt.csproj" />
 		<ProjectReference Include="..\..\modules\runtimes\Elsa.Workflows.Runtime.ProtoActor\Elsa.Workflows.Runtime.ProtoActor.csproj" />
 		<ProjectReference Include="..\..\modules\secrets\Elsa.Secrets.Persistence.EFCore.PostgreSql\Elsa.Secrets.Persistence.EFCore.PostgreSql.csproj" />
 		<ProjectReference Include="..\..\modules\secrets\Elsa.Secrets.Persistence.EFCore.Sqlite\Elsa.Secrets.Persistence.EFCore.Sqlite.csproj" />

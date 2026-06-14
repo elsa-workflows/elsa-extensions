@@ -1,8 +1,8 @@
-using System.DirectoryServices.Protocols;
 using Elsa.Agents;
 using Elsa.Expressions.JavaScript.Libraries.Extensions;
 using Elsa.Extensions;
 using Elsa.Ldap.Extensions;
+using Elsa.Mqtt.Options;
 using Elsa.Persistence.EFCore.Extensions;
 using Elsa.Persistence.EFCore.Modules.Management;
 using Elsa.Persistence.EFCore.Modules.Runtime;
@@ -155,6 +155,17 @@ services
                 };
             })
             .UseWorkflowsApi()
+            .UseMqtt(mqtt =>
+            {
+                mqtt.ConfigureOptions = options =>
+                {
+                    options.AddDefaultConnection(new MqttConnectionOptions
+                    {
+                        Host = configuration.GetValue<string>("Mqtt:Host")!,
+                        Port = configuration.GetValue<int>("Mqtt:Port"),
+                    });
+                };
+            })
             .AddActivitiesFrom<Program>()
             .AddWorkflowsFrom<Program>();
 
