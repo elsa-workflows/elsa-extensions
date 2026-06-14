@@ -29,6 +29,7 @@ public class TriggerMqttWorkflowsTests
         var mqttClient = Substitute.For<IMqttClient>();
         var scopeFactory = Substitute.For<IServiceScopeFactory>();
         var logger = Substitute.For<ILogger<MqttSubscriber>>();
+
         _subscriber = new MqttSubscriber(
             connectionName: "Default",
             mqttClient: mqttClient,

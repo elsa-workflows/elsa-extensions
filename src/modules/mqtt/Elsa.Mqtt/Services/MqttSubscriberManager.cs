@@ -1,4 +1,5 @@
 using Elsa.Extensions;
+using Elsa.Mqtt.Contracts;
 using Elsa.Mqtt.Models;
 using Elsa.Mqtt.Options;
 using Elsa.Mqtt.Stimuli;
@@ -8,7 +9,6 @@ using Elsa.Workflows.Runtime.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MQTTnet;
 
 namespace Elsa.Mqtt.Services;
 
@@ -19,24 +19,26 @@ namespace Elsa.Mqtt.Services;
 internal class MqttSubscriberManager : IMqttSubscriberManager
 {
     private static readonly string ActivityTypeName = ActivityTypeNameHelper.GenerateTypeName<Activities.MqttMessageReceived>();
-
+    
     private readonly MqttOptions _options;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<MqttSubscriberManager> _logger;
-    private readonly IDictionary<string, MqttSubscriber> _subscribers =
-        new Dictionary<string, MqttSubscriber>(StringComparer.OrdinalIgnoreCase);
+    private readonly IMqttClientFactory _mqttClientFactory;
+    private readonly Dictionary<string, MqttSubscriber> _subscribers = new(StringComparer.OrdinalIgnoreCase);
 
     public MqttSubscriberManager(
         IOptions<MqttOptions> options,
         IServiceScopeFactory scopeFactory,
         ILoggerFactory loggerFactory,
-        ILogger<MqttSubscriberManager> logger)
+        ILogger<MqttSubscriberManager> logger,
+        IMqttClientFactory mqttClientFactory)
     {
         _options = options.Value;
         _scopeFactory = scopeFactory;
         _loggerFactory = loggerFactory;
         _logger = logger;
+        _mqttClientFactory = mqttClientFactory;
     }
 
     /// <inheritdoc/>
@@ -167,23 +169,12 @@ internal class MqttSubscriberManager : IMqttSubscriberManager
             return existing;
         }
 
-        if (!_options.Connections.TryGetValue(connectionName, out var mqttClientOptions))
-        {
-            _logger.LogWarning(
-                "No MQTT connection named '{ConnectionName}' was found. " +
-                "Cannot create subscriber. Configure connections via MqttOptions.AddConnection(...).",
-                connectionName);
-
-            return null;
-        }
-
-        var client = new MqttClientFactory().CreateMqttClient();
-        await client.ConnectAsync(mqttClientOptions, cancellationToken);
+        var mqttClient = await _mqttClientFactory.CreateClientAsync(connectionName, cancellationToken);
 
         var subscriberLogger = _loggerFactory.CreateLogger<MqttSubscriber>();
         var subscriber = new MqttSubscriber(
             connectionName: connectionName,
-            mqttClient: client,
+            mqttClient: mqttClient,
             scopeFactory: _scopeFactory,
             logger: subscriberLogger,
             maxReconnectAttempts: _options.MaxReconnectAttempts,

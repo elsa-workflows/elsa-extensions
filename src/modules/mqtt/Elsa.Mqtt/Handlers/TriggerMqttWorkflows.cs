@@ -57,7 +57,7 @@ internal class TriggerMqttWorkflows(ITriggerInvoker triggerInvoker, IBookmarkQue
                 {
                     Input = input,
                 },
-                ActivityTypeName = ActivityTypeName
+                ActivityTypeName = ActivityTypeName,
             }, cancellationToken);
         }
     }

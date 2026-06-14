@@ -463,8 +463,8 @@ services
                 {
                     options.AddDefaultConnection(new MqttConnectionOptions
                     {
-                        Host = "localhost",
-                        Port = 1883,
+                        Host = configuration.GetValue<string>("Mqtt:Host")!,
+                        Port = configuration.GetValue<int>("Mqtt:Port"),
                     });
                 };
             })

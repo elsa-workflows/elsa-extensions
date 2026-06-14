@@ -37,7 +37,7 @@ public class MqttFeature : FeatureBase
     {
         Services
             .Configure(ConfigureOptions)
-            .AddSingleton<IMqttConnectionFactory, MqttConnectionFactory>()
+            .AddSingleton<IMqttClientFactory, MqttClientFactory>()
             .AddSingleton<IMqttSubscriberManager, MqttSubscriberManager>()
             .AddBackgroundTask<StartMqttSubscriptionsTask>()
             .AddScoped<IPropertyUIHandler, MqttConnectionDropdownOptionsProvider>()

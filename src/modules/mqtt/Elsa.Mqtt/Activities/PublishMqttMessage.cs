@@ -7,6 +7,7 @@ using Elsa.Workflows.Attributes;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.UIHints;
 using Microsoft.Extensions.Logging;
+using MQTTnet;
 using MQTTnet.Protocol;
 
 namespace Elsa.Mqtt.Activities;
@@ -63,7 +64,7 @@ public class PublishMqttMessage : Activity<bool>
     protected override async ValueTask ExecuteAsync(ActivityExecutionContext context)
     {
         var logger = context.GetRequiredService<ILogger<PublishMqttMessage>>();
-        var ldapConnectionFactory = context.GetRequiredService<IMqttConnectionFactory>();
+        var mqttClientFactory = context.GetRequiredService<IMqttClientFactory>();
 
         var connectionName = context.Get(ConnectionName);
         var topic = context.Get(Topic);
@@ -75,17 +76,24 @@ public class PublishMqttMessage : Activity<bool>
         {
             context.AddExecutionLogEntry("Precondition Failed", "The topic name is required (cannot be null or whitespace).");
             await context.CompleteActivityWithOutcomesAsync(OutcomeFailure);
+            return;
         }
 
         if (message == null)
         {
             context.AddExecutionLogEntry("Precondition Failed", "The message is required (cannot be null).");
             await context.CompleteActivityWithOutcomesAsync(OutcomeFailure);
+            return;
         }
 
-        var connection = await ldapConnectionFactory.CreateConnectionAsync(connectionName);
+        var mqttClient = await mqttClientFactory.CreateClientAsync(connectionName);
 
-        var response = await connection.PublishAsync(topic!, message!, qualityOfServiceLevel, retain);
+        var response = await mqttClient.PublishStringAsync(
+            topic: topic!,
+            payload: message!,
+            qualityOfServiceLevel: qualityOfServiceLevel,
+            retain: retain,
+            cancellationToken: context.CancellationToken);
 
         if (!response.IsSuccess)
         {
@@ -99,7 +107,7 @@ public class PublishMqttMessage : Activity<bool>
         context.JournalData.Add("ReasonCode", response.ReasonCode);
         context.JournalData.Add("ReasonString", response.ReasonString);
         context.JournalData.Add("Topic", topic!);
-        context.JournalData.Add("Message", message!);
+        context.JournalData.Add("MessageLength", message!.Length);
 
         await context.CompleteActivityWithOutcomesAsync(result ? OutcomeSuccess : OutcomeFailure);
     }
