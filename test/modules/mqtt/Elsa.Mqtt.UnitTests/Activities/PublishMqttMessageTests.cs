@@ -1,3 +1,4 @@
+using Elsa.Extensions;
 using Elsa.Mqtt.Activities;
 using Elsa.Mqtt.Contracts;
 using Elsa.Testing.Shared;
@@ -31,6 +32,7 @@ public class PublishMqttMessageTests
         var context = await fixture.ExecuteAsync();
 
         Assert.Equal(ActivityStatus.Completed, context.Status);
+        Assert.Equal(false, context.GetResult(activity));
         Assert.True(context.HasOutcome("Failure"));
         Assert.False(context.HasOutcome("Success"));
     }
@@ -53,6 +55,7 @@ public class PublishMqttMessageTests
         var context = await fixture.ExecuteAsync();
 
         Assert.Equal(ActivityStatus.Completed, context.Status);
+        Assert.Equal(false, context.GetResult(activity));
         Assert.True(context.HasOutcome("Failure"));
         Assert.False(context.HasOutcome("Success"));
     }
@@ -79,6 +82,7 @@ public class PublishMqttMessageTests
         var context = await fixture.ExecuteAsync();
 
         Assert.Equal(ActivityStatus.Completed, context.Status);
+        Assert.Equal(true, context.GetResult(activity));
         Assert.True(context.HasOutcome("Success"));
         Assert.False(context.HasOutcome("Failure"));
     }
@@ -101,6 +105,7 @@ public class PublishMqttMessageTests
         var context = await fixture.ExecuteAsync();
 
         Assert.Equal(ActivityStatus.Completed, context.Status);
+        Assert.Equal(false, context.GetResult(activity));
         Assert.True(context.HasOutcome("Failure"));
         Assert.False(context.HasOutcome("Success"));
     }

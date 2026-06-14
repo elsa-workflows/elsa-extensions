@@ -75,6 +75,7 @@ public class PublishMqttMessage : Activity<bool>
         if (string.IsNullOrWhiteSpace(topic))
         {
             context.AddExecutionLogEntry("Precondition Failed", "The topic name is required (cannot be null or whitespace).");
+            context.Set(Result, false);
             await context.CompleteActivityWithOutcomesAsync(OutcomeFailure);
             return;
         }
@@ -82,6 +83,7 @@ public class PublishMqttMessage : Activity<bool>
         if (message == null)
         {
             context.AddExecutionLogEntry("Precondition Failed", "The message is required (cannot be null).");
+            context.Set(Result, false);
             await context.CompleteActivityWithOutcomesAsync(OutcomeFailure);
             return;
         }
