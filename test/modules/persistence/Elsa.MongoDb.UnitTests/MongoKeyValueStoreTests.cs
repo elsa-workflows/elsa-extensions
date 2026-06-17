@@ -5,7 +5,6 @@ using Elsa.Persistence.MongoDb.Common;
 using Elsa.Persistence.MongoDb.Modules.Runtime;
 using MongoDB.Driver;
 using NSubstitute;
-using System.Reflection;
 
 namespace Elsa.MongoDb.UnitTests;
 
@@ -86,9 +85,6 @@ public class MongoDbStoreTenantTests
     [Fact(DisplayName = "Tenant filter includes tenant-specific and agnostic records")]
     public void ApplyTenantFilter_WithConcreteTenant_IncludesAgnostic()
     {
-        var method = typeof(MongoDbStore<TestEntity>).GetMethod("ApplyTenantFilter", BindingFlags.NonPublic | BindingFlags.Static);
-        Assert.NotNull(method);
-
         var documents = new[]
         {
             new TestEntity { Id = "specific", TenantId = "tenant-a" },
@@ -97,7 +93,7 @@ public class MongoDbStoreTenantTests
             new TestEntity { Id = "null", TenantId = null }
         }.AsQueryable();
 
-        var filtered = (IQueryable<TestEntity>)method!.Invoke(null, [documents, "tenant-a"])!;
+        var filtered = MongoDbStore<TestEntity>.ApplyTenantFilter(documents, "tenant-a");
         var ids = filtered.Select(x => x.Id).ToList();
 
         Assert.Contains("specific", ids);
@@ -109,9 +105,6 @@ public class MongoDbStoreTenantTests
     [Fact(DisplayName = "Tenant filter includes null and agnostic when ambient tenant is agnostic")]
     public void ApplyTenantFilter_WithAgnosticTenant_IncludesNullAndAgnostic()
     {
-        var method = typeof(MongoDbStore<TestEntity>).GetMethod("ApplyTenantFilter", BindingFlags.NonPublic | BindingFlags.Static);
-        Assert.NotNull(method);
-
         var documents = new[]
         {
             new TestEntity { Id = "specific", TenantId = "tenant-a" },
@@ -119,7 +112,7 @@ public class MongoDbStoreTenantTests
             new TestEntity { Id = "null", TenantId = null }
         }.AsQueryable();
 
-        var filtered = (IQueryable<TestEntity>)method!.Invoke(null, [documents, null])!;
+        var filtered = MongoDbStore<TestEntity>.ApplyTenantFilter(documents, null);
         var ids = filtered.Select(x => x.Id).ToList();
 
         Assert.Contains("agnostic", ids);

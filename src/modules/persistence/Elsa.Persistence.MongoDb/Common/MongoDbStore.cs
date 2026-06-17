@@ -443,7 +443,7 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
         return queryable;
     }
 
-    private static IQueryable<TDocument> ApplyTenantFilter(IQueryable<TDocument> queryable, string? tenantId)
+    internal static IQueryable<TDocument> ApplyTenantFilter(IQueryable<TDocument> queryable, string? tenantId)
     {
         return queryable.Where(x => (x as Entity)!.TenantId == tenantId || (x as Entity)!.TenantId == Tenant.AgnosticTenantId);
     }
@@ -474,6 +474,7 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
         if (tenantDocument.TenantId == Tenant.AgnosticTenantId)
             return;
 
+        // Preserve explicitly scoped entities and only stamp ambient tenant IDs on unscoped entities.
         if (tenantDocument.TenantId != null)
             return;
 
