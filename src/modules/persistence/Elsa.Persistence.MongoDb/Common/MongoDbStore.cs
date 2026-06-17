@@ -437,10 +437,15 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
         {
             var tenant = tenantAccessor.Tenant;
             var tenantId = tenant?.Id.EmptyToNull();
-            queryable = queryable.Where(x => (x as Entity)!.TenantId == tenantId);
+            queryable = ApplyTenantFilter(queryable, tenantId);
         }
 
         return queryable;
+    }
+
+    private static IQueryable<TDocument> ApplyTenantFilter(IQueryable<TDocument> queryable, string? tenantId)
+    {
+        return queryable.Where(x => (x as Entity)!.TenantId == tenantId || (x as Entity)!.TenantId == Tenant.AgnosticTenantId);
     }
 
     private void ApplyTenantId(TDocument document)
@@ -449,7 +454,7 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
         var tenantId = tenant?.Id;
 
         if (document is Entity tenantDocument)
-            tenantDocument.TenantId = tenantId.EmptyToNull();
+            ApplyTenantId(tenantDocument, tenantId);
     }
 
     private void ApplyTenantId(IEnumerable<TDocument> documents)
@@ -460,7 +465,18 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
         foreach (var document in documents)
         {
             if (document is Entity tenantDocument)
-                tenantDocument.TenantId = tenantId.EmptyToNull();
+                ApplyTenantId(tenantDocument, tenantId);
         }
+    }
+
+    private static void ApplyTenantId(Entity tenantDocument, string? tenantId)
+    {
+        if (tenantDocument.TenantId == Tenant.AgnosticTenantId)
+            return;
+
+        if (tenantDocument.TenantId != null)
+            return;
+
+        tenantDocument.TenantId = tenantId.EmptyToNull();
     }
 }
