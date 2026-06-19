@@ -3,16 +3,16 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:8080",
+      "applicationUrl": "http://localhost:8383",
       "sslPort": 44363
     }
   },
   "profiles": {
-    "Elsa.AllInOne.Web": {
+    "Elsa.ServerAndStudio.Web": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:8080",
+      "applicationUrl": "https://localhost:8383",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

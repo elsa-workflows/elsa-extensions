@@ -16,9 +16,10 @@ using WebhooksCore.Options;
 
 const bool useMassTransit = true;
 const bool useProtoActor = true;
+const bool useQuartz = true;
 const bool useCaching = true;
 const DistributedCachingTransport distributedCachingTransport = DistributedCachingTransport.MassTransit;
-const MassTransitBroker useMassTransitBroker = MassTransitBroker.Memory;
+const MassTransitBroker useMassTransitBroker = MassTransitBroker.AzureServiceBus;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseStaticWebAssets();
@@ -106,7 +107,11 @@ services
                 runtime.WorkflowInboxCleanupOptions = options => configuration.GetSection("Runtime:WorkflowInboxCleanup").Bind(options);
                 runtime.WorkflowDispatcherOptions = options => configuration.GetSection("Runtime:WorkflowDispatcher").Bind(options);
             })
-            .UseScheduling()
+            .UseScheduling(scheduling =>
+            {
+                if (useQuartz)
+                    scheduling.UseQuartzScheduler();
+            })
             .UseJavaScript(javaScriptFeature =>
             {
                 javaScriptFeature
@@ -141,6 +146,17 @@ services
             .UseWorkflowsApi()
             .AddActivitiesFrom<Program>()
             .AddWorkflowsFrom<Program>();
+
+        if (useQuartz)
+        {
+            elsa.UseQuartz(quartz =>
+            {
+                if (sqlDatabaseProvider == SqlDatabaseProvider.Sqlite)
+                    quartz.UseSqlite(sqliteConnectionString);
+                else if (sqlDatabaseProvider == SqlDatabaseProvider.PostgreSql)
+                    quartz.UsePostgreSql(postgreSqlConnectionString);
+            });
+        }
 
         if (useProtoActor)
         {
