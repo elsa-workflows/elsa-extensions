@@ -26,7 +26,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .StartAt(at)
             .Build();
 
-        await ScheduleJobAsync(scheduler, trigger, typeof(RunWorkflowJob), cancellationToken);
+        await ScheduleJobAsync<RunWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -40,7 +40,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .StartAt(at)
             .Build();
 
-        await ScheduleJobAsync(scheduler, trigger, typeof(ResumeWorkflowJob), cancellationToken);
+        await ScheduleJobAsync<ResumeWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -55,7 +55,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .WithSimpleSchedule(schedule => schedule.WithInterval(interval).RepeatForever())
             .Build();
 
-        await ScheduleJobAsync(scheduler, trigger, typeof(RunWorkflowJob), cancellationToken);
+        await ScheduleJobAsync<RunWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -70,7 +70,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .WithSimpleSchedule(schedule => schedule.WithInterval(interval).RepeatForever())
             .Build();
 
-        await ScheduleJobAsync(scheduler, trigger, typeof(ResumeWorkflowJob), cancellationToken);
+        await ScheduleJobAsync<ResumeWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -84,7 +84,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .WithCronSchedule(cronExpression)
             .Build();
 
-        await ScheduleJobAsync(scheduler, trigger, typeof(RunWorkflowJob), cancellationToken);
+        await ScheduleJobAsync<RunWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -97,7 +97,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .WithIdentity(GetTriggerKey(taskName))
             .WithCronSchedule(cronExpression).Build();
 
-        await ScheduleJobAsync(scheduler, trigger, typeof(ResumeWorkflowJob), cancellationToken);
+        await ScheduleJobAsync<ResumeWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -108,7 +108,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
         await scheduler.UnscheduleJob(triggerKey, cancellationToken);
     }
     
-    private async Task ScheduleJobAsync(QuartzIScheduler scheduler, ITrigger trigger, Type jobType, CancellationToken cancellationToken)
+    private async Task ScheduleJobAsync<TJob>(QuartzIScheduler scheduler, ITrigger trigger, CancellationToken cancellationToken) where TJob : IJob
     {
         // Ensure the durable job referenced by the trigger exists before scheduling.
         // The job is normally registered at startup by RegisterJobsTask, but it can be absent here when:
@@ -116,7 +116,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
         // - the startup task has not run yet (or was skipped), or
         // - the job rows were removed from the Quartz job store at runtime.
         // Without this, Quartz throws "The job (...RunWorkflowJob) referenced by the trigger does not exist".
-        await EnsureJobAsync(scheduler, trigger.JobKey, jobType, cancellationToken);
+        await EnsureJobAsync<TJob>(scheduler, trigger.JobKey, cancellationToken);
 
         try
         {
@@ -135,13 +135,13 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
         }
     }
 
-    private async Task EnsureJobAsync(QuartzIScheduler scheduler, JobKey jobKey, Type jobType, CancellationToken cancellationToken)
+    private async Task EnsureJobAsync<TJob>(QuartzIScheduler scheduler, JobKey jobKey, CancellationToken cancellationToken) where TJob : IJob
     {
         // Fast path: the durable job is already registered.
         if (await scheduler.CheckExists(jobKey, cancellationToken))
             return;
 
-        var job = JobBuilder.Create(jobType)
+        var job = JobBuilder.Create<TJob>()
             .WithIdentity(jobKey)
             .StoreDurably()
             .Build();
