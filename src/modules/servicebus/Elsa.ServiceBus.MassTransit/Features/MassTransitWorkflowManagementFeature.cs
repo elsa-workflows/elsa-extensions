@@ -18,7 +18,7 @@ public class MassTransitWorkflowManagementFeature(IModule module) : FeatureBase(
     /// <inheritdoc />
     public override void Configure()
     {
-        Module.AddMassTransitConsumer<WorkflowDefinitionEventsConsumer>("elsa-workflow-definition-updates", true, true);
+        Module.AddMassTransitConsumer<WorkflowDefinitionEventsConsumer>("elsa-wf-def-upd", true, true);
     }
 
     /// <inheritdoc />
