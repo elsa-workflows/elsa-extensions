@@ -81,7 +81,7 @@ Below is the current status of each extension. Icons indicate implementation pro
 ### 🤖 AI & Automation
 | Status | Extension | Description | Module Name | Issue |
 |--------|------------|-------------|-------------|-------|
-| 🔲 | **OpenAI** | GPT-based text generation, chatbots | `Elsa.OpenAI` | [Open Issue](https://github.com/elsa-workflows/elsa-extensions/issues/new) |
+| ✅ | **OpenAI** | GPT-based text generation, chatbots | `Elsa.OpenAI` | [PR #98](https://github.com/elsa-workflows/elsa-extensions/pull/98) |
 | 🔲 | **Google AI** | AI-enhanced search, translation | `Elsa.GoogleAI` | [Open Issue](https://github.com/elsa-workflows/elsa-extensions/issues/new) |
 | 🔲 | **AWS Comprehend** | NLP services for text analysis | `Elsa.AWSComprehend` | [Open Issue](https://github.com/elsa-workflows/elsa-extensions/issues/new) |
 | 🔲 | **Azure AI** | Vision, speech, language processing | `Elsa.AzureAI` | [Open Issue](https://github.com/elsa-workflows/elsa-extensions/issues/new) |
