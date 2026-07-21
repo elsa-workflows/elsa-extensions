@@ -19,6 +19,7 @@
         <PackageReference Include="Elsa.Identity"/>
         <PackageReference Include="Elsa.Labels"/>
         <PackageReference Include="Elsa.Workflows.Runtime"/>
+        <PackageReference Include="SharpCompress" />
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
