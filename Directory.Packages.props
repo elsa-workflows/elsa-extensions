@@ -17,6 +17,7 @@
         <PackageVersion Include="Elsa.Expressions.Python" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Features" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Http" Version="$(ElsaVersion)"/>
+        <PackageVersion Include="Elsa.Http.Webhooks" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Hosting.Management" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Identity" Version="$(ElsaVersion)"/>
         <PackageVersion Include="Elsa.Labels" Version="$(ElsaVersion)"/>
