@@ -91,7 +91,7 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
     /// <inheritdoc />
     public override void ConfigureHostedServices()
     {
-        Module.ConfigureHostedService<StartClusterMember>();
+        Module.ConfigureHostedService<StartClusterMember>(-100);
     }
 
     /// <inheritdoc />
