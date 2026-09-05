@@ -12,7 +12,8 @@ on:
       - 'feat/*'
       - 'enh/*'
   release:
-    types: [ prereleased, published ]
+    # published covers stable releases and prereleases; subscribe once.
+    types: [ published ]
 env:
   base_version: '3.8.0'
   feedz_feed_source: 'https://f.feedz.io/elsa-workflows/elsa-3/nuget/index.json'
@@ -96,7 +97,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: ${{ github.event.action == 'published' || github.event.action == 'prereleased' }}
+    if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
     steps:
       - name: Download Packages
         uses: actions/download-artifact@v7
