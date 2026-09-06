@@ -46,6 +46,7 @@ public sealed class ParameterizedQueryBuilderExtensionsTests : IDisposable
             .In(nameof(TestRecord.Id), (IEnumerable<object>?)null));
 
         Assert.Equal(["a2"], result.Items.Select(x => x.Id));
+        Assert.Equal(1, result.TotalCount);
     }
 
     [Fact]
@@ -56,6 +57,7 @@ public sealed class ParameterizedQueryBuilderExtensionsTests : IDisposable
         var result = await FindManyAsync(query => query.In(nameof(TestRecord.Id), Array.Empty<object>()));
 
         Assert.Empty(result.Items);
+        Assert.Equal(0, result.TotalCount);
     }
 
     [Fact]
@@ -67,6 +69,7 @@ public sealed class ParameterizedQueryBuilderExtensionsTests : IDisposable
 
         Assert.Equal(["a2"], result.Items.Select(x => x.Id));
         Assert.Equal(["tenant-a"], result.Items.Select(x => x.TenantId));
+        Assert.Equal(1, result.TotalCount);
     }
 
     [Fact]
@@ -77,6 +80,20 @@ public sealed class ParameterizedQueryBuilderExtensionsTests : IDisposable
         var result = await FindManyAsync(query => query.In(nameof(TestRecord.Id), new object[] { "b1" }));
 
         Assert.Empty(result.Items);
+        Assert.Equal(0, result.TotalCount);
+    }
+
+    [Fact]
+    public async Task In_WithTenantAgnosticFilter_ReturnsMatchingRowsAcrossTenants()
+    {
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+
+        var result = await FindManyAsync(
+            query => query.In(nameof(TestRecord.Id), new object[] { "a2", "b1" }),
+            tenantAgnostic: true);
+
+        Assert.Equal(["a2", "b1"], result.Items.Select(x => x.Id));
+        Assert.Equal(2, result.TotalCount);
     }
 
     public void Dispose()
@@ -84,14 +101,14 @@ public sealed class ParameterizedQueryBuilderExtensionsTests : IDisposable
         File.Delete(_databasePath);
     }
 
-    private Task<Page<TestRecord>> FindManyAsync(Action<ParameterizedQuery> filter)
+    private Task<Page<TestRecord>> FindManyAsync(Action<ParameterizedQuery> filter, bool tenantAgnostic = false)
     {
         return _store.FindManyAsync(
             filter,
             PageArgs.All,
             nameof(TestRecord.Id),
             OrderDirection.Ascending,
-            tenantAgnostic: false,
+            tenantAgnostic,
             cancellationToken: CancellationToken.None);
     }
 
