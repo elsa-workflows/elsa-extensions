@@ -48,7 +48,11 @@ public class WorkflowServer(Infrastructure infrastructure, string url) : WebAppl
                 return StorageFactory.Blobs.DirectoryFiles(workflowsDirectory);
             });
             elsa.UseMassTransit(massTransit => { massTransit.UseRabbitMq(rabbitMqConnectionString); });
-            elsa.UseIdentity(identity => identity.UseEntityFrameworkCore(ef => ef.UsePostgreSql(dbConnectionString)));
+            elsa.UseIdentity(identity =>
+            {
+                identity.TokenOptions = options => options.SigningKey = "test-server-only-secret-signing-key-not-for-production";
+                identity.UseEntityFrameworkCore(ef => ef.UsePostgreSql(dbConnectionString));
+            });
             elsa.UseWorkflowManagement(management =>
             {
                 management.UseEntityFrameworkCore(ef => ef.UsePostgreSql(dbConnectionString));

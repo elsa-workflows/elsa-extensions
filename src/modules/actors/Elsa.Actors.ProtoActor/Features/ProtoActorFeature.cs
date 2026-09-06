@@ -2,18 +2,22 @@ using Elsa.Features.Abstractions;
 using Elsa.Features.Services;
 using Elsa.Actors.ProtoActor.HostedServices;
 using Elsa.Actors.ProtoActor.Middleware;
+using Elsa.Actors.ProtoActor.Services;
 using Elsa.Workflows.Runtime.ProtoActor.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Proto;
 using Proto.Cluster;
 using Proto.Cluster.Partition;
+using Proto.Cluster.PubSub;
 using Proto.Cluster.Testing;
 using Proto.DependencyInjection;
 using Proto.OpenTelemetry;
 using Proto.Persistence;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
+using Proto.Utils;
 
 namespace Elsa.Actors.ProtoActor.Features;
 
@@ -65,6 +69,15 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
     /// </summary>
     public Func<IServiceProvider, ClusterConfig, ClusterConfig>? ConfigureClusterConfig { get; set; }
 
+    /// <summary>
+    /// A delegate that creates the key-value store used by Proto.Actor Pub/Sub to persist topic subscribers.
+    /// </summary>
+    /// <remarks>
+    /// The default store survives topic reactivation only within the same process and member. It does not survive
+    /// process restarts or migration. Clustered applications should replace it with shared, durable storage such as Redis.
+    /// </remarks>
+    public Func<IServiceProvider, IKeyValueStore<Subscribers>> CreatePubSubSubscribersStore { get; set; } = _ => new InMemorySubscribersStore();
+
     public ProtoActorFeature EnableMetrics(bool value = true)
     {
         _enableMetrics = value;
@@ -91,13 +104,15 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
     /// <inheritdoc />
     public override void ConfigureHostedServices()
     {
-        Module.ConfigureHostedService<StartClusterMember>();
+        Module.ConfigureHostedService<StartClusterMember>(-5);
     }
 
     /// <inheritdoc />
     public override void Apply()
     {
         var services = Services;
+
+        services.TryAddSingleton<IKeyValueStore<Subscribers>>(sp => CreatePubSubSubscribersStore(sp));
 
         // Register ActorSystem.
         services.AddSingleton(sp =>
@@ -130,10 +145,16 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
                 .WithGossipRequestTimeout(TimeSpan.FromHours(1));
 
             var remoteConfig = ConfigureRemoteConfig(sp);
-            clusterConfig = AddVirtualActors(sp, system, clusterConfig);
+            (clusterConfig, remoteConfig) = AddVirtualActors(sp, system, clusterConfig, remoteConfig);
 
             if (ConfigureClusterConfig != null)
                 clusterConfig = ConfigureClusterConfig(sp, clusterConfig);
+
+            if (clusterConfig.ClusterKinds.All(x => x.Name != TopicActor.Kind))
+            {
+                var topicActorProps = Props.FromProducer(() => new TopicActor(sp.GetRequiredService<IKeyValueStore<Subscribers>>()));
+                clusterConfig = clusterConfig.WithClusterKind(TopicActor.Kind, topicActorProps);
+            }
 
             system
                 .WithRemote(remoteConfig)
@@ -154,10 +175,13 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
         services.AddSingleton(sp => sp.GetRequiredService<ActorSystem>().Cluster());
     }
 
-    private ClusterConfig AddVirtualActors(IServiceProvider sp, ActorSystem system, ClusterConfig clusterConfig)
+    private (ClusterConfig ClusterConfig, RemoteConfig RemoteConfig) AddVirtualActors(
+        IServiceProvider sp,
+        ActorSystem system,
+        ClusterConfig clusterConfig,
+        RemoteConfig remoteConfig)
     {
         var virtualActorProviders = sp.GetServices<IVirtualActorsProvider>().ToList();
-        var remoteConfig = ConfigureRemoteConfig(sp);
 
         foreach (var virtualActorProvider in virtualActorProviders)
         {
@@ -177,7 +201,7 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
             remoteConfig = remoteConfig.WithProtoMessages(messageDescriptors);
         }
 
-        return clusterConfig;
+        return (clusterConfig, remoteConfig);
     }
 
     private static ActorSystemConfig SetupDefaultConfig(IServiceProvider serviceProvider, ActorSystemConfig config)
