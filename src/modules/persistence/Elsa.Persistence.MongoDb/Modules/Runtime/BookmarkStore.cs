@@ -1,3 +1,5 @@
+using Elsa.Common.Models;
+using Elsa.Extensions;
 using Elsa.Persistence.MongoDb.Common;
 using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Entities;
@@ -45,6 +47,14 @@ public class MongoBookmarkStore : IBookmarkStore
     public async ValueTask<IEnumerable<StoredBookmark>> FindManyAsync(BookmarkFilter filter, CancellationToken cancellationToken = default)
     {
         return await _mongoDbStore.FindManyAsync(query => Filter(query, filter), filter.TenantAgnostic, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<Page<StoredBookmark>> FindManyAsync(BookmarkFilter filter, PageArgs pageArgs, CancellationToken cancellationToken = default)
+    {
+        var count = await _mongoDbStore.CountAsync(query => Filter(query, filter), filter.TenantAgnostic, cancellationToken);
+        var results = (await _mongoDbStore.FindManyAsync(query => Filter(query, filter).OrderBy(x => x.Id).Paginate(pageArgs), filter.TenantAgnostic, cancellationToken)).ToList();
+        return new(results, count);
     }
 
     /// <inheritdoc />

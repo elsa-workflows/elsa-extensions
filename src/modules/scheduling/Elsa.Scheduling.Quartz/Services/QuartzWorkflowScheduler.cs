@@ -26,7 +26,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .StartAt(at)
             .Build();
 
-        await ScheduleJobAsync(scheduler, trigger, cancellationToken);
+        await ScheduleJobAsync<RunWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -40,7 +40,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .StartAt(at)
             .Build();
 
-        await ScheduleJobAsync(scheduler, trigger, cancellationToken);
+        await ScheduleJobAsync<ResumeWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -55,7 +55,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .WithSimpleSchedule(schedule => schedule.WithInterval(interval).RepeatForever())
             .Build();
 
-        await ScheduleJobAsync(scheduler, trigger, cancellationToken);
+        await ScheduleJobAsync<RunWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -70,7 +70,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .WithSimpleSchedule(schedule => schedule.WithInterval(interval).RepeatForever())
             .Build();
 
-        await ScheduleJobAsync(scheduler, trigger, cancellationToken);
+        await ScheduleJobAsync<ResumeWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -84,7 +84,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .WithCronSchedule(cronExpression)
             .Build();
 
-        await ScheduleJobAsync(scheduler, trigger, cancellationToken);
+        await ScheduleJobAsync<RunWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -97,7 +97,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .WithIdentity(GetTriggerKey(taskName))
             .WithCronSchedule(cronExpression).Build();
 
-        await ScheduleJobAsync(scheduler, trigger, cancellationToken);
+        await ScheduleJobAsync<ResumeWorkflowJob>(scheduler, trigger, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -108,8 +108,16 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
         await scheduler.UnscheduleJob(triggerKey, cancellationToken);
     }
     
-    private async Task ScheduleJobAsync(QuartzIScheduler scheduler, ITrigger trigger, CancellationToken cancellationToken)
+    private async Task ScheduleJobAsync<TJobType>(QuartzIScheduler scheduler, ITrigger trigger, CancellationToken cancellationToken) where TJobType : IJob
     {
+        // Ensure the durable job referenced by the trigger exists before scheduling.
+        // The job is normally registered at startup by RegisterJobsTask, but it can be absent here when:
+        // - the trigger targets a tenant-specific job group that was never registered at startup,
+        // - the startup task has not run yet (or was skipped), or
+        // - the job rows were removed from the Quartz job store at runtime.
+        // Without this, Quartz throws "The job (...RunWorkflowJob) referenced by the trigger does not exist".
+        await EnsureJobAsync<TJobType>(scheduler, trigger.JobKey, cancellationToken);
+
         try
         {
             // Try to schedule the trigger. In clustered mode, multiple instances may attempt this simultaneously.
@@ -118,12 +126,48 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             // Note: To update an existing trigger, callers should first use UnscheduleAsync before scheduling the new trigger.
             await scheduler.ScheduleJob(trigger, cancellationToken);
         }
+        catch (JobPersistenceException e) when (e.InnerException is ObjectAlreadyExistsException)
+        {
+            // SQL-backed Quartz stores (AdoJobStore) wrap the duplicate-trigger error in a JobPersistenceException.
+            // In clustered mode, this is an expected race condition when multiple pods attempt to schedule the same trigger.
+            logger.LogDebug("Trigger {TriggerKey} already exists (wrapped), skipping scheduling. This is expected in clustered deployments during concurrent operations", trigger.Key);
+        }
         catch (ObjectAlreadyExistsException)
         {
             // Trigger already exists. In clustered scenarios, this is an expected race condition
             // when multiple pods attempt to schedule the same trigger during tenant activation or startup.
             // We can safely ignore this and continue, as the trigger is already scheduled.
             logger.LogDebug("Trigger {TriggerKey} already exists, skipping scheduling. This is expected in clustered deployments during concurrent operations", trigger.Key);
+        }
+    }
+
+    private async Task EnsureJobAsync<TJobType>(QuartzIScheduler scheduler, JobKey jobKey, CancellationToken cancellationToken) where TJobType : IJob
+    {
+        // Fast path: the durable job is already registered.
+        if (await scheduler.CheckExists(jobKey, cancellationToken))
+            return;
+
+        var job = JobBuilder.Create<TJobType>()
+            .WithIdentity(jobKey)
+            .StoreDurably()
+            .Build();
+
+        try
+        {
+            // Use replace=false so we don't overwrite an existing job definition. In clustered mode,
+            // multiple instances may attempt this simultaneously between the CheckExists call and here.
+            const bool replaceExisting = false;
+            await scheduler.AddJob(job, replaceExisting, cancellationToken);
+        }
+        catch (JobPersistenceException e) when (e.InnerException is ObjectAlreadyExistsException)
+        {
+            // Job already exists, which is fine: another instance registered it concurrently.
+            logger.LogDebug("Job {JobKey} already exists, skipping registration. This is expected in clustered deployments during concurrent operations", jobKey);
+        }
+        catch (ObjectAlreadyExistsException)
+        {
+            // Job already exists, which is fine: another instance registered it concurrently.
+            logger.LogDebug("Job {JobKey} already exists, skipping registration. This is expected in clustered deployments during concurrent operations", jobKey);
         }
     }
 

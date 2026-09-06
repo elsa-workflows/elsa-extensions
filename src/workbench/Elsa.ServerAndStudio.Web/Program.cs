@@ -1,6 +1,8 @@
 using Elsa.Agents;
 using Elsa.Expressions.JavaScript.Libraries.Extensions;
 using Elsa.Extensions;
+using Elsa.Ldap.Extensions;
+using Elsa.Mqtt.Options;
 using Elsa.Persistence.EFCore.Extensions;
 using Elsa.Persistence.EFCore.Modules.Management;
 using Elsa.Persistence.EFCore.Modules.Runtime;
@@ -138,7 +140,32 @@ services
             })
             .UseEmail(email => email.ConfigureOptions = options => configuration.GetSection("Smtp").Bind(options))
             .UseWebhooks(webhooks => webhooks.ConfigureSinks = options => builder.Configuration.GetSection("Webhooks:Sinks").Bind(options))
+            .UseLdap(ldap =>
+            {
+                ldap.ConfigureOptions = options =>
+                {
+                    options.AddDefaultConnection(new Elsa.Ldap.Options.LdapConnectionOptions
+                    {
+                        BindDn = configuration.GetValue<string>("Ldap:BindDn"),
+                        BindPassword = configuration.GetValue<string>("Ldap:BindPassword"),
+                        Host = configuration.GetValue<string>("Ldap:Host")!,
+                        Port = configuration.GetValue<int>("Ldap:Port"),
+                        UseSsl = configuration.GetValue<bool>("Ldap:UseSsl"),
+                    });
+                };
+            })
             .UseWorkflowsApi()
+            .UseMqtt(mqtt =>
+            {
+                mqtt.ConfigureOptions = options =>
+                {
+                    options.AddDefaultConnection(new MqttConnectionOptions
+                    {
+                        Host = configuration.GetValue<string>("Mqtt:Host")!,
+                        Port = configuration.GetValue<int>("Mqtt:Port"),
+                    });
+                };
+            })
             .AddActivitiesFrom<Program>()
             .AddWorkflowsFrom<Program>();
 
