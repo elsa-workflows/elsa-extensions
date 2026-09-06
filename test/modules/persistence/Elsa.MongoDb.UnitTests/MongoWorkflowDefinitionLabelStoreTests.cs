@@ -13,20 +13,39 @@ public sealed class MongoWorkflowDefinitionLabelStoreTests : IAsyncLifetime
 {
     private readonly MongoDbContainer _container = new MongoDbBuilder().WithImage("mongo:7.0.24").Build();
     private readonly TestTenantAccessor _tenantAccessor = new();
+    private MongoClient? _client;
     private MongoWorkflowDefinitionLabelStore _store = null!;
 
     public async Task InitializeAsync()
     {
-        await _container.StartAsync();
+        try
+        {
+            await _container.StartAsync();
 
-        var client = new MongoClient(_container.GetConnectionString());
-        var database = client.GetDatabase($"elsa-labels-{Guid.NewGuid():N}");
-        var collection = database.GetCollection<WorkflowDefinitionLabel>("workflow_definition_labels");
-        var mongoDbStore = new MongoDbStore<WorkflowDefinitionLabel>(collection, _tenantAccessor);
-        _store = new MongoWorkflowDefinitionLabelStore(mongoDbStore);
+            _client = new MongoClient(_container.GetConnectionString());
+            var database = _client.GetDatabase($"elsa-labels-{Guid.NewGuid():N}");
+            var collection = database.GetCollection<WorkflowDefinitionLabel>("workflow_definition_labels");
+            var mongoDbStore = new MongoDbStore<WorkflowDefinitionLabel>(collection, _tenantAccessor);
+            _store = new MongoWorkflowDefinitionLabelStore(mongoDbStore);
+        }
+        catch
+        {
+            await DisposeAsync();
+            throw;
+        }
     }
 
-    public Task DisposeAsync() => _container.DisposeAsync().AsTask();
+    public async Task DisposeAsync()
+    {
+        try
+        {
+            _client?.Dispose();
+        }
+        finally
+        {
+            await _container.DisposeAsync();
+        }
+    }
 
     [Fact]
     public async Task FindByLabelIdsAsync_ReturnsAnyMatchingVersionForCurrentTenant()
