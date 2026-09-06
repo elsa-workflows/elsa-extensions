@@ -41,6 +41,31 @@ public class StartLocalCacheActorTests
     }
 
     [Fact]
+    public async Task StartAsync_WhenSubscriptionRequestIsCancelled_StopsSpawnedActorAndPropagatesException()
+    {
+        var subscribersStore = new TestSubscribersStore();
+        subscribersStore.PauseNextWrite();
+        var agent = new InMemAgent();
+        await using var node = ProtoActorCacheNode.Create(NewClusterName(), agent, subscribersStore);
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+
+        var startTask = node.StartAsync(cancellationTokenSource.Token);
+
+        try
+        {
+            await subscribersStore.WaitForPausedWriteAsync(cancellationTokenSource.Token);
+            cancellationTokenSource.Cancel();
+
+            await Assert.ThrowsAsync<TimeoutException>(() => startTask);
+            Assert.Empty(node.ActorSystem.ProcessRegistry.Find(id => id == ActorName));
+        }
+        finally
+        {
+            subscribersStore.ResumePausedWrite();
+        }
+    }
+
+    [Fact]
     public async Task StartAsync_WhenTwoMembersJoin_RegistersOneLocalPidPerMember()
     {
         var subscribersStore = new TestSubscribersStore();
@@ -123,6 +148,33 @@ public class StartLocalCacheActorTests
         await postStopFence;
         Assert.Equal(1, firstNode.SignalInvoker.GetCount(postStopSignalKey));
         Assert.Equal(0, secondNode.SignalInvoker.GetCount(postStopSignalKey));
+    }
+
+    [Fact]
+    public async Task StopAsync_WhenUnsubscriptionRequestIsCancelled_StopsActorAndPropagatesException()
+    {
+        var subscribersStore = new TestSubscribersStore();
+        var agent = new InMemAgent();
+        await using var node = ProtoActorCacheNode.Create(NewClusterName(), agent, subscribersStore);
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        var cancellationToken = cancellationTokenSource.Token;
+
+        await node.StartAsync(cancellationToken);
+        subscribersStore.PauseNextWrite();
+        var stopTask = node.StopAsync(cancellationToken);
+
+        try
+        {
+            await subscribersStore.WaitForPausedWriteAsync(cancellationToken);
+            cancellationTokenSource.Cancel();
+
+            await Assert.ThrowsAsync<TimeoutException>(() => stopTask);
+            Assert.Empty(node.ActorSystem.ProcessRegistry.Find(id => id == ActorName));
+        }
+        finally
+        {
+            subscribersStore.ResumePausedWrite();
+        }
     }
 
     private static async Task<SubscriberIdentity[]> AssertPidSubscribersAsync(

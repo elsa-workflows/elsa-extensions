@@ -94,8 +94,14 @@ internal sealed class ProtoActorCacheNode : IAsyncDisposable
         if (!_started)
             return;
 
-        await _host.StopAsync(cancellationToken);
-        _started = false;
+        try
+        {
+            await _host.StopAsync(cancellationToken);
+        }
+        finally
+        {
+            _started = false;
+        }
     }
 
     /// <inheritdoc />
