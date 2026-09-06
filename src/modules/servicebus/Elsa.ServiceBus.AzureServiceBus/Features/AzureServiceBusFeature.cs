@@ -37,6 +37,11 @@ public class AzureServiceBusFeature : FeatureBase
     public Action<AzureServiceBusOptions> AzureServiceBusOptions { get; set; } = _ => { };
 
     /// <summary>
+    /// A delegate to create a <see cref="AzureServiceBusOptions"/> instance.
+    /// </summary>
+    public Func<IServiceProvider, ServiceBusProcessorOptions> ProcessorOptionsFactory { get; set; } = _ => new ServiceBusProcessorOptions();
+
+    /// <summary>
     /// A delegate to create a <see cref="ServiceBusAdministrationClient"/> instance.
     /// </summary>
     public Func<IServiceProvider, ServiceBusClient> ServiceBusClientFactory { get; set; } = sp => new(GetConnectionString(sp));
@@ -68,6 +73,7 @@ public class AzureServiceBusFeature : FeatureBase
         Services
             .AddSingleton(ServiceBusAdministrationClientFactory)
             .AddSingleton(ServiceBusClientFactory)
+            .AddSingleton(ProcessorOptionsFactory)
             .AddSingleton<ConfigurationQueueTopicAndSubscriptionProvider>()
             .AddSingleton<IWorkerManager, WorkerManager>()
             .AddScoped<IServiceBusInitializer, ServiceBusInitializer>();
