@@ -1,3 +1,5 @@
+using Elsa.Common.Entities;
+using Elsa.Common.Models;
 using Elsa.Persistence.Dapper.Extensions;
 using Elsa.Persistence.Dapper.Models;
 using Elsa.Persistence.Dapper.Modules.Runtime.Records;
@@ -45,6 +47,13 @@ internal class DapperBookmarkStore(Store<StoredBookmarkRecord> store, IPayloadSe
     }
 
     /// <inheritdoc />
+    public async ValueTask<Page<StoredBookmark>> FindManyAsync(BookmarkFilter filter, PageArgs pageArgs, CancellationToken cancellationToken = default)
+    {
+        var page = await store.FindManyAsync(q => ApplyFilter(q, filter), pageArgs, nameof(StoredBookmarkRecord.Id), OrderDirection.Ascending, filter.TenantAgnostic, cancellationToken);
+        return Map(page);
+    }
+
+    /// <inheritdoc />
     public async ValueTask<long> DeleteAsync(BookmarkFilter filter, CancellationToken cancellationToken = default)
     {
         return await store.DeleteAsync(q => ApplyFilter(q, filter), cancellationToken);
@@ -67,6 +76,7 @@ internal class DapperBookmarkStore(Store<StoredBookmarkRecord> store, IPayloadSe
     }
 
     private IEnumerable<StoredBookmark> Map(IEnumerable<StoredBookmarkRecord> source) => source.Select(Map);
+    private Page<StoredBookmark> Map(Page<StoredBookmarkRecord> source) => new(source.Items.Select(Map).ToList(), source.TotalCount);
     private IEnumerable<StoredBookmarkRecord> Map(IEnumerable<StoredBookmark> source) => source.Select(Map);
 
     private StoredBookmarkRecord Map(StoredBookmark source)
