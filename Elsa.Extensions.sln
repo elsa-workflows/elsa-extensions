@@ -300,6 +300,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ldap", "ldap", "{5317CECB-9664-4C32-8258-47F6CD806323}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Ldap.UnitTests", "test\modules\ldap\Elsa.Ldap.UnitTests\Elsa.Ldap.UnitTests.csproj", "{98AA025E-4375-75B2-0CA6-00F3637CC009}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{0125BAC5-45B7-4E9B-8A2B-55F075BF537A}"
 	ProjectSection(SolutionItems) = preProject
 		.github\agents\release-notes.agent.md = .github\agents\release-notes.agent.md
@@ -312,6 +313,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mqtt", "mqtt", "{EE9660A5-F973-4302-A63D-348C8403A943}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Mqtt.UnitTests", "test\modules\mqtt\Elsa.Mqtt.UnitTests\Elsa.Mqtt.UnitTests.csproj", "{D21DCA88-98D9-4613-8C0D-83C83B006235}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elsa.Persistence.Dapper.UnitTests", "test\modules\persistence\Elsa.Persistence.Dapper.UnitTests\Elsa.Persistence.Dapper.UnitTests.csproj", "{C115D266-ED50-4584-B059-B4BB48B54C77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1491,6 +1494,18 @@ Global
 		{D21DCA88-98D9-4613-8C0D-83C83B006235}.Release|x64.Build.0 = Release|Any CPU
 		{D21DCA88-98D9-4613-8C0D-83C83B006235}.Release|x86.ActiveCfg = Release|Any CPU
 		{D21DCA88-98D9-4613-8C0D-83C83B006235}.Release|x86.Build.0 = Release|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Debug|x64.Build.0 = Debug|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Debug|x86.Build.0 = Debug|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Release|x64.ActiveCfg = Release|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Release|x64.Build.0 = Release|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Release|x86.ActiveCfg = Release|Any CPU
+		{C115D266-ED50-4584-B059-B4BB48B54C77}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1628,6 +1643,7 @@ Global
 		{C4AECE52-4698-44A2-8043-C9F43A57AD71} = {7F6C8D2B-86BA-4229-86C5-6EB47D569672}
 		{EE9660A5-F973-4302-A63D-348C8403A943} = {3DDE6F89-531C-47F8-9CD7-7A4E6984FA48}
 		{D21DCA88-98D9-4613-8C0D-83C83B006235} = {EE9660A5-F973-4302-A63D-348C8403A943}
+		{C115D266-ED50-4584-B059-B4BB48B54C77} = {273F8587-516E-41F3-93B9-D2F8FDC188A4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11A771DA-B728-445E-8A88-AE1C84C3B3A6}
