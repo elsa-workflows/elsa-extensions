@@ -97,6 +97,48 @@ public class QuartzWorkflowSchedulerTests
     }
 
     [Fact]
+    public async Task ScheduleAtAsync_NewInstance_RegistersRunWorkflowJob()
+    {
+        // Arrange
+        var scheduler = new Mock<global::Quartz.IScheduler>();
+        scheduler.Setup(s => s.CheckExists(It.IsAny<JobKey>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+        var sut = CreateScheduler(scheduler, out _);
+        var request = CreateNewRequest();
+
+        // Act
+        await sut.ScheduleAtAsync("task-1", request, DateTimeOffset.UtcNow);
+
+        // Assert
+        scheduler.Verify(s => s.AddJob(
+            It.Is<IJobDetail>(j => j.Key.Name == nameof(RunWorkflowJob) && j.Durable),
+            false,
+            It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.ScheduleJob(It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ScheduleAtAsync_ExistingInstance_RegistersResumeWorkflowJob()
+    {
+        // Arrange
+        var scheduler = new Mock<global::Quartz.IScheduler>();
+        scheduler.Setup(s => s.CheckExists(It.IsAny<JobKey>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+        var sut = CreateScheduler(scheduler, out _);
+        var request = new global::Elsa.Scheduling.ScheduleExistingWorkflowInstanceRequest { WorkflowInstanceId = "instance-1" };
+
+        // Act
+        await sut.ScheduleAtAsync("task-1", request, DateTimeOffset.UtcNow);
+
+        // Assert
+        scheduler.Verify(s => s.AddJob(
+            It.Is<IJobDetail>(j => j.Key.Name == nameof(ResumeWorkflowJob) && j.Durable),
+            false,
+            It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.ScheduleJob(It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task ScheduleCronAsync_WhenJobAddedConcurrently_SwallowsAlreadyExists()
     {
         // Arrange: CheckExists reports missing, but a concurrent instance registers it first, so AddJob throws.

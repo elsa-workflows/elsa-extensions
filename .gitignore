@@ -12,6 +12,7 @@
 .idea
 .DS_Store
 elsa.sqlite.db
+.codebase-memory/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
