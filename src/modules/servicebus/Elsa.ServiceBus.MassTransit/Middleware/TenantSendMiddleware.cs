@@ -12,10 +12,9 @@ public class TenantSendMiddleware(ITenantAccessor tenantAccessor) : IFilter<Send
 
     public async Task Send(SendContext context, IPipe<SendContext> next)
     {
-        var tenantId = tenantAccessor.Tenant?.Id;
+        var tenantId = tenantAccessor.TenantId;
 
-        if (!string.IsNullOrEmpty(tenantId))
-            context.Headers.Set(HeaderNames.TenantId, tenantId);
+        context.Headers.Set(HeaderNames.TenantId, tenantId);
 
         await next.Send(context);
     }

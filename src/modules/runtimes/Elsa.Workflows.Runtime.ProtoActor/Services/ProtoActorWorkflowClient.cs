@@ -99,7 +99,7 @@ public class ProtoActorWorkflowClient : IWorkflowClient
     private IDictionary<string, string> CreateHeaders()
     {
         var headers = new Dictionary<string, string>();
-        if (_tenantAccessor.Tenant != null) headers[HeaderNames.TenantId] = _tenantAccessor.Tenant.Id;
+        headers[HeaderNames.TenantId] = _tenantAccessor.TenantId;
         return headers;
     }
 }

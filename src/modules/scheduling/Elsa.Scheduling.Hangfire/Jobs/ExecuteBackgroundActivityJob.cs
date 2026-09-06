@@ -13,9 +13,9 @@ public class ExecuteBackgroundActivityJob(IBackgroundActivityInvoker backgroundA
     /// <summary>
     /// Executes the job.
     /// </summary>
-    public async Task ExecuteAsync(ScheduledBackgroundActivity scheduledBackgroundActivity, string? tenantId, CancellationToken cancellationToken = default)
+    public async Task ExecuteAsync(ScheduledBackgroundActivity scheduledBackgroundActivity, string tenantId, CancellationToken cancellationToken = default)
     {
-        var tenant = tenantId != null ? await tenantFinder.FindByIdAsync(tenantId, cancellationToken) : null;
+        var tenant = await tenantFinder.FindByIdAsync(tenantId, cancellationToken);
         using var scope = tenantAccessor.PushContext(tenant);
         await backgroundActivityInvoker.ExecuteAsync(scheduledBackgroundActivity, cancellationToken);
     }

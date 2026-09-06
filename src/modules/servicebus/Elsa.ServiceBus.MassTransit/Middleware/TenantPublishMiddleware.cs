@@ -12,10 +12,9 @@ public class TenantPublishMiddleware(ITenantAccessor tenantAccessor) : IFilter<P
 
     public async Task Send(PublishContext context, IPipe<PublishContext> next)
     {
-        var tenantId = tenantAccessor.Tenant?.Id;
+        var tenantId = tenantAccessor.TenantId;
 
-        if (!string.IsNullOrEmpty(tenantId))
-            context.Headers.Set(HeaderNames.TenantId, tenantId);
+        context.Headers.Set(HeaderNames.TenantId, tenantId);
 
         await next.Send(context);
     }

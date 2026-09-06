@@ -435,8 +435,7 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
 
         if (typeof(Entity).IsAssignableFrom(typeof(TDocument)))
         {
-            var tenant = tenantAccessor.Tenant;
-            var tenantId = tenant?.Id.EmptyToNull();
+            var tenantId = tenantAccessor.TenantId;
             queryable = queryable.Where(x => (x as Entity)!.TenantId == tenantId);
         }
 
@@ -445,22 +444,20 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
 
     private void ApplyTenantId(TDocument document)
     {
-        var tenant = tenantAccessor.Tenant;
-        var tenantId = tenant?.Id;
+        var tenantId = tenantAccessor.TenantId;
 
         if (document is Entity tenantDocument)
-            tenantDocument.TenantId = tenantId.EmptyToNull();
+            tenantDocument.TenantId = tenantId;
     }
 
     private void ApplyTenantId(IEnumerable<TDocument> documents)
     {
-        var tenant = tenantAccessor.Tenant;
-        var tenantId = tenant?.Id;
+        var tenantId = tenantAccessor.TenantId;
 
         foreach (var document in documents)
         {
             if (document is Entity tenantDocument)
-                tenantDocument.TenantId = tenantId.EmptyToNull();
+                tenantDocument.TenantId = tenantId;
         }
     }
 }
