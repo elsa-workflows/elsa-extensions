@@ -57,6 +57,28 @@ public class ProtoActorPubSubTests
     }
 
     [Fact]
+    public async Task DefaultSubscribersStore_CanceledOperations_DoNotReadOrMutateState()
+    {
+        using var serviceProvider = CreateServiceProvider();
+        var store = serviceProvider.GetRequiredService<IKeyValueStore<Subscribers>>();
+        var original = CreateSubscribers();
+        var replacement = CreateSubscribers();
+        replacement.Subscribers_[0].ClusterIdentity = ClusterIdentity.Create("replacement", "kind");
+        await store.SetAsync("topic", original, CancellationToken.None);
+
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var canceledToken = cancellation.Token;
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => store.GetAsync("topic", canceledToken));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => store.SetAsync("topic", replacement, canceledToken));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => store.ClearAsync("topic", canceledToken));
+
+        var loaded = await store.GetAsync("topic", CancellationToken.None);
+        Assert.Equal(original, loaded);
+    }
+
+    [Fact]
     public async Task Apply_NoCustomTopicKind_RegistersSingleTopicActorKind()
     {
         await using var serviceProvider = CreateServiceProvider();
@@ -119,6 +141,15 @@ public class ProtoActorPubSubTests
 
         return services.BuildServiceProvider();
     }
+
+    private static Subscribers CreateSubscribers() =>
+        new()
+        {
+            Subscribers_ =
+            {
+                new SubscriberIdentity { ClusterIdentity = ClusterIdentity.Create("subscriber", "kind") }
+            }
+        };
 
     private sealed class TestSubscribersStore : IKeyValueStore<Subscribers>
     {

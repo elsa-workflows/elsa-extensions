@@ -68,6 +68,21 @@ public class RedisSubscribersStoreTests
     }
 
     [Fact]
+    public async Task CanceledOperations_DoNotCallRedis()
+    {
+        var database = Substitute.For<IDatabase>();
+        var store = new RedisSubscribersStore("cluster", database);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => store.GetAsync("topic", cancellation.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => store.SetAsync("topic", CreateSubscribers(), cancellation.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => store.ClearAsync("topic", cancellation.Token));
+
+        Assert.Empty(database.ReceivedCalls());
+    }
+
+    [Fact]
     public async Task ClearAsync_CustomKeyPrefix_UsesCustomNamespace()
     {
         var database = Substitute.For<IDatabase>();

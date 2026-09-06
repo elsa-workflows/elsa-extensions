@@ -21,6 +21,10 @@ public class RedisPubSubSubscribersStoreFeature(IModule module) : FeatureBase(mo
     /// <summary>
     /// Gets or sets the delegate that resolves the shared Redis database.
     /// </summary>
+    /// <remarks>
+    /// The default delegate resolves <see cref="IConnectionMultiplexer"/> from dependency injection and uses its default
+    /// database. Register an <see cref="IConnectionMultiplexer"/> or provide a custom delegate before applying the module.
+    /// </remarks>
     public Func<IServiceProvider, IDatabase> CreateDatabase { get; set; } =
         sp => sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase();
 
