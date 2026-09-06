@@ -2,18 +2,22 @@ using Elsa.Features.Abstractions;
 using Elsa.Features.Services;
 using Elsa.Actors.ProtoActor.HostedServices;
 using Elsa.Actors.ProtoActor.Middleware;
+using Elsa.Actors.ProtoActor.Services;
 using Elsa.Workflows.Runtime.ProtoActor.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Proto;
 using Proto.Cluster;
 using Proto.Cluster.Partition;
+using Proto.Cluster.PubSub;
 using Proto.Cluster.Testing;
 using Proto.DependencyInjection;
 using Proto.OpenTelemetry;
 using Proto.Persistence;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
+using Proto.Utils;
 
 namespace Elsa.Actors.ProtoActor.Features;
 
@@ -65,6 +69,15 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
     /// </summary>
     public Func<IServiceProvider, ClusterConfig, ClusterConfig>? ConfigureClusterConfig { get; set; }
 
+    /// <summary>
+    /// A delegate that creates the key-value store used by Proto.Actor Pub/Sub to persist topic subscribers.
+    /// </summary>
+    /// <remarks>
+    /// The default store survives topic reactivation only within the same process and member. It does not survive
+    /// process restarts or migration. Clustered applications should replace it with shared, durable storage such as Redis.
+    /// </remarks>
+    public Func<IServiceProvider, IKeyValueStore<Subscribers>> CreatePubSubSubscribersStore { get; set; } = _ => new InMemorySubscribersStore();
+
     public ProtoActorFeature EnableMetrics(bool value = true)
     {
         _enableMetrics = value;
@@ -98,6 +111,8 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
     public override void Apply()
     {
         var services = Services;
+
+        services.TryAddSingleton<IKeyValueStore<Subscribers>>(sp => CreatePubSubSubscribersStore(sp));
 
         // Register ActorSystem.
         services.AddSingleton(sp =>
@@ -134,6 +149,12 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
 
             if (ConfigureClusterConfig != null)
                 clusterConfig = ConfigureClusterConfig(sp, clusterConfig);
+
+            if (clusterConfig.ClusterKinds.All(x => x.Name != TopicActor.Kind))
+            {
+                var topicActorProps = Props.FromProducer(() => new TopicActor(sp.GetRequiredService<IKeyValueStore<Subscribers>>()));
+                clusterConfig = clusterConfig.WithClusterKind(TopicActor.Kind, topicActorProps);
+            }
 
             system
                 .WithRemote(remoteConfig)
