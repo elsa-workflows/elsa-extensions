@@ -5,6 +5,7 @@
     </PropertyGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Testcontainers.MongoDb" />
 	  <ProjectReference Include="..\..\..\..\src\modules\persistence\Elsa.Persistence.MongoDb\Elsa.Persistence.MongoDb.csproj" />
 	</ItemGroup>
 	
