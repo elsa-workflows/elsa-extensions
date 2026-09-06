@@ -33,6 +33,31 @@ public class ProtoActorFeatureTests
     }
 
     [Fact]
+    public void StartClusterMember_IsRegisteredAfterMongoSerializerInitialization()
+    {
+        var services = new ServiceCollection();
+        var module = services.CreateModule();
+        module.ConfigureHostedService<MongoSerializerInitializationHostedService>(-10);
+        module.ConfigureHostedService<DependentHostedService>(-1);
+        new ProtoActorFeature(module).ConfigureHostedServices();
+
+        module.Apply();
+
+        var hostedServices = services
+            .Where(x => x.ServiceType == typeof(IHostedService))
+            .Select(x => x.ImplementationType)
+            .ToList();
+
+        Assert.Equal(
+            [
+                typeof(MongoSerializerInitializationHostedService),
+                typeof(StartClusterMember),
+                typeof(DependentHostedService)
+            ],
+            hostedServices);
+    }
+
+    [Fact]
     public void StartClusterMember_IsRegisteredBeforeTenantActivationAndLocalCacheActor()
     {
         var services = new ServiceCollection();
@@ -105,6 +130,12 @@ public class ProtoActorFeatureTests
     }
 
     private sealed class DependentHostedService : IHostedService
+    {
+        public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class MongoSerializerInitializationHostedService : IHostedService
     {
         public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

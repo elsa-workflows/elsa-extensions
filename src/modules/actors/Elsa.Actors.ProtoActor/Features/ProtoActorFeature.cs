@@ -91,7 +91,7 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
     /// <inheritdoc />
     public override void ConfigureHostedServices()
     {
-        Module.ConfigureHostedService<StartClusterMember>(-100);
+        Module.ConfigureHostedService<StartClusterMember>(-5);
     }
 
     /// <inheritdoc />
@@ -130,7 +130,7 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
                 .WithGossipRequestTimeout(TimeSpan.FromHours(1));
 
             var remoteConfig = ConfigureRemoteConfig(sp);
-            clusterConfig = AddVirtualActors(sp, system, clusterConfig);
+            (clusterConfig, remoteConfig) = AddVirtualActors(sp, system, clusterConfig, remoteConfig);
 
             if (ConfigureClusterConfig != null)
                 clusterConfig = ConfigureClusterConfig(sp, clusterConfig);
@@ -154,10 +154,13 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
         services.AddSingleton(sp => sp.GetRequiredService<ActorSystem>().Cluster());
     }
 
-    private ClusterConfig AddVirtualActors(IServiceProvider sp, ActorSystem system, ClusterConfig clusterConfig)
+    private (ClusterConfig ClusterConfig, RemoteConfig RemoteConfig) AddVirtualActors(
+        IServiceProvider sp,
+        ActorSystem system,
+        ClusterConfig clusterConfig,
+        RemoteConfig remoteConfig)
     {
         var virtualActorProviders = sp.GetServices<IVirtualActorsProvider>().ToList();
-        var remoteConfig = ConfigureRemoteConfig(sp);
 
         foreach (var virtualActorProvider in virtualActorProviders)
         {
@@ -177,7 +180,7 @@ public class ProtoActorFeature(IModule module) : FeatureBase(module)
             remoteConfig = remoteConfig.WithProtoMessages(messageDescriptors);
         }
 
-        return clusterConfig;
+        return (clusterConfig, remoteConfig);
     }
 
     private static ActorSystemConfig SetupDefaultConfig(IServiceProvider serviceProvider, ActorSystemConfig config)
