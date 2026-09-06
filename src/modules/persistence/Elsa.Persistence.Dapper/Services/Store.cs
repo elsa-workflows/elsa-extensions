@@ -222,6 +222,7 @@ public class Store<T>(IDbConnectionProvider dbConnectionProvider, ITenantAccesso
         query = query.OrderBy(orderFields.ToArray()).Page(pageArgs);
 
         var countQuery = dbConnectionProvider.CreateQuery().Count(TableName);
+        ApplyTenantFilter(countQuery, tenantAgnostic);
         filter?.Invoke(countQuery);
 
         using var connection = dbConnectionProvider.GetConnection();

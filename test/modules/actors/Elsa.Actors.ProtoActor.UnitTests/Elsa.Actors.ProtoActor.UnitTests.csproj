@@ -2,6 +2,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\src\modules\actors\Elsa.Actors.ProtoActor\Elsa.Actors.ProtoActor.csproj" />
+        <ProjectReference Include="..\..\..\..\src\modules\caching\Elsa.Caching.Distributed.ProtoActor\Elsa.Caching.Distributed.ProtoActor.csproj" />
     </ItemGroup>
 
 </Project>
