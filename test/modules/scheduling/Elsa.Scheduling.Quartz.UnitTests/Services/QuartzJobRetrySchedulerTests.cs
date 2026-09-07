@@ -119,6 +119,18 @@ public class QuartzJobRetrySchedulerTests
     }
 
     [Fact]
+    public async Task ScheduleRetryAsync_NegativeMaximumAttempts_ReturnsFalse()
+    {
+        _options.MaxRetryAttempts = -1;
+        var (context, scheduler) = CreateContext();
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.False(scheduled);
+        VerifyNotRescheduled(scheduler);
+    }
+
+    [Fact]
     public async Task ScheduleRetryAsync_DelayGenerator_OverridesTheComputedDelay()
     {
         _options.InitialRetryDelay = TimeSpan.FromSeconds(10);

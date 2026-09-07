@@ -1,3 +1,4 @@
+using Elsa.Scheduling.Quartz.Options;
 using Quartz;
 
 namespace Elsa.Scheduling.Quartz.Models;
@@ -25,7 +26,7 @@ public class QuartzJobRetryContext
     public required int AttemptNumber { get; init; }
 
     /// <summary>
-    /// The maximum number of retries that will be scheduled, as configured by <c>QuartzJobOptions.MaxRetryAttempts</c>.
+    /// The maximum number of retries that will be scheduled, as configured by <see cref="QuartzJobOptions.MaxRetryAttempts"/>.
     /// </summary>
     public required int MaxRetryAttempts { get; init; }
 

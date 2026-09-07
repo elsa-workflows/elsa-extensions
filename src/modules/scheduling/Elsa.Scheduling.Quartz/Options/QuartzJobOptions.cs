@@ -17,8 +17,14 @@ public class QuartzJobOptions
 
     /// <summary>
     /// The maximum number of retries scheduled for a single failing job. Defaults to <c>5</c>. Once this number of
-    /// retries has been made, the job is abandoned. A value of <c>0</c> disables retries.
+    /// retries has been made, the job is abandoned. A value of zero or less disables retries.
     /// </summary>
+    /// <remarks>
+    /// Before this change, failed jobs retried indefinitely with a fixed 10-second delay. Now, retries stop after
+    /// <see cref="MaxRetryAttempts"/> attempts (5 by default, roughly 15 seconds of exponential backoff). Deployments
+    /// that relied on retrying through longer outages should raise <see cref="MaxRetryAttempts"/> and/or
+    /// <see cref="MaxRetryDelay"/> when upgrading.
+    /// </remarks>
     public int MaxRetryAttempts { get; set; } = 5;
 
     /// <summary>

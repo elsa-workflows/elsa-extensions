@@ -49,8 +49,7 @@ public class ResumeWorkflowJob(
             }
             catch (Exception e) when (retryScheduler.IsRetryable(e))
             {
-                // The retry scheduler logs the scheduled retry, including the attempt number and delay.
-                if (await retryScheduler.ScheduleRetryAsync(context, e, cancellationToken))
+                if (await retryScheduler.TryScheduleRetryAsync(context, e, cancellationToken))
                     return;
 
                 logger.LogError(
