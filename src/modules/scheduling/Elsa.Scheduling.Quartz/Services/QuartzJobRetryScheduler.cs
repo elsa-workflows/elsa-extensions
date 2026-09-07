@@ -12,8 +12,9 @@ namespace Elsa.Scheduling.Quartz.Services;
 
 /// <summary>
 /// Default implementation of <see cref="IQuartzJobRetryScheduler"/>. Rather than retrying in-process, each retry is
-/// scheduled as a new Quartz trigger, so that a pending retry survives an application restart and does not occupy a
-/// Quartz worker thread while waiting.
+/// scheduled as a new Quartz trigger, so that a pending retry does not occupy a Quartz worker thread while waiting,
+/// and it survives an application restart when Quartz is configured with a persistent job store (with the default
+/// in-memory store, pending retries are lost on restart).
 /// </summary>
 public class QuartzJobRetryScheduler(
     ISystemClock systemClock,

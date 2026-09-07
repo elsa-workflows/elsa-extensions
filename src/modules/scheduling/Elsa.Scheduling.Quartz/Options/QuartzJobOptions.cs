@@ -4,8 +4,9 @@ namespace Elsa.Scheduling.Quartz.Options;
 
 /// <summary>
 /// Options for Quartz job execution behavior, including the retry policy applied to jobs that fail with a retryable
-/// exception. Every retry is scheduled as a new Quartz trigger, so retries survive an application restart and never
-/// occupy a Quartz worker thread while waiting.
+/// exception. Every retry is scheduled as a new Quartz trigger, so a pending retry never occupies a Quartz worker
+/// thread while waiting, and it survives an application restart when Quartz is configured with a persistent job
+/// store (with the default in-memory store, pending retries are lost on restart).
 /// </summary>
 public class QuartzJobOptions
 {
