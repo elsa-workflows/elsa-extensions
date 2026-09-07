@@ -41,8 +41,8 @@ internal static class JobExecutionExtensions
         return value switch
         {
             int intValue => intValue,
-            long longValue => (int)longValue,
-            string stringValue when int.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue) => parsedValue,
+            long longValue => (int)Math.Clamp(longValue, int.MinValue, int.MaxValue),
+            string stringValue when long.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue) => (int)Math.Clamp(parsedValue, int.MinValue, int.MaxValue),
             _ => 0
         };
     }

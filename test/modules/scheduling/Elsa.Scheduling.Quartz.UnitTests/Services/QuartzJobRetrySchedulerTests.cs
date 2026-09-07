@@ -158,6 +158,30 @@ public class QuartzJobRetrySchedulerTests
     }
 
     [Fact]
+    public async Task ScheduleRetryAsync_PersistedAttemptCountAtLongMaxValue_ReturnsFalseWithoutOverflow()
+    {
+        _options.MaxRetryAttempts = 3;
+        var (context, scheduler) = CreateContext(retryAttempt: long.MaxValue);
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.False(scheduled);
+        VerifyNotRescheduled(scheduler);
+    }
+
+    [Fact]
+    public async Task ScheduleRetryAsync_PersistedAttemptCountAsStringBeyondIntRange_ReturnsFalseWithoutOverflow()
+    {
+        _options.MaxRetryAttempts = 3;
+        var (context, scheduler) = CreateContext(retryAttempt: "9999999999");
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.False(scheduled);
+        VerifyNotRescheduled(scheduler);
+    }
+
+    [Fact]
     public async Task ScheduleRetryAsync_RescheduleJobReturnsNull_ReturnsFalse()
     {
         var (context, scheduler) = CreateContext();
@@ -281,7 +305,7 @@ public class QuartzJobRetrySchedulerTests
     private QuartzJobRetryScheduler CreateSut() =>
         new(_clock.Object, _options.AsOptions(), new QuartzRetryDelayCalculator(), _transientDetector.Object, NullLogger<QuartzJobRetryScheduler>.Instance);
 
-    private static (IJobExecutionContext Context, Mock<QuartzScheduler> Scheduler) CreateContext(string? retryAttempt = null)
+    private static (IJobExecutionContext Context, Mock<QuartzScheduler> Scheduler) CreateContext(object? retryAttempt = null)
     {
         var triggerData = new Dictionary<string, object>
         {
