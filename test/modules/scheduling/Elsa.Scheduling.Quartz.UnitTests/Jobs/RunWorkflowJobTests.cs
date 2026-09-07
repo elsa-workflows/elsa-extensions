@@ -1,5 +1,4 @@
 using Elsa.Common.Multitenancy;
-using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Jobs;
 using Elsa.Scheduling.Quartz.UnitTests.Helpers;
@@ -18,7 +17,6 @@ public class RunWorkflowJobTests
     private readonly Mock<ITenantAccessor> _tenantAccessor = QuartzJobTestHelper.CreateTenantAccessor();
     private readonly Mock<ITenantFinder> _tenantFinder = new();
     private readonly Mock<IWorkflowStarter> _workflowStarter = new();
-    private readonly Mock<ITransientExceptionDetector> _transientDetector = new();
     private readonly Mock<IQuartzJobRetryScheduler> _retryScheduler = new();
     private readonly Mock<ILogger<RunWorkflowJob>> _logger = new();
     private readonly RunWorkflowJob _job;
@@ -29,7 +27,6 @@ public class RunWorkflowJobTests
             _tenantAccessor.Object,
             _tenantFinder.Object,
             _workflowStarter.Object,
-            _transientDetector.Object,
             _retryScheduler.Object,
             _logger.Object);
     }
@@ -69,17 +66,47 @@ public class RunWorkflowJobTests
     }
 
     [Theory]
-    [InlineData(typeof(TimeoutException), true)]
-    [InlineData(typeof(HttpRequestException), true)]
-    public async Task Execute_TransientException_ReschedulesJob(Type exceptionType, bool isTransient)
+    [InlineData(typeof(TimeoutException))]
+    [InlineData(typeof(HttpRequestException))]
+    public async Task Execute_RetryableException_ReschedulesJob(Type exceptionType)
     {
-        var (context, _) = CreateJobExecutionContext();
-        _transientDetector.SetupIsTransient(isTransient);
+        var (context, scheduler) = CreateJobExecutionContext();
+        _retryScheduler.SetupRetry(isRetryable: true);
         _workflowStarter.SetupStartWorkflowThrows((Exception)Activator.CreateInstance(exceptionType)!);
 
         await _job.Execute(context);
 
-        _retryScheduler.Verify(x => x.ScheduleRetryAsync(context, It.IsAny<CancellationToken>()), Times.Once);
+        _retryScheduler.VerifyRetryScheduled(context);
+        _logger.VerifyLogged(LogLevel.Error, Times.Never());
+        scheduler.VerifyNotDeleted();
+    }
+
+    [Fact]
+    public async Task Execute_RetriesExhausted_LogsErrorAndKeepsTheJob()
+    {
+        var (context, scheduler) = CreateJobExecutionContext();
+        _retryScheduler.SetupRetry(isRetryable: true, retryScheduled: false);
+        _workflowStarter.SetupStartWorkflowThrows(new TimeoutException());
+
+        await _job.Execute(context);
+
+        _retryScheduler.VerifyRetryScheduled(context);
+        _logger.VerifyLogged(LogLevel.Error, Times.Once());
+        scheduler.VerifyNotDeleted();
+    }
+
+    [Fact]
+    public async Task Execute_IsRetryableOverrideRejectsTheException_TreatsItAsPermanent()
+    {
+        var (context, scheduler) = CreateJobExecutionContext();
+        _retryScheduler.SetupRetry(isRetryable: false);
+        _workflowStarter.SetupStartWorkflowThrows(new TimeoutException());
+
+        await _job.Execute(context);
+
+        _retryScheduler.Verify(x => x.ScheduleRetryAsync(It.IsAny<IJobExecutionContext>(), It.IsAny<Exception>(), It.IsAny<CancellationToken>()), Times.Never);
+        _logger.VerifyLogged(LogLevel.Error, Times.Once());
+        scheduler.VerifyDeleted();
     }
 
     [Theory]
@@ -90,7 +117,7 @@ public class RunWorkflowJobTests
     public async Task Execute_NonTransientException_DeletesJob(Type exceptionType, string? jobKeyName)
     {
         var (context, scheduler) = CreateJobExecutionContext(jobKeyName);
-        _transientDetector.SetupIsTransient(false);
+        _retryScheduler.SetupRetry(isRetryable: false);
         _workflowStarter.SetupStartWorkflowThrows((Exception)Activator.CreateInstance(exceptionType)!);
 
         await _job.Execute(context);
@@ -99,6 +126,19 @@ public class RunWorkflowJobTests
             scheduler.VerifyDeleted();
         else
             scheduler.VerifyNotDeleted();
+    }
+
+    [Fact]
+    public async Task Execute_TenantFinderThrowsTransientException_SchedulesRetryAndDoesNotPropagate()
+    {
+        var (context, _) = CreateJobExecutionContext(withTenantId: true);
+        _retryScheduler.SetupRetry(isRetryable: true);
+        _tenantFinder.Setup(f => f.FindByIdAsync("tenant-123", It.IsAny<CancellationToken>())).ThrowsAsync(new TimeoutException());
+
+        await _job.Execute(context);
+
+        _retryScheduler.VerifyRetryScheduled(context);
+        _workflowStarter.Verify(w => w.StartWorkflowAsync(It.IsAny<StartWorkflowRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -116,11 +156,18 @@ public class RunWorkflowJobTests
         Assert.Equal("workflow-def-123", capturedRequest.WorkflowDefinitionHandle.DefinitionVersionId);
     }
 
-    private static (IJobExecutionContext, Mock<QuartzScheduler>) CreateJobExecutionContext(string? jobKeyName = null) =>
-        QuartzJobTestHelper.CreateJobExecutionContext(new Dictionary<string, object>
+    private static (IJobExecutionContext, Mock<QuartzScheduler>) CreateJobExecutionContext(string? jobKeyName = null, bool withTenantId = false)
+    {
+        var jobData = new Dictionary<string, object>
         {
             { "DefinitionVersionId", "workflow-def-123" },
             { "CorrelationId", "corr-123" },
             { "TriggerActivityId", "trigger-123" }
-        }, jobKeyName);
+        };
+
+        if (withTenantId)
+            jobData["TenantId"] = "tenant-123";
+
+        return QuartzJobTestHelper.CreateJobExecutionContext(jobData, jobKeyName);
+    }
 }

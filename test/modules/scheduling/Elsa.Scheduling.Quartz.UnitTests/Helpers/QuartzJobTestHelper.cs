@@ -4,6 +4,7 @@ using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Options;
 using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Messages;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Quartz;
@@ -21,9 +22,13 @@ public static class QuartzJobTestHelper
     /// </summary>
     public static (IJobExecutionContext Context, Mock<QuartzScheduler> Scheduler) CreateJobExecutionContext(
         IDictionary<string, object> jobData,
-        string? jobKeyName = null)
+        string? jobKeyName = null,
+        IDictionary<string, object>? triggerData = null)
     {
         var jobDataMap = new JobDataMap(jobData);
+        var triggerDataMap = new JobDataMap(triggerData ?? new Dictionary<string, object>());
+        var mergedDataMap = new JobDataMap(jobData);
+        mergedDataMap.PutAll(triggerDataMap);
         var jobKey = new JobKey(jobKeyName ?? "test-job");
         var triggerKey = new TriggerKey("test-trigger");
 
@@ -34,6 +39,7 @@ public static class QuartzJobTestHelper
         var trigger = new Mock<ITrigger>();
         trigger.Setup(t => t.Key).Returns(triggerKey);
         trigger.Setup(t => t.JobKey).Returns(jobKey);
+        trigger.Setup(t => t.JobDataMap).Returns(triggerDataMap);
 
         var scheduler = new Mock<QuartzScheduler>();
         scheduler.Setup(s => s.RescheduleJob(It.IsAny<TriggerKey>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()))
@@ -42,7 +48,7 @@ public static class QuartzJobTestHelper
             .ReturnsAsync(true);
 
         var context = new Mock<IJobExecutionContext>();
-        context.Setup(c => c.MergedJobDataMap).Returns(jobDataMap);
+        context.Setup(c => c.MergedJobDataMap).Returns(mergedDataMap);
         context.Setup(c => c.JobDetail).Returns(jobDetail.Object);
         context.Setup(c => c.Trigger).Returns(trigger.Object);
         context.Setup(c => c.Scheduler).Returns(scheduler.Object);
@@ -52,14 +58,25 @@ public static class QuartzJobTestHelper
     }
 
     /// <summary>
-    /// Creates a mock for QuartzJobOptions with the specified retry delay.
+    /// Creates <see cref="QuartzJobOptions"/> with deterministic retry settings: jitter is disabled so that computed
+    /// delays are exact.
     /// </summary>
-    public static Mock<IOptions<QuartzJobOptions>> CreateQuartzJobOptions(TimeSpan? retryDelay = null)
+    public static QuartzJobOptions CreateQuartzJobOptions(Action<QuartzJobOptions>? configure = null)
     {
-        var options = new Mock<IOptions<QuartzJobOptions>>();
-        options.Setup(o => o.Value).Returns(new QuartzJobOptions { TransientExceptionRetryDelay = retryDelay ?? TimeSpan.FromSeconds(1) });
+        var options = new QuartzJobOptions
+        {
+            InitialRetryDelay = TimeSpan.FromSeconds(1),
+            UseJitter = false
+        };
+
+        configure?.Invoke(options);
         return options;
     }
+
+    /// <summary>
+    /// Wraps the specified options so they can be injected into a service that takes <see cref="IOptions{TOptions}"/>.
+    /// </summary>
+    public static IOptions<QuartzJobOptions> AsOptions(this QuartzJobOptions options) => Microsoft.Extensions.Options.Options.Create(options);
 
     /// <summary>
     /// Creates a mock tenant accessor that allows context pushing.
@@ -156,4 +173,39 @@ public static class QuartzJobTestHelper
     /// </summary>
     public static void VerifyRunInstanceCalled(this Mock<IWorkflowClient> workflowClient) =>
         workflowClient.Verify(c => c.RunInstanceAsync(It.IsAny<RunWorkflowInstanceRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+
+    extension<T>(Mock<ILogger<T>> logger)
+    {
+        /// <summary>
+        /// Verifies that the logger logged at the specified level the specified number of times.
+        /// </summary>
+        public void VerifyLogged(LogLevel level, Times times) =>
+            logger.Verify(
+                x => x.Log(
+                    level,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()),
+                times);
+    }
+
+    extension(Mock<IQuartzJobRetryScheduler> retryScheduler)
+    {
+        /// <summary>
+        /// Sets up the retry scheduler to consider any exception retryable, and to report whether it scheduled a retry.
+        /// </summary>
+        public void SetupRetry(bool isRetryable, bool retryScheduled = true)
+        {
+            retryScheduler.Setup(x => x.IsRetryable(It.IsAny<Exception>())).Returns(isRetryable);
+            retryScheduler.Setup(x => x.ScheduleRetryAsync(It.IsAny<IJobExecutionContext>(), It.IsAny<Exception>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(retryScheduled);
+        }
+
+        /// <summary>
+        /// Verifies that a retry was requested for the specified context exactly once.
+        /// </summary>
+        public void VerifyRetryScheduled(IJobExecutionContext context) =>
+            retryScheduler.Verify(x => x.ScheduleRetryAsync(context, It.IsAny<Exception>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

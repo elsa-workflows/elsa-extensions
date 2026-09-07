@@ -1,28 +1,120 @@
+using System.Globalization;
 using Elsa.Common;
+using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
+using Elsa.Scheduling.Quartz.Models;
 using Elsa.Scheduling.Quartz.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
 
 namespace Elsa.Scheduling.Quartz.Services;
 
 /// <summary>
-/// Default implementation of <see cref="IQuartzJobRetryScheduler"/>.
+/// Default implementation of <see cref="IQuartzJobRetryScheduler"/>. Rather than retrying in-process, each retry is
+/// scheduled as a new Quartz trigger, so that a pending retry does not occupy a Quartz worker thread while waiting,
+/// and it survives an application restart when Quartz is configured with a persistent job store (with the default
+/// in-memory store, pending retries are lost on restart).
 /// </summary>
-public class QuartzJobRetryScheduler(ISystemClock systemClock, IOptions<QuartzJobOptions> options) : IQuartzJobRetryScheduler
+public class QuartzJobRetryScheduler(
+    ISystemClock systemClock,
+    IOptions<QuartzJobOptions> options,
+    IQuartzRetryDelayCalculator delayCalculator,
+    ITransientExceptionDetector transientExceptionDetector,
+    ILogger<QuartzJobRetryScheduler> logger) : IQuartzJobRetryScheduler
 {
     /// <inheritdoc />
-    public async Task ScheduleRetryAsync(IJobExecutionContext context, CancellationToken cancellationToken = default)
+    public bool IsRetryable(Exception exception)
     {
-        var delay = options.Value.TransientExceptionRetryDelay;
+        var isRetryable = options.Value.IsRetryable;
+        return isRetryable != null ? isRetryable(exception) : transientExceptionDetector.IsTransient(exception);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> ScheduleRetryAsync(IJobExecutionContext context, Exception exception, CancellationToken cancellationToken = default)
+    {
+        var jobOptions = options.Value;
+        var jobKey = context.JobDetail.Key;
+
+        if (!jobOptions.RetryEnabled)
+        {
+            logger.LogDebug("Retries are disabled. Not rescheduling job {JobKey}", jobKey);
+            return false;
+        }
+
+        var attemptsMade = Math.Max(context.GetRetryAttempt(), 0);
+
+        if (attemptsMade >= jobOptions.MaxRetryAttempts)
+            return false;
+
+        var attemptNumber = attemptsMade + 1;
+        var delay = GetDelay(context, exception, attemptNumber, jobOptions);
+        var retryTrigger = CreateRetryTrigger(context, attemptNumber, delay);
+
+        logger.LogWarning(
+            exception,
+            "Job {JobKey} failed with a retryable error. Scheduling retry {AttemptNumber} of {MaxRetryAttempts} in {RetryDelay}",
+            jobKey,
+            attemptNumber,
+            jobOptions.MaxRetryAttempts,
+            delay);
+
+        var scheduledStartTime = await context.Scheduler.RescheduleJob(context.Trigger.Key, retryTrigger, cancellationToken);
+
+        if (scheduledStartTime == null)
+        {
+            logger.LogWarning("Trigger {TriggerKey} for job {JobKey} was no longer present. No retry was scheduled", context.Trigger.Key, jobKey);
+            return false;
+        }
+
+        return true;
+    }
+
+    private TimeSpan GetDelay(IJobExecutionContext context, Exception exception, int attemptNumber, QuartzJobOptions jobOptions)
+    {
+        var computedDelay = delayCalculator.CalculateDelay(attemptNumber, jobOptions);
+        var delayGenerator = jobOptions.DelayGenerator;
+
+        if (delayGenerator == null)
+            return computedDelay;
+
+        var retryContext = new QuartzJobRetryContext
+        {
+            JobExecutionContext = context,
+            Exception = exception,
+            AttemptNumber = attemptNumber,
+            MaxRetryAttempts = jobOptions.MaxRetryAttempts,
+            ComputedDelay = computedDelay
+        };
+
+        var customDelay = delayGenerator(retryContext);
+
+        if (customDelay == null)
+            return computedDelay;
+
+        return customDelay.Value > TimeSpan.Zero ? customDelay.Value : TimeSpan.Zero;
+    }
+
+    private ITrigger CreateRetryTrigger(IJobExecutionContext context, int attemptNumber, TimeSpan delay)
+    {
+        // Carry over the job data of the failed trigger so that the workflow inputs it carries are not lost, and keep
+        // the original trigger key so that the retry remains addressable (for example, to unschedule it).
+        var jobDataMap = new JobDataMap();
+        var triggerJobDataMap = context.Trigger.JobDataMap;
+
+        if (triggerJobDataMap != null)
+            jobDataMap.PutAll(triggerJobDataMap);
+
+        jobDataMap[QuartzJobDataKeys.RetryAttempt] = attemptNumber.ToString(CultureInfo.InvariantCulture);
+
         var now = systemClock.UtcNow;
+        var startAt = delay >= DateTimeOffset.MaxValue - now ? DateTimeOffset.MaxValue : now.Add(delay);
 
-        var trigger = TriggerBuilder.Create()
+        return TriggerBuilder.Create()
             .ForJob(context.JobDetail.Key)
-            .StartAt(now.Add(delay))
+            .WithIdentity(context.Trigger.Key)
+            .UsingJobData(jobDataMap)
+            .StartAt(startAt)
             .Build();
-
-        await context.Scheduler.RescheduleJob(context.Trigger.Key, trigger, cancellationToken);
     }
 }
-
