@@ -1,3 +1,4 @@
+using System.Globalization;
 using Elsa.Common;
 using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Models;
@@ -128,6 +129,58 @@ public class QuartzJobRetrySchedulerTests
 
         Assert.False(scheduled);
         VerifyNotRescheduled(scheduler);
+    }
+
+    [Fact]
+    public async Task ScheduleRetryAsync_NegativePersistedAttemptCount_IsClampedToZero()
+    {
+        _options.MaxRetryAttempts = 3;
+        _options.InitialRetryDelay = TimeSpan.FromSeconds(10);
+        var (context, scheduler) = CreateContext(retryAttempt: "-1");
+        var capturedTrigger = CaptureTrigger(scheduler);
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.True(scheduled);
+        Assert.Equal("1", capturedTrigger()!.JobDataMap[QuartzJobDataKeys.RetryAttempt]);
+    }
+
+    [Fact]
+    public async Task ScheduleRetryAsync_PersistedAttemptCountAtIntMaxValue_ReturnsFalseWithoutOverflow()
+    {
+        _options.MaxRetryAttempts = 3;
+        var (context, scheduler) = CreateContext(retryAttempt: int.MaxValue.ToString(CultureInfo.InvariantCulture));
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.False(scheduled);
+        VerifyNotRescheduled(scheduler);
+    }
+
+    [Fact]
+    public async Task ScheduleRetryAsync_RescheduleJobReturnsNull_ReturnsFalse()
+    {
+        var (context, scheduler) = CreateContext();
+        scheduler
+            .Setup(s => s.RescheduleJob(It.IsAny<TriggerKey>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DateTimeOffset?)null);
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.False(scheduled);
+    }
+
+    [Fact]
+    public async Task ScheduleRetryAsync_DelayIsTimeSpanMaxValue_ClampsStartTimeToDateTimeOffsetMaxValueWithoutThrowing()
+    {
+        _options.DelayGenerator = _ => TimeSpan.MaxValue;
+        var (context, scheduler) = CreateContext();
+        var capturedTrigger = CaptureTrigger(scheduler);
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.True(scheduled);
+        Assert.Equal(DateTimeOffset.MaxValue, capturedTrigger()!.StartTimeUtc);
     }
 
     [Fact]

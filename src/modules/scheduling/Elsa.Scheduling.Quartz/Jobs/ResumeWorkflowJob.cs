@@ -24,17 +24,19 @@ public class ResumeWorkflowJob(
     /// <inheritdoc />
     public async Task Execute(IJobExecutionContext context)
     {
-        var tenant = await context.GetTenantAsync(tenantFinder);
-        using (tenantAccessor.PushContext(tenant))
-        {
-            var map = context.MergedJobDataMap;
-            var serializedActivityHandle = (string)map.Get(nameof(ScheduleExistingWorkflowInstanceRequest.ActivityHandle));
-            var activityHandle = serializedActivityHandle != null! ? jsonSerializer.Deserialize<ActivityHandle>(serializedActivityHandle) : null;
-            var workflowInstanceId = (string)map.Get(nameof(ScheduleExistingWorkflowInstanceRequest.WorkflowInstanceId));
-            var cancellationToken = context.CancellationToken;
+        var cancellationToken = context.CancellationToken;
+        string? workflowInstanceId = null;
 
-            try
+        try
+        {
+            var tenant = await context.GetTenantAsync(tenantFinder);
+            using (tenantAccessor.PushContext(tenant))
             {
+                var map = context.MergedJobDataMap;
+                var serializedActivityHandle = (string)map.Get(nameof(ScheduleExistingWorkflowInstanceRequest.ActivityHandle));
+                var activityHandle = serializedActivityHandle != null! ? jsonSerializer.Deserialize<ActivityHandle>(serializedActivityHandle) : null;
+                workflowInstanceId = (string)map.Get(nameof(ScheduleExistingWorkflowInstanceRequest.WorkflowInstanceId));
+
                 var workflowClient = await workflowRuntime.CreateClientAsync(workflowInstanceId, cancellationToken);
                 var request = new RunWorkflowInstanceRequest
                 {
@@ -47,23 +49,23 @@ public class ResumeWorkflowJob(
 
                 logger.LogInformation("Resumed workflow instance {WorkflowInstanceId}", workflowInstanceId);
             }
-            catch (Exception e) when (retryScheduler.IsRetryable(e))
-            {
-                if (await retryScheduler.TryScheduleRetryAsync(context, e, cancellationToken))
-                    return;
+        }
+        catch (Exception e) when (retryScheduler.IsRetryable(e))
+        {
+            if (await retryScheduler.TryScheduleRetryAsync(context, e, cancellationToken))
+                return;
 
-                logger.LogError(
-                    e,
-                    "Retries are exhausted for job {JobKey} after {RetryAttempts} retry attempt(s). Giving up on resuming workflow instance {WorkflowInstanceId}",
-                    context.JobDetail.Key,
-                    context.GetRetryAttempt(),
-                    workflowInstanceId);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "An error occurred while resuming workflow instance {WorkflowInstanceId}", workflowInstanceId);
-                await context.DeleteJob(context.JobDetail.Key, cancellationToken);
-            }
+            logger.LogError(
+                e,
+                "No retry was scheduled for job {JobKey} after {RetryAttempts} retry attempt(s) (retries disabled, exhausted, or trigger no longer present). Giving up on resuming workflow instance {WorkflowInstanceId}",
+                context.JobDetail.Key,
+                context.GetRetryAttempt(),
+                workflowInstanceId);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while resuming workflow instance {WorkflowInstanceId}", workflowInstanceId);
+            await context.DeleteJob(context.JobDetail.Key, cancellationToken);
         }
     }
 }

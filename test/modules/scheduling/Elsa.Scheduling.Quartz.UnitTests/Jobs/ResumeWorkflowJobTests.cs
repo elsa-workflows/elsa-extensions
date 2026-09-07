@@ -111,6 +111,19 @@ public class ResumeWorkflowJobTests
     }
 
     [Fact]
+    public async Task Execute_TenantFinderThrowsTransientException_SchedulesRetryAndDoesNotPropagate()
+    {
+        var (context, _) = CreateJobExecutionContext(withTenantId: true);
+        _retryScheduler.SetupRetry(isRetryable: true);
+        _tenantFinder.Setup(f => f.FindByIdAsync("tenant-123", It.IsAny<CancellationToken>())).ThrowsAsync(new TimeoutException());
+
+        await _job.Execute(context);
+
+        _retryScheduler.VerifyRetryScheduled(context);
+        _workflowRuntime.Verify(r => r.CreateClientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Execute_UsesCorrectWorkflowInstanceId()
     {
         var (context, _) = CreateJobExecutionContext();
@@ -154,7 +167,7 @@ public class ResumeWorkflowJobTests
     }
 
     private static (IJobExecutionContext, Mock<QuartzScheduler>) CreateJobExecutionContext(string? activityHandle = null,
-        string? jobKeyName = null)
+        string? jobKeyName = null, bool withTenantId = false)
     {
         var jobData = new Dictionary<string, object>
         {
@@ -164,6 +177,9 @@ public class ResumeWorkflowJobTests
 
         if (activityHandle != null)
             jobData.Add("ActivityHandle", activityHandle);
+
+        if (withTenantId)
+            jobData["TenantId"] = "tenant-123";
 
         return QuartzJobTestHelper.CreateJobExecutionContext(jobData, jobKeyName);
     }

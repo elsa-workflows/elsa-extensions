@@ -24,25 +24,27 @@ public class RunWorkflowJob(
     /// <inheritdoc />
     public async Task Execute(IJobExecutionContext context)
     {
-        var tenant = await context.GetTenantAsync(tenantFinder);
-        using (tenantAccessor.PushContext(tenant))
+        var cancellationToken = context.CancellationToken;
+        StartWorkflowRequest? startRequest = null;
+
+        try
         {
-            var map = context.MergedJobDataMap;
-            var cancellationToken = context.CancellationToken;
-
-            var startRequest = new StartWorkflowRequest
+            var tenant = await context.GetTenantAsync(tenantFinder);
+            using (tenantAccessor.PushContext(tenant))
             {
-                WorkflowDefinitionHandle = WorkflowDefinitionHandle.ByDefinitionVersionId((string)map.Get(nameof(ScheduleNewWorkflowInstanceRequest.WorkflowDefinitionHandle.DefinitionVersionId))),
-                CorrelationId = (string?)map.Get(nameof(ScheduleNewWorkflowInstanceRequest.CorrelationId)),
-                TriggerActivityId = (string?)map.Get(nameof(ScheduleNewWorkflowInstanceRequest.TriggerActivityId)),
-                Input = map.GetDictionary(nameof(ScheduleNewWorkflowInstanceRequest.Input)),
-                Variables = map.GetDictionary(nameof(ScheduleNewWorkflowInstanceRequest.Variables)),
-                Properties = map.GetDictionary(nameof(ScheduleNewWorkflowInstanceRequest.Properties)),
-                ParentId = (string?)map.Get(nameof(ScheduleNewWorkflowInstanceRequest.ParentId))
-            };
+                var map = context.MergedJobDataMap;
 
-            try
-            {
+                startRequest = new StartWorkflowRequest
+                {
+                    WorkflowDefinitionHandle = WorkflowDefinitionHandle.ByDefinitionVersionId((string)map.Get(nameof(ScheduleNewWorkflowInstanceRequest.WorkflowDefinitionHandle.DefinitionVersionId))),
+                    CorrelationId = (string?)map.Get(nameof(ScheduleNewWorkflowInstanceRequest.CorrelationId)),
+                    TriggerActivityId = (string?)map.Get(nameof(ScheduleNewWorkflowInstanceRequest.TriggerActivityId)),
+                    Input = map.GetDictionary(nameof(ScheduleNewWorkflowInstanceRequest.Input)),
+                    Variables = map.GetDictionary(nameof(ScheduleNewWorkflowInstanceRequest.Variables)),
+                    Properties = map.GetDictionary(nameof(ScheduleNewWorkflowInstanceRequest.Properties)),
+                    ParentId = (string?)map.Get(nameof(ScheduleNewWorkflowInstanceRequest.ParentId))
+                };
+
                 var startResponse = await workflowStarter.StartWorkflowAsync(startRequest, cancellationToken);
 
                 if (startResponse.CannotStart)
@@ -53,29 +55,29 @@ public class RunWorkflowJob(
 
                 logger.LogInformation("Started workflow {WorkflowInstanceId} with correlation ID {CorrelationId}", startResponse.WorkflowInstanceId, startRequest.CorrelationId);
             }
-            catch (WorkflowGraphNotFoundException e)
-            {
-                logger.LogWarning(e, "Could not find workflow graph for workflow definition handle {WorkflowDefinitionHandle}", startRequest.WorkflowDefinitionHandle);
-                await context.Scheduler.UnscheduleJob(context.Trigger.Key, cancellationToken);
-            }
-            catch (Exception e) when (retryScheduler.IsRetryable(e))
-            {
-                if (await retryScheduler.TryScheduleRetryAsync(context, e, cancellationToken))
-                    return;
+        }
+        catch (WorkflowGraphNotFoundException e)
+        {
+            logger.LogWarning(e, "Could not find workflow graph for workflow definition handle {WorkflowDefinitionHandle}", startRequest?.WorkflowDefinitionHandle);
+            await context.Scheduler.UnscheduleJob(context.Trigger.Key, cancellationToken);
+        }
+        catch (Exception e) when (retryScheduler.IsRetryable(e))
+        {
+            if (await retryScheduler.TryScheduleRetryAsync(context, e, cancellationToken))
+                return;
 
-                logger.LogError(
-                    e,
-                    "Retries are exhausted for job {JobKey} after {RetryAttempts} retry attempt(s). Giving up on starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}",
-                    context.JobDetail.Key,
-                    context.GetRetryAttempt(),
-                    startRequest.WorkflowDefinitionHandle,
-                    startRequest.CorrelationId);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "An error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
-                await context.DeleteJob(context.JobDetail.Key, cancellationToken);
-            }
+            logger.LogError(
+                e,
+                "No retry was scheduled for job {JobKey} after {RetryAttempts} retry attempt(s) (retries disabled, exhausted, or trigger no longer present). Giving up on starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}",
+                context.JobDetail.Key,
+                context.GetRetryAttempt(),
+                startRequest?.WorkflowDefinitionHandle,
+                startRequest?.CorrelationId);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}", startRequest?.WorkflowDefinitionHandle, startRequest?.CorrelationId);
+            await context.DeleteJob(context.JobDetail.Key, cancellationToken);
         }
     }
 }

@@ -41,11 +41,12 @@ public class QuartzJobRetryScheduler(
             return false;
         }
 
-        var attemptNumber = context.GetRetryAttempt() + 1;
+        var attemptsMade = Math.Max(context.GetRetryAttempt(), 0);
 
-        if (attemptNumber > jobOptions.MaxRetryAttempts)
+        if (attemptsMade >= jobOptions.MaxRetryAttempts)
             return false;
 
+        var attemptNumber = attemptsMade + 1;
         var delay = GetDelay(context, exception, attemptNumber, jobOptions);
         var retryTrigger = CreateRetryTrigger(context, attemptNumber, delay);
 
@@ -57,7 +58,14 @@ public class QuartzJobRetryScheduler(
             jobOptions.MaxRetryAttempts,
             delay);
 
-        await context.Scheduler.RescheduleJob(context.Trigger.Key, retryTrigger, cancellationToken);
+        var scheduledStartTime = await context.Scheduler.RescheduleJob(context.Trigger.Key, retryTrigger, cancellationToken);
+
+        if (scheduledStartTime == null)
+        {
+            logger.LogWarning("Trigger {TriggerKey} for job {JobKey} was no longer present. No retry was scheduled", context.Trigger.Key, jobKey);
+            return false;
+        }
+
         return true;
     }
 
@@ -98,11 +106,14 @@ public class QuartzJobRetryScheduler(
 
         jobDataMap[QuartzJobDataKeys.RetryAttempt] = attemptNumber.ToString(CultureInfo.InvariantCulture);
 
+        var now = systemClock.UtcNow;
+        var startAt = delay >= DateTimeOffset.MaxValue - now ? DateTimeOffset.MaxValue : now.Add(delay);
+
         return TriggerBuilder.Create()
             .ForJob(context.JobDetail.Key)
             .WithIdentity(context.Trigger.Key)
             .UsingJobData(jobDataMap)
-            .StartAt(systemClock.UtcNow.Add(delay))
+            .StartAt(startAt)
             .Build();
     }
 }
