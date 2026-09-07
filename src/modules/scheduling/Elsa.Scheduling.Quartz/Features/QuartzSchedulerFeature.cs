@@ -54,6 +54,7 @@ public class QuartzSchedulerFeature(IModule module) : FeatureBase(module)
             .AddSingleton<QuartzCronParser>()
             .AddScoped<QuartzWorkflowScheduler>()
             .AddScoped<IJobKeyProvider, JobKeyProvider>()
+            .AddSingleton<IQuartzRetryDelayCalculator, QuartzRetryDelayCalculator>()
             .AddSingleton<IQuartzJobRetryScheduler, QuartzJobRetryScheduler>()
             .AddStartupTask<RegisterJobsTask>()
             .AddQuartz();

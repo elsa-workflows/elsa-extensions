@@ -1,6 +1,5 @@
 using Elsa.Common.Multitenancy;
 using Elsa.Extensions;
-using Elsa.Resilience;
 using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
@@ -19,7 +18,6 @@ public class RunWorkflowJob(
     ITenantAccessor tenantAccessor,
     ITenantFinder tenantFinder,
     IWorkflowStarter workflowStarter,
-    ITransientExceptionDetector transientExceptionDetector,
     IQuartzJobRetryScheduler retryScheduler,
     ILogger<RunWorkflowJob> logger) : IJob
 {
@@ -60,10 +58,19 @@ public class RunWorkflowJob(
                 logger.LogWarning(e, "Could not find workflow graph for workflow definition handle {WorkflowDefinitionHandle}", startRequest.WorkflowDefinitionHandle);
                 await context.Scheduler.UnscheduleJob(context.Trigger.Key, cancellationToken);
             }
-            catch (Exception e) when (transientExceptionDetector.IsTransient(e))
+            catch (Exception e) when (retryScheduler.IsRetryable(e))
             {
-                logger.LogWarning(e, "A transient error occurred while starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}. Rescheduling job for retry", startRequest.WorkflowDefinitionHandle, startRequest.CorrelationId);
-                await retryScheduler.ScheduleRetryAsync(context, cancellationToken);
+                // The retry scheduler logs the scheduled retry, including the attempt number and delay.
+                if (await retryScheduler.ScheduleRetryAsync(context, e, cancellationToken))
+                    return;
+
+                logger.LogError(
+                    e,
+                    "Retries are exhausted for job {JobKey} after {RetryAttempts} retry attempt(s). Giving up on starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}",
+                    context.JobDetail.Key,
+                    context.GetRetryAttempt(),
+                    startRequest.WorkflowDefinitionHandle,
+                    startRequest.CorrelationId);
             }
             catch (Exception e)
             {
