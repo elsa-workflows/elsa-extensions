@@ -21,13 +21,13 @@ namespace Elsa.Persistence.MongoDb.HostedServices;
 /// It uses helper methods to register these serializers during the application's startup process.
 /// </remarks>
 [UsedImplicitly]
-public class ConfigureMongoDbSerializers(IPayloadSerializer payloadSerializer) : IHostedService
+public class ConfigureMongoDbSerializers(IPayloadSerializer payloadSerializer, VariableSerializer variableSerializer) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
         TryRegisterSerializer(typeof(object), new PolymorphicSerializer());
         TryRegisterSerializer(typeof(Type), new TypeSerializer());
-        TryRegisterSerializer(typeof(Variable), new VariableSerializer());
+        TryRegisterSerializer(typeof(Variable), variableSerializer);
         TryRegisterSerializer(typeof(Version), new VersionSerializer());
         TryRegisterSerializer(typeof(JsonElement), new JsonElementSerializer());
         TryRegisterSerializer(typeof(JsonNode), new JsonNodeBsonConverter());
