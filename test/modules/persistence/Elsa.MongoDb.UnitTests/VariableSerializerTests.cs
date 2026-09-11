@@ -5,7 +5,6 @@ using Elsa.Workflows;
 using Elsa.Workflows.Memory;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Services;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
@@ -81,10 +80,9 @@ public class VariableSerializerTests
     private static ISerializationTypeRegistry CreateWorkflowsRegistry()
     {
         var options = new SerializationTypeOptions();
-        options.AddTypeAliasWithLegacyName<WorkflowStorageDriver>(nameof(WorkflowStorageDriver));
         options.AddTypeAliasWithLegacyName<WorkflowInstanceStorageDriver>(nameof(WorkflowInstanceStorageDriver));
         options.AddTypeAliasWithLegacyName<MemoryStorageDriver>(nameof(MemoryStorageDriver));
-        return new SerializationTypeRegistry(Options.Create(options));
+        return new SerializationTypeRegistry(Microsoft.Extensions.Options.Options.Create(options));
     }
 
     private static Variable<string> CreateDialogIdVariable() =>
