@@ -5,6 +5,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Data.Sqlite" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\..\..\src\modules\persistence\Elsa.Persistence.Dapper\Elsa.Persistence.Dapper.csproj" />
     </ItemGroup>
 
