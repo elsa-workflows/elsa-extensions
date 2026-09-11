@@ -159,10 +159,18 @@ public class JsonNodeBsonConverter<TNode> : IBsonSerializer<TNode> where TNode :
 
     private static bool IsTaggedJsonNode(BsonDocument document)
     {
-        if (!document.Contains("type") || !document.Contains("value") || document["type"].BsonType != BsonType.String)
+        if (document.ElementCount != 2 || !document.Contains("type") || !document.Contains("value"))
             return false;
 
-        return document["type"].AsString is "JsonObject" or "JsonArray" or "JsonValue";
+        if (document["type"].BsonType != BsonType.String)
+            return false;
+
+        return document["type"].AsString switch
+        {
+            "JsonObject" or "JsonArray" => document["value"].BsonType == BsonType.String,
+            "JsonValue" => true,
+            _ => false
+        };
     }
 
     private static JsonNode DeserializeTagged(BsonDocument document)

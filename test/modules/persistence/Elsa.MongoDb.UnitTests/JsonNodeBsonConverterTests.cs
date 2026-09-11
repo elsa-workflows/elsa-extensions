@@ -195,6 +195,36 @@ public class JsonNodeBsonConverterTests
         Assert.Equal(3, obj["Count"]!.GetValue<int>());
     }
 
+    [Fact(DisplayName = "A type/value document that is not a two-field string envelope deserializes as a map")]
+    public void Deserialize_AmbiguousTypeValueDocument_IsMapNotEnvelope()
+    {
+        // {"type":"JsonObject","value":"{\"a\":1}"} with ElementCount == 2 and a BSON string
+        // value is a valid tagged envelope (covered by the round-trip tests). The false-positive
+        // risk is a class-map / user document that merely has type/value keys:
+        // extra elements, or value as a nested BSON document instead of a JSON string.
+        var extraElements = new BsonDocument
+        {
+            { "type", "JsonObject" },
+            { "value", """{"a":1}""" },
+            { "DialogId", "abc" }
+        };
+        var nestedDocumentValue = new BsonDocument
+        {
+            { "type", "JsonObject" },
+            { "value", new BsonDocument { { "a", 1 } } }
+        };
+        var serializer = new JsonNodeBsonConverter<JsonObject>();
+
+        var withExtra = DeserializeDocument(serializer, extraElements);
+        Assert.Equal("JsonObject", withExtra["type"]!.GetValue<string>());
+        Assert.Equal("""{"a":1}""", withExtra["value"]!.GetValue<string>());
+        Assert.Equal("abc", withExtra["DialogId"]!.GetValue<string>());
+
+        var withNestedValue = DeserializeDocument(serializer, nestedDocumentValue);
+        Assert.Equal("JsonObject", withNestedValue["type"]!.GetValue<string>());
+        Assert.Equal(1, withNestedValue["value"]!["a"]!.GetValue<int>());
+    }
+
     [Fact(DisplayName = "LookupSerializer returns the JsonNode converter for JsonObject, JsonArray, and JsonValue")]
     public void LookupSerializer_ConcreteJsonNodeTypes_UseJsonNodeConverter()
     {
@@ -208,6 +238,12 @@ public class JsonNodeBsonConverterTests
     {
         var restored = RoundTrip(new JsonNodeBsonConverter<JsonValue>(), original);
         Assert.Equal(original.ToJsonString(), restored.ToJsonString());
+    }
+
+    private static T DeserializeDocument<T>(IBsonSerializer<T> serializer, BsonDocument document)
+    {
+        using var reader = new BsonDocumentReader(document);
+        return serializer.Deserialize(BsonDeserializationContext.CreateRoot(reader));
     }
 
     private static T RoundTrip<T>(IBsonSerializer<T> serializer, T value) where T : JsonNode
