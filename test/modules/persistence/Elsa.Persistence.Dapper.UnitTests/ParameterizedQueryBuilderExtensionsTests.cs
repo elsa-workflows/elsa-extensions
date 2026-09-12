@@ -96,6 +96,30 @@ public sealed class ParameterizedQueryBuilderExtensionsTests : IDisposable
         Assert.Equal(2, result.TotalCount);
     }
 
+    [Fact]
+    public async Task LessThan_WithValue_ExcludesRowsAtOrAboveTheValue()
+    {
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+
+        var result = await FindManyAsync(query => query.LessThan(nameof(TestRecord.Value), "value-a2"));
+
+        Assert.Equal(["a1"], result.Items.Select(x => x.Id));
+        Assert.Equal(1, result.TotalCount);
+    }
+
+    [Fact]
+    public async Task LessThan_WithNullValue_PreservesOtherFilters()
+    {
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+
+        var result = await FindManyAsync(query => query
+            .Is(nameof(TestRecord.Value), "value-a2")
+            .LessThan(nameof(TestRecord.Id), null));
+
+        Assert.Equal(["a2"], result.Items.Select(x => x.Id));
+        Assert.Equal(1, result.TotalCount);
+    }
+
     public void Dispose()
     {
         File.Delete(_databasePath);
