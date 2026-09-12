@@ -118,19 +118,31 @@ public sealed class DapperWorkflowInstanceStoreTests : IDisposable
         Assert.Equal(("Running", "Interrupted", 0), ReadMarkers("running-1"));
     }
 
-    [Fact(DisplayName = "TryMarkInterruptedAsync promotes Finished/Cancelled to Running+Interrupted")]
-    public async Task TryMarkInterruptedAsync_MarksCancelledInstance()
+    [Fact(DisplayName = "TryMarkInterruptedAsync refuses Finished/Cancelled unless allowFinishedCancelled is set")]
+    public async Task TryMarkInterruptedAsync_DoesNotOverwriteCancelledInstanceByDefault()
     {
         InsertInterruptible("cancelled-1", WorkflowStatus.Finished, WorkflowSubStatus.Cancelled, isExecuting: false);
 
         using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
         var marked = await _store.TryMarkInterruptedAsync("cancelled-1");
 
+        Assert.False(marked);
+        Assert.Equal(("Finished", "Cancelled", 0), ReadMarkers("cancelled-1"));
+    }
+
+    [Fact(DisplayName = "TryMarkInterruptedAsync promotes Finished/Cancelled only when allowFinishedCancelled is true")]
+    public async Task TryMarkInterruptedAsync_PromotesCancelledWhenAllowed()
+    {
+        InsertInterruptible("cancelled-1", WorkflowStatus.Finished, WorkflowSubStatus.Cancelled, isExecuting: false);
+
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+        var marked = await _store.TryMarkInterruptedAsync("cancelled-1", allowFinishedCancelled: true);
+
         Assert.True(marked);
         Assert.Equal(("Running", "Interrupted", 0), ReadMarkers("cancelled-1"));
     }
 
-    [Fact(DisplayName = "TryMarkInterruptedAsync refuses naturally completed Finished/Finished")]
+    [Fact(DisplayName = "TryMarkInterruptedAsync refuses Finished/Finished")]
     public async Task TryMarkInterruptedAsync_RefusesFinishedInstance()
     {
         InsertInterruptible("finished-1", WorkflowStatus.Finished, WorkflowSubStatus.Finished, isExecuting: false);
@@ -142,13 +154,37 @@ public sealed class DapperWorkflowInstanceStoreTests : IDisposable
         Assert.Equal(("Finished", "Finished", 0), ReadMarkers("finished-1"));
     }
 
-    [Fact(DisplayName = "TryMarkInterruptedAsync refuses naturally completed Finished/Faulted")]
+    [Fact(DisplayName = "TryMarkInterruptedAsync still refuses Finished/Finished when allowFinishedCancelled is true")]
+    public async Task TryMarkInterruptedAsync_RefusesFinishedEvenWhenCancelledAllowed()
+    {
+        InsertInterruptible("finished-1", WorkflowStatus.Finished, WorkflowSubStatus.Finished, isExecuting: false);
+
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+        var marked = await _store.TryMarkInterruptedAsync("finished-1", allowFinishedCancelled: true);
+
+        Assert.False(marked);
+        Assert.Equal(("Finished", "Finished", 0), ReadMarkers("finished-1"));
+    }
+
+    [Fact(DisplayName = "TryMarkInterruptedAsync refuses Finished/Faulted")]
     public async Task TryMarkInterruptedAsync_RefusesFaultedInstance()
     {
         InsertInterruptible("faulted-1", WorkflowStatus.Finished, WorkflowSubStatus.Faulted, isExecuting: false);
 
         using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
         var marked = await _store.TryMarkInterruptedAsync("faulted-1");
+
+        Assert.False(marked);
+        Assert.Equal(("Finished", "Faulted", 0), ReadMarkers("faulted-1"));
+    }
+
+    [Fact(DisplayName = "TryMarkInterruptedAsync still refuses Finished/Faulted when allowFinishedCancelled is true")]
+    public async Task TryMarkInterruptedAsync_RefusesFaultedEvenWhenCancelledAllowed()
+    {
+        InsertInterruptible("faulted-1", WorkflowStatus.Finished, WorkflowSubStatus.Faulted, isExecuting: false);
+
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+        var marked = await _store.TryMarkInterruptedAsync("faulted-1", allowFinishedCancelled: true);
 
         Assert.False(marked);
         Assert.Equal(("Finished", "Faulted", 0), ReadMarkers("faulted-1"));
