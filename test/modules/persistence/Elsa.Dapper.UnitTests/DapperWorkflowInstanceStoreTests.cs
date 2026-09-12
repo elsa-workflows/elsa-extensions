@@ -15,15 +15,16 @@ public sealed class DapperWorkflowInstanceStoreTests : IDisposable
     private static readonly DateTimeOffset Cutoff = new(2026, 1, 1, 12, 5, 0, TimeSpan.Zero);
 
     private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"elsa-dapper-instances-{Guid.NewGuid():N}.db");
+    private readonly string _connectionString;
     private readonly DapperWorkflowInstanceStore _store;
     private readonly TestTenantAccessor _tenantAccessor = new();
 
     public DapperWorkflowInstanceStoreTests()
     {
-        var connectionString = new SqliteConnectionStringBuilder { DataSource = _databasePath, Pooling = false }.ToString();
-        var connectionProvider = new SqliteDbConnectionProvider(connectionString);
+        _connectionString = new SqliteConnectionStringBuilder { DataSource = _databasePath, Pooling = false }.ToString();
+        var connectionProvider = new SqliteDbConnectionProvider(_connectionString);
 
-        using var connection = new SqliteConnection(connectionString);
+        using var connection = new SqliteConnection(_connectionString);
         connection.Open();
         connection.Execute("""
                            create table WorkflowInstances (
@@ -105,23 +106,97 @@ public sealed class DapperWorkflowInstanceStoreTests : IDisposable
         Assert.Equal(2, count);
     }
 
+    [Fact(DisplayName = "TryMarkInterruptedAsync marks a Running instance as Running+Interrupted")]
+    public async Task TryMarkInterruptedAsync_MarksRunningInstance()
+    {
+        InsertInterruptible("running-1", WorkflowStatus.Running, WorkflowSubStatus.Executing, isExecuting: true);
+
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+        var marked = await _store.TryMarkInterruptedAsync("running-1");
+
+        Assert.True(marked);
+        Assert.Equal(("Running", "Interrupted", 0), ReadMarkers("running-1"));
+    }
+
+    [Fact(DisplayName = "TryMarkInterruptedAsync promotes Finished/Cancelled to Running+Interrupted")]
+    public async Task TryMarkInterruptedAsync_MarksCancelledInstance()
+    {
+        InsertInterruptible("cancelled-1", WorkflowStatus.Finished, WorkflowSubStatus.Cancelled, isExecuting: false);
+
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+        var marked = await _store.TryMarkInterruptedAsync("cancelled-1");
+
+        Assert.True(marked);
+        Assert.Equal(("Running", "Interrupted", 0), ReadMarkers("cancelled-1"));
+    }
+
+    [Fact(DisplayName = "TryMarkInterruptedAsync refuses naturally completed Finished/Finished")]
+    public async Task TryMarkInterruptedAsync_RefusesFinishedInstance()
+    {
+        InsertInterruptible("finished-1", WorkflowStatus.Finished, WorkflowSubStatus.Finished, isExecuting: false);
+
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+        var marked = await _store.TryMarkInterruptedAsync("finished-1");
+
+        Assert.False(marked);
+        Assert.Equal(("Finished", "Finished", 0), ReadMarkers("finished-1"));
+    }
+
+    [Fact(DisplayName = "TryMarkInterruptedAsync refuses naturally completed Finished/Faulted")]
+    public async Task TryMarkInterruptedAsync_RefusesFaultedInstance()
+    {
+        InsertInterruptible("faulted-1", WorkflowStatus.Finished, WorkflowSubStatus.Faulted, isExecuting: false);
+
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+        var marked = await _store.TryMarkInterruptedAsync("faulted-1");
+
+        Assert.False(marked);
+        Assert.Equal(("Finished", "Faulted", 0), ReadMarkers("faulted-1"));
+    }
+
+    [Fact(DisplayName = "TryMarkInterruptedAsync returns false when the instance is missing")]
+    public async Task TryMarkInterruptedAsync_ReturnsFalseWhenMissing()
+    {
+        using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
+        var marked = await _store.TryMarkInterruptedAsync("missing-1");
+
+        Assert.False(marked);
+    }
+
     public void Dispose()
     {
         File.Delete(_databasePath);
     }
 
-    private static void Insert(SqliteConnection connection, string id, DateTimeOffset updatedAt, bool isExecuting)
+    private void InsertInterruptible(string id, WorkflowStatus status, WorkflowSubStatus subStatus, bool isExecuting)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        Insert(connection, id, Cutoff.AddMinutes(-2), isExecuting, status.ToString(), subStatus.ToString());
+    }
+
+    private (string Status, string SubStatus, long IsExecuting) ReadMarkers(string id)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        return connection.QuerySingle<(string, string, long)>(
+            "select Status, SubStatus, IsExecuting from WorkflowInstances where Id = @Id",
+            new { Id = id });
+    }
+
+    private static void Insert(SqliteConnection connection, string id, DateTimeOffset updatedAt, bool isExecuting, string status = "Running", string subStatus = "Executing")
     {
         connection.Execute(
             """
             insert into WorkflowInstances
                 (Id, TenantId, DefinitionId, DefinitionVersionId, Version, WorkflowState, Status, SubStatus, IsExecuting, IncidentCount, IsSystem, CreatedAt, UpdatedAt)
             values
-                (@Id, 'tenant-a', 'definition-1', 'definition-1:1', 1, '{}', 'Running', 'Executing', @IsExecuting, 0, 0, @CreatedAt, @UpdatedAt);
+                (@Id, 'tenant-a', 'definition-1', 'definition-1:1', 1, '{}', @Status, @SubStatus, @IsExecuting, 0, 0, @CreatedAt, @UpdatedAt);
             """,
             new
             {
                 Id = id,
+                Status = status,
+                SubStatus = subStatus,
                 IsExecuting = isExecuting,
                 CreatedAt = updatedAt,
                 UpdatedAt = updatedAt

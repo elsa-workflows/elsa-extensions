@@ -176,16 +176,25 @@ internal class DapperWorkflowInstanceStore(Store<WorkflowInstanceRecord> store, 
         var record = new WorkflowInstanceRecord
         {
             Id = workflowInstanceId,
+            Status = WorkflowStatus.Running.ToString(),
             SubStatus = WorkflowSubStatus.Interrupted.ToString(),
             IsExecuting = false
         };
 
         var updated = await store.UpdateAsync(
             record,
-            [x => x.SubStatus, x => x.IsExecuting],
-            q => q
-                .Is(nameof(WorkflowInstanceRecord.Id), workflowInstanceId)
-                .IsNot(nameof(WorkflowInstanceRecord.Status), WorkflowStatus.Finished.ToString()),
+            [x => x.Status, x => x.SubStatus, x => x.IsExecuting],
+            q =>
+            {
+                q.Is(nameof(WorkflowInstanceRecord.Id), workflowInstanceId);
+                // Naturally completed rows (Finished && SubStatus != Cancelled) must not be
+                // interrupted. Finished/Cancelled is the runner's drain force-cancel commit
+                // and is interruptible (elsa-core#8069). Distinct param names avoid colliding
+                // with the SET Status = Running assignment.
+                q.Sql.AppendLine("and (not Status = @FinishedStatus or SubStatus = @CancelledSubStatus)");
+                q.Parameters.Add("@FinishedStatus", WorkflowStatus.Finished.ToString());
+                q.Parameters.Add("@CancelledSubStatus", WorkflowSubStatus.Cancelled.ToString());
+            },
             cancellationToken);
 
         return updated > 0;

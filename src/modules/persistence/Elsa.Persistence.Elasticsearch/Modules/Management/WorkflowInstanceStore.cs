@@ -158,14 +158,24 @@ public class ElasticWorkflowInstanceStore : IWorkflowInstanceStore
             Id = workflowInstanceId
         }, cancellationToken);
 
-        if (instance is null || instance.Status == WorkflowStatus.Finished)
+        if (instance is null || IsNaturallyCompleted(instance))
             return false;
 
+        // Finished/Cancelled is the runner's commit after drain force-cancel. Promote to
+        // Running+Interrupted so the recovery scan (Running+Interrupted) can requeue it.
+        instance.Status = WorkflowStatus.Running;
         instance.SubStatus = WorkflowSubStatus.Interrupted;
         instance.IsExecuting = false;
         await _store.SaveAsync(instance, cancellationToken);
         return true;
     }
+
+    /// <summary>
+    /// Naturally completed rows must not be interrupted. Finished/Cancelled is the opposite:
+    /// that is the expected runner commit after a drain force-cancel and is interruptible.
+    /// </summary>
+    private static bool IsNaturallyCompleted(WorkflowInstance instance) =>
+        instance.Status == WorkflowStatus.Finished && instance.SubStatus != WorkflowSubStatus.Cancelled;
 
     private static SearchRequestDescriptor<WorkflowInstance> Sort<TProp>(SearchRequestDescriptor<WorkflowInstance> descriptor, WorkflowInstanceOrder<TProp> order)
     {
