@@ -171,7 +171,7 @@ internal class DapperWorkflowInstanceStore(Store<WorkflowInstanceRecord> store, 
     }
 
     /// <inheritdoc />
-    public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default)
+    public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default, bool allowFinishedCancelled = false)
     {
         var record = new WorkflowInstanceRecord
         {
@@ -187,13 +187,19 @@ internal class DapperWorkflowInstanceStore(Store<WorkflowInstanceRecord> store, 
             q =>
             {
                 q.Is(nameof(WorkflowInstanceRecord.Id), workflowInstanceId);
-                // Naturally completed rows (Finished && SubStatus != Cancelled) must not be
-                // interrupted. Finished/Cancelled is the runner's drain force-cancel commit
-                // and is interruptible (elsa-core#8069). Distinct param names avoid colliding
-                // with the SET Status = Running assignment.
-                q.Sql.AppendLine("and (not Status = @FinishedStatus or SubStatus = @CancelledSubStatus)");
+                // Default: refuse every Finished row (#8052). Distinct param names avoid
+                // colliding with SET Status = Running. Drain PersistInterrupted alone may
+                // pass allowFinishedCancelled (elsa-core#8069).
                 q.Parameters.Add("@FinishedStatus", WorkflowStatus.Finished.ToString());
-                q.Parameters.Add("@CancelledSubStatus", WorkflowSubStatus.Cancelled.ToString());
+                if (allowFinishedCancelled)
+                {
+                    q.Sql.AppendLine("and (not Status = @FinishedStatus or SubStatus = @CancelledSubStatus)");
+                    q.Parameters.Add("@CancelledSubStatus", WorkflowSubStatus.Cancelled.ToString());
+                }
+                else
+                {
+                    q.Sql.AppendLine("and not Status = @FinishedStatus");
+                }
             },
             cancellationToken);
 

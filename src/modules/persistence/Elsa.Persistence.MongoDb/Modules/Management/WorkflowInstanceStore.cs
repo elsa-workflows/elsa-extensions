@@ -139,16 +139,20 @@ public class MongoWorkflowInstanceStore(MongoDbStore<WorkflowInstance> mongoDbSt
     }
 
     /// <inheritdoc />
-    public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default)
+    public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default, bool allowFinishedCancelled = false)
     {
         var collection = mongoDbStore.GetCollection();
-        // Interruptible = not naturally completed. Finished/Cancelled is the runner's commit
-        // after drain force-cancel and must become Running+Interrupted (elsa-core#8069).
-        var filter = Builders<WorkflowInstance>.Filter.And(
-            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, workflowInstanceId),
-            Builders<WorkflowInstance>.Filter.Or(
-                Builders<WorkflowInstance>.Filter.Ne(x => x.Status, WorkflowStatus.Finished),
-                Builders<WorkflowInstance>.Filter.Eq(x => x.SubStatus, WorkflowSubStatus.Cancelled)));
+        // Default: refuse every Finished row (#8052). Drain PersistInterrupted alone may pass
+        // allowFinishedCancelled to promote Finished/Cancelled → Running+Interrupted.
+        var idFilter = Builders<WorkflowInstance>.Filter.Eq(x => x.Id, workflowInstanceId);
+        var notFinished = Builders<WorkflowInstance>.Filter.Ne(x => x.Status, WorkflowStatus.Finished);
+        var filter = allowFinishedCancelled
+            ? Builders<WorkflowInstance>.Filter.And(
+                idFilter,
+                Builders<WorkflowInstance>.Filter.Or(
+                    notFinished,
+                    Builders<WorkflowInstance>.Filter.Eq(x => x.SubStatus, WorkflowSubStatus.Cancelled)))
+            : Builders<WorkflowInstance>.Filter.And(idFilter, notFinished);
         var update = Builders<WorkflowInstance>.Update
             .Set(x => x.Status, WorkflowStatus.Running)
             .Set(x => x.SubStatus, WorkflowSubStatus.Interrupted)
