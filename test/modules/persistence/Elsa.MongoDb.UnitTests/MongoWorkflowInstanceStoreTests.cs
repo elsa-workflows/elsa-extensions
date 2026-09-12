@@ -13,7 +13,7 @@ namespace Elsa.MongoDb.UnitTests;
 
 public class MongoWorkflowInstanceStoreTests
 {
-    [Fact(DisplayName = "TryMarkInterruptedAsync updates only when Status is not Finished")]
+    [Fact(DisplayName = "TryMarkInterruptedAsync updates Running instances to Running+Interrupted")]
     public async Task TryMarkInterruptedAsync_UpdatesNonTerminalInstance()
     {
         var (store, collection) = CreateStore(matchedCount: 1);
@@ -22,14 +22,29 @@ public class MongoWorkflowInstanceStoreTests
 
         Assert.True(marked);
         await collection.Received(1).UpdateOneAsync(
-            Arg.Is<FilterDefinition<WorkflowInstance>>(filter => FilterMentionsIdAndNonFinished(filter, "running-1")),
-            Arg.Is<UpdateDefinition<WorkflowInstance>>(update => UpdateSetsInterruptedMarkers(update)),
+            Arg.Is<FilterDefinition<WorkflowInstance>>(filter => FilterAllowsInterruptible(filter, "running-1")),
+            Arg.Is<UpdateDefinition<WorkflowInstance>>(update => UpdatePromotesToRunningInterrupted(update)),
             Arg.Any<UpdateOptions>(),
             Arg.Any<CancellationToken>());
     }
 
-    [Fact(DisplayName = "TryMarkInterruptedAsync returns false when no non-terminal instance matches")]
-    public async Task TryMarkInterruptedAsync_ReturnsFalseWhenMissingOrFinished()
+    [Fact(DisplayName = "TryMarkInterruptedAsync filter allows Finished/Cancelled (drain force-cancel)")]
+    public async Task TryMarkInterruptedAsync_FilterAllowsFinishedCancelled()
+    {
+        var (store, collection) = CreateStore(matchedCount: 1);
+
+        var marked = await store.TryMarkInterruptedAsync("cancelled-1");
+
+        Assert.True(marked);
+        await collection.Received(1).UpdateOneAsync(
+            Arg.Is<FilterDefinition<WorkflowInstance>>(filter => FilterAllowsInterruptible(filter, "cancelled-1")),
+            Arg.Is<UpdateDefinition<WorkflowInstance>>(update => UpdatePromotesToRunningInterrupted(update)),
+            Arg.Any<UpdateOptions>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact(DisplayName = "TryMarkInterruptedAsync returns false when no interruptible instance matches")]
+    public async Task TryMarkInterruptedAsync_ReturnsFalseWhenMissingOrNaturallyCompleted()
     {
         var (store, _) = CreateStore(matchedCount: 0);
 
@@ -58,19 +73,28 @@ public class MongoWorkflowInstanceStoreTests
         return (store, collection);
     }
 
-    private static bool FilterMentionsIdAndNonFinished(FilterDefinition<WorkflowInstance> filter, string id)
+    /// <summary>
+    /// Id match plus the IsNaturallyCompleted inverse: Status != Finished OR SubStatus == Cancelled.
+    /// Refuses Finished/Finished and Finished/Faulted at the filter.
+    /// </summary>
+    private static bool FilterAllowsInterruptible(FilterDefinition<WorkflowInstance> filter, string id)
     {
         var rendered = Render(filter);
         return rendered.Contains(id, StringComparison.Ordinal)
+               && rendered.Contains("$or", StringComparison.Ordinal)
                && rendered.Contains("Status", StringComparison.Ordinal)
                && rendered.Contains("$ne", StringComparison.Ordinal)
-               && rendered.Contains(((int)WorkflowStatus.Finished).ToString(), StringComparison.Ordinal);
+               && rendered.Contains(((int)WorkflowStatus.Finished).ToString(), StringComparison.Ordinal)
+               && rendered.Contains("SubStatus", StringComparison.Ordinal)
+               && rendered.Contains(((int)WorkflowSubStatus.Cancelled).ToString(), StringComparison.Ordinal);
     }
 
-    private static bool UpdateSetsInterruptedMarkers(UpdateDefinition<WorkflowInstance> update)
+    private static bool UpdatePromotesToRunningInterrupted(UpdateDefinition<WorkflowInstance> update)
     {
         var rendered = Render(update);
         return rendered.Contains("$set", StringComparison.Ordinal)
+               && rendered.Contains("Status", StringComparison.Ordinal)
+               && rendered.Contains(((int)WorkflowStatus.Running).ToString(), StringComparison.Ordinal)
                && rendered.Contains("SubStatus", StringComparison.Ordinal)
                && rendered.Contains(((int)WorkflowSubStatus.Interrupted).ToString(), StringComparison.Ordinal)
                && rendered.Contains("IsExecuting", StringComparison.Ordinal);

@@ -142,10 +142,15 @@ public class MongoWorkflowInstanceStore(MongoDbStore<WorkflowInstance> mongoDbSt
     public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default)
     {
         var collection = mongoDbStore.GetCollection();
+        // Interruptible = not naturally completed. Finished/Cancelled is the runner's commit
+        // after drain force-cancel and must become Running+Interrupted (elsa-core#8069).
         var filter = Builders<WorkflowInstance>.Filter.And(
             Builders<WorkflowInstance>.Filter.Eq(x => x.Id, workflowInstanceId),
-            Builders<WorkflowInstance>.Filter.Ne(x => x.Status, WorkflowStatus.Finished));
+            Builders<WorkflowInstance>.Filter.Or(
+                Builders<WorkflowInstance>.Filter.Ne(x => x.Status, WorkflowStatus.Finished),
+                Builders<WorkflowInstance>.Filter.Eq(x => x.SubStatus, WorkflowSubStatus.Cancelled)));
         var update = Builders<WorkflowInstance>.Update
+            .Set(x => x.Status, WorkflowStatus.Running)
             .Set(x => x.SubStatus, WorkflowSubStatus.Interrupted)
             .Set(x => x.IsExecuting, false);
 

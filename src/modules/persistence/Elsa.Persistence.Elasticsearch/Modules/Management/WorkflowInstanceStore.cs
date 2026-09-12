@@ -153,18 +153,32 @@ public class ElasticWorkflowInstanceStore : IWorkflowInstanceStore
     /// <inheritdoc />
     public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default)
     {
-        var instance = await FindAsync(new WorkflowInstanceFilter
-        {
-            Id = workflowInstanceId
-        }, cancellationToken);
+        // Conditional write: do not SaveAsync a Find snapshot. Id is a document field
+        // (not mapped as _id), so Update-by-id is unavailable. UpdateByQuery applies
+        // the same interruptible predicate as EF/Mongo (elsa-core#8069):
+        // Status != Finished OR SubStatus == Cancelled.
+        var updated = await _store.UpdateByQueryAsync(d => d
+            .Refresh(true)
+            .Query(q => q.Bool(b => b
+                .Must(
+                    m => m.Match(mt => mt.Field(f => f.Id).Query(workflowInstanceId)),
+                    m => m.Bool(s => s
+                        .Should(
+                            sh => sh.Bool(n => n.MustNot(mn => mn.Match(mt => mt
+                                .Field(f => f.Status)
+                                .Query(WorkflowStatus.Finished.ToString()!)))),
+                            sh => sh.Match(mt => mt
+                                .Field(f => f.SubStatus)
+                                .Query(WorkflowSubStatus.Cancelled.ToString()!)))
+                        .MinimumShouldMatch(1)))))
+            .Script(s => s
+                .Source("ctx._source.status = params.status; ctx._source.subStatus = params.subStatus; ctx._source.isExecuting = params.isExecuting;")
+                .AddParam("status", WorkflowStatus.Running.ToString())
+                .AddParam("subStatus", WorkflowSubStatus.Interrupted.ToString())
+                .AddParam("isExecuting", false)),
+            cancellationToken);
 
-        if (instance is null || instance.Status == WorkflowStatus.Finished)
-            return false;
-
-        instance.SubStatus = WorkflowSubStatus.Interrupted;
-        instance.IsExecuting = false;
-        await _store.SaveAsync(instance, cancellationToken);
-        return true;
+        return updated > 0;
     }
 
     private static SearchRequestDescriptor<WorkflowInstance> Sort<TProp>(SearchRequestDescriptor<WorkflowInstance> descriptor, WorkflowInstanceOrder<TProp> order)
