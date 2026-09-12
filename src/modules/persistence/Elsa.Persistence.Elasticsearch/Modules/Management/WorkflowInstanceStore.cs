@@ -153,29 +153,33 @@ public class ElasticWorkflowInstanceStore : IWorkflowInstanceStore
     /// <inheritdoc />
     public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default)
     {
-        var instance = await FindAsync(new WorkflowInstanceFilter
-        {
-            Id = workflowInstanceId
-        }, cancellationToken);
+        // Conditional write: do not SaveAsync a Find snapshot. Id is a document field
+        // (not mapped as _id), so Update-by-id is unavailable. UpdateByQuery applies
+        // the same interruptible predicate as EF/Mongo (elsa-core#8069):
+        // Status != Finished OR SubStatus == Cancelled.
+        var updated = await _store.UpdateByQueryAsync(d => d
+            .Refresh(true)
+            .Query(q => q.Bool(b => b
+                .Must(
+                    m => m.Match(mt => mt.Field(f => f.Id).Query(workflowInstanceId)),
+                    m => m.Bool(s => s
+                        .Should(
+                            sh => sh.Bool(n => n.MustNot(mn => mn.Match(mt => mt
+                                .Field(f => f.Status)
+                                .Query(WorkflowStatus.Finished.ToString()!)))),
+                            sh => sh.Match(mt => mt
+                                .Field(f => f.SubStatus)
+                                .Query(WorkflowSubStatus.Cancelled.ToString()!)))
+                        .MinimumShouldMatch(1)))))
+            .Script(s => s
+                .Source("ctx._source.status = params.status; ctx._source.subStatus = params.subStatus; ctx._source.isExecuting = params.isExecuting;")
+                .AddParam("status", WorkflowStatus.Running.ToString())
+                .AddParam("subStatus", WorkflowSubStatus.Interrupted.ToString())
+                .AddParam("isExecuting", false)),
+            cancellationToken);
 
-        if (instance is null || IsNaturallyCompleted(instance))
-            return false;
-
-        // Finished/Cancelled is the runner's commit after drain force-cancel. Promote to
-        // Running+Interrupted so the recovery scan (Running+Interrupted) can requeue it.
-        instance.Status = WorkflowStatus.Running;
-        instance.SubStatus = WorkflowSubStatus.Interrupted;
-        instance.IsExecuting = false;
-        await _store.SaveAsync(instance, cancellationToken);
-        return true;
+        return updated > 0;
     }
-
-    /// <summary>
-    /// Naturally completed rows must not be interrupted. Finished/Cancelled is the opposite:
-    /// that is the expected runner commit after a drain force-cancel and is interruptible.
-    /// </summary>
-    private static bool IsNaturallyCompleted(WorkflowInstance instance) =>
-        instance.Status == WorkflowStatus.Finished && instance.SubStatus != WorkflowSubStatus.Cancelled;
 
     private static SearchRequestDescriptor<WorkflowInstance> Sort<TProp>(SearchRequestDescriptor<WorkflowInstance> descriptor, WorkflowInstanceOrder<TProp> order)
     {
