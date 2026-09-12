@@ -4,6 +4,7 @@ using Elsa.Common.Entities;
 using Elsa.Common.Models;
 using Elsa.Persistence.Elasticsearch.Common;
 using Elsa.Extensions;
+using Elsa.Workflows;
 using Elsa.Workflows.Management;
 using Elsa.Workflows.Management.Entities;
 using Elsa.Workflows.Management.Filters;
@@ -147,6 +148,23 @@ public class ElasticWorkflowInstanceStore : IWorkflowInstanceStore
     public Task UpdateUpdatedTimestampAsync(string workflowInstanceId, DateTimeOffset value, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default)
+    {
+        var instance = await FindAsync(new WorkflowInstanceFilter
+        {
+            Id = workflowInstanceId
+        }, cancellationToken);
+
+        if (instance is null || instance.Status == WorkflowStatus.Finished)
+            return false;
+
+        instance.SubStatus = WorkflowSubStatus.Interrupted;
+        instance.IsExecuting = false;
+        await _store.SaveAsync(instance, cancellationToken);
+        return true;
     }
 
     private static SearchRequestDescriptor<WorkflowInstance> Sort<TProp>(SearchRequestDescriptor<WorkflowInstance> descriptor, WorkflowInstanceOrder<TProp> order)

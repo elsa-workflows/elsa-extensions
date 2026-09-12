@@ -3,6 +3,7 @@ using Elsa.Common.Models;
 using Elsa.Extensions;
 using Elsa.Persistence.MongoDb.Common;
 using Elsa.Persistence.MongoDb.Helpers;
+using Elsa.Workflows;
 using Elsa.Workflows.Management;
 using Elsa.Workflows.Management.Entities;
 using Elsa.Workflows.Management.Filters;
@@ -135,6 +136,21 @@ public class MongoWorkflowInstanceStore(MongoDbStore<WorkflowInstance> mongoDbSt
         
         if (!updated) 
             logger.LogDebug("Failed to update the 'UpdatedAt' timestamp for workflow instance with ID '{WorkflowInstanceId}'. This means this workflow does not yet exist in the DB.", workflowInstanceId);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default)
+    {
+        var collection = mongoDbStore.GetCollection();
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, workflowInstanceId),
+            Builders<WorkflowInstance>.Filter.Ne(x => x.Status, WorkflowStatus.Finished));
+        var update = Builders<WorkflowInstance>.Update
+            .Set(x => x.SubStatus, WorkflowSubStatus.Interrupted)
+            .Set(x => x.IsExecuting, false);
+
+        var result = await collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        return result.MatchedCount > 0;
     }
 
     /// <inheritdoc />
