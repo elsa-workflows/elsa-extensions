@@ -170,6 +170,27 @@ internal class DapperWorkflowInstanceStore(Store<WorkflowInstanceRecord> store, 
         await store.UpdateAsync(record, [x => x.UpdatedAt], cancellationToken);
     }
 
+    /// <inheritdoc />
+    public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default)
+    {
+        var record = new WorkflowInstanceRecord
+        {
+            Id = workflowInstanceId,
+            SubStatus = WorkflowSubStatus.Interrupted.ToString(),
+            IsExecuting = false
+        };
+
+        var updated = await store.UpdateAsync(
+            record,
+            [x => x.SubStatus, x => x.IsExecuting],
+            q => q
+                .Is(nameof(WorkflowInstanceRecord.Id), workflowInstanceId)
+                .IsNot(nameof(WorkflowInstanceRecord.Status), WorkflowStatus.Finished.ToString()),
+            cancellationToken);
+
+        return updated > 0;
+    }
+
     private void ApplyFilter(ParameterizedQuery query, WorkflowInstanceFilter filter)
     {
         query
