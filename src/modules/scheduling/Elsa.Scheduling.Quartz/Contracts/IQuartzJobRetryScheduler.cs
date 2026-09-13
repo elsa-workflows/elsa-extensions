@@ -33,5 +33,9 @@ public interface IQuartzJobRetryScheduler
     /// trigger fires so a later scheduled occurrence does not also run a leftover retry. A no-op when the current
     /// execution is itself a retry.
     /// </summary>
-    Task CancelPendingRetryAsync(IJobExecutionContext context, CancellationToken cancellationToken = default);
+    /// <remarks>
+    /// The default implementation keeps existing custom retry schedulers source-compatible. Implementations that use
+    /// derived retry triggers should override this member to cancel a pending retry when the original schedule fires.
+    /// </remarks>
+    Task CancelPendingRetryAsync(IJobExecutionContext context, CancellationToken cancellationToken = default) => Task.CompletedTask;
 }

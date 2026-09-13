@@ -64,7 +64,22 @@ public class QuartzJobRetryScheduler(
         // its next fire times. Unschedule-then-schedule covers both the first retry and a later attempt that reuses
         // the same derived key.
         await context.Scheduler.UnscheduleJob(retryTrigger.Key, cancellationToken);
-        await context.Scheduler.ScheduleJob(retryTrigger, cancellationToken);
+
+        try
+        {
+            await context.Scheduler.ScheduleJob(retryTrigger, cancellationToken);
+        }
+        catch (JobPersistenceException e) when (e.InnerException is ObjectAlreadyExistsException)
+        {
+            // Another concurrent execution won the race to create the deterministic retry key. The retry is already
+            // scheduled, so report success to the job and avoid turning an idempotent operation into a failed attempt.
+            logger.LogDebug("Retry trigger {RetryTriggerKey} already exists for job {JobKey}; keeping the existing retry", retryTrigger.Key, jobKey);
+        }
+        catch (ObjectAlreadyExistsException)
+        {
+            // See the wrapped exception case above. Quartz may expose the duplicate directly depending on the store.
+            logger.LogDebug("Retry trigger {RetryTriggerKey} already exists for job {JobKey}; keeping the existing retry", retryTrigger.Key, jobKey);
+        }
 
         return true;
     }
@@ -72,7 +87,7 @@ public class QuartzJobRetryScheduler(
     /// <inheritdoc />
     public async Task CancelPendingRetryAsync(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
-        if (QuartzTriggerKeys.IsRetryTrigger(context.Trigger.Key))
+        if (QuartzTriggerKeys.IsRetryTrigger(context.Trigger))
             return;
 
         var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key);
@@ -117,14 +132,18 @@ public class QuartzJobRetryScheduler(
         if (triggerJobDataMap != null)
             jobDataMap.PutAll(triggerJobDataMap);
 
+        var originalTriggerKey = QuartzTriggerKeys.GetOriginalTriggerKey(context.Trigger);
         jobDataMap[QuartzJobDataKeys.RetryAttempt] = attemptNumber.ToString(CultureInfo.InvariantCulture);
+        jobDataMap[QuartzJobDataKeys.RetryTrigger] = bool.TrueString;
+        jobDataMap[QuartzJobDataKeys.RetryOriginalTriggerName] = originalTriggerKey.Name;
+        jobDataMap[QuartzJobDataKeys.RetryOriginalTriggerGroup] = originalTriggerKey.Group;
 
         var now = systemClock.UtcNow;
         var startAt = delay >= DateTimeOffset.MaxValue - now ? DateTimeOffset.MaxValue : now.Add(delay);
 
         return TriggerBuilder.Create()
             .ForJob(context.JobDetail.Key)
-            .WithIdentity(QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key))
+            .WithIdentity(QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey))
             .UsingJobData(jobDataMap)
             .StartAt(startAt)
             .Build();

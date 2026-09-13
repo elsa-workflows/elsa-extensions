@@ -6,28 +6,55 @@ namespace Elsa.Scheduling.Quartz.UnitTests.Services;
 public class QuartzTriggerKeysTests
 {
     [Fact]
-    public void GetRetryTriggerKey_AppendsTheRetrySuffixInTheSameGroup()
+    public void GetRetryTriggerKey_UsesTheReservedRetryGroup()
     {
         var original = new TriggerKey("task-1", "tenant-a");
 
         var retry = QuartzTriggerKeys.GetRetryTriggerKey(original);
 
-        Assert.Equal("task-1-retry", retry.Name);
-        Assert.Equal("tenant-a", retry.Group);
+        Assert.StartsWith("retry-", retry.Name);
+        Assert.Equal(QuartzTriggerKeys.RetryGroup, retry.Group);
     }
 
     [Fact]
-    public void GetRetryTriggerKey_WhenAlreadyARetry_ReturnsTheSameKey()
+    public void GetRetryTriggerKey_WhenTaskNamesWouldCollide_ProducesDistinctKeys()
     {
-        var retry = new TriggerKey("task-1-retry", "Default");
+        var first = QuartzTriggerKeys.GetRetryTriggerKey(new TriggerKey("task-1", "Default"));
+        var second = QuartzTriggerKeys.GetRetryTriggerKey(new TriggerKey("task-1-retry", "Default"));
 
-        Assert.Equal(retry, QuartzTriggerKeys.GetRetryTriggerKey(retry));
-        Assert.True(QuartzTriggerKeys.IsRetryTrigger(retry));
+        Assert.NotEqual(first, second);
+        Assert.NotEqual(first, new TriggerKey("task-1-retry", "Default"));
     }
 
     [Fact]
-    public void IsRetryTrigger_OriginalKey_ReturnsFalse()
+    public void IsRetryTrigger_OriginalTriggerWithRetrySuffix_ReturnsFalse()
     {
-        Assert.False(QuartzTriggerKeys.IsRetryTrigger(new TriggerKey("task-1", "Default")));
+        var trigger = TriggerBuilder.Create().WithIdentity("task-1-retry", "Default").Build();
+
+        Assert.False(QuartzTriggerKeys.IsRetryTrigger(trigger));
+    }
+
+    [Fact]
+    public void IsRetryTrigger_MarkedTrigger_ReturnsTrue()
+    {
+        var trigger = TriggerBuilder.Create()
+            .WithIdentity("task-1-retry", "Default")
+            .UsingJobData(QuartzJobDataKeys.RetryTrigger, bool.TrueString)
+            .Build();
+
+        Assert.True(QuartzTriggerKeys.IsRetryTrigger(trigger));
+    }
+
+    [Fact]
+    public void GetOriginalTriggerKey_UsesPersistedOriginalIdentity()
+    {
+        var trigger = TriggerBuilder.Create()
+            .WithIdentity("retry-123", QuartzTriggerKeys.RetryGroup)
+            .UsingJobData(QuartzJobDataKeys.RetryTrigger, bool.TrueString)
+            .UsingJobData(QuartzJobDataKeys.RetryOriginalTriggerName, "task-1-retry")
+            .UsingJobData(QuartzJobDataKeys.RetryOriginalTriggerGroup, "Default")
+            .Build();
+
+        Assert.Equal(new TriggerKey("task-1-retry", "Default"), QuartzTriggerKeys.GetOriginalTriggerKey(trigger));
     }
 }

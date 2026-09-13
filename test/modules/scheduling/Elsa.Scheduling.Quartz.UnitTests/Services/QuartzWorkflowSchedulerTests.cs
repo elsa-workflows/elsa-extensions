@@ -188,7 +188,8 @@ public class QuartzWorkflowSchedulerTests
 
         // Assert: both the original schedule and its derived retry trigger are removed.
         scheduler.Verify(s => s.UnscheduleJob(It.Is<TriggerKey>(k => k.Name == "task-1" && k.Group == "Default"), It.IsAny<CancellationToken>()), Times.Once);
-        scheduler.Verify(s => s.UnscheduleJob(It.Is<TriggerKey>(k => k.Name == "task-1-retry" && k.Group == "Default"), It.IsAny<CancellationToken>()), Times.Once);
+        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(new TriggerKey("task-1", "Default"));
+        scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -200,7 +201,20 @@ public class QuartzWorkflowSchedulerTests
         await sut.UnscheduleAsync("task-1");
 
         scheduler.Verify(s => s.UnscheduleJob(It.Is<TriggerKey>(k => k.Name == "task-1" && k.Group == "tenant-a"), It.IsAny<CancellationToken>()), Times.Once);
-        scheduler.Verify(s => s.UnscheduleJob(It.Is<TriggerKey>(k => k.Name == "task-1-retry" && k.Group == "tenant-a"), It.IsAny<CancellationToken>()), Times.Once);
+        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(new TriggerKey("task-1", "tenant-a"));
+        scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UnscheduleAsync_TaskNameEndingWithRetry_DoesNotDeleteAnotherTaskRetryKey()
+    {
+        var scheduler = new Mock<global::Quartz.IScheduler>();
+        var sut = CreateScheduler(scheduler, out _);
+
+        await sut.UnscheduleAsync("task-1");
+
+        scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("task-1-retry", "Default"), It.IsAny<CancellationToken>()), Times.Never);
+        scheduler.Verify(s => s.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(new TriggerKey("task-1", "Default")), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

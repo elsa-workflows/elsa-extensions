@@ -61,6 +61,9 @@ public class RunWorkflowJob(
         {
             logger.LogWarning(e, "Could not find workflow graph for workflow definition handle {WorkflowDefinitionHandle}", startRequest?.WorkflowDefinitionHandle);
             await context.Scheduler.UnscheduleJob(context.Trigger.Key, cancellationToken);
+
+            if (QuartzTriggerKeys.IsRetryTrigger(context.Trigger))
+                await context.Scheduler.UnscheduleJob(QuartzTriggerKeys.GetOriginalTriggerKey(context.Trigger), cancellationToken);
         }
         catch (Exception e) when (retryScheduler.IsRetryable(e))
         {

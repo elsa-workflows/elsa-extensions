@@ -1,6 +1,7 @@
 using System.Globalization;
 using Elsa.Common;
 using Elsa.Resilience;
+using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz;
 using Elsa.Scheduling.Quartz.Models;
 using Elsa.Scheduling.Quartz.Options;
@@ -79,15 +80,30 @@ public class QuartzJobRetrySchedulerTests
     }
 
     [Fact]
-    public async Task ScheduleRetryAsync_WhenTheFiringTriggerIsAlreadyARetry_ReusesTheRetryKey()
+    public async Task ScheduleRetryAsync_OriginalNameEndingWithRetry_UsesAnUnambiguousDerivedKey()
     {
-        var (context, scheduler) = CreateContext(retryAttempt: "1", triggerName: "test-trigger-retry");
+        var (context, scheduler) = CreateContext(triggerName: "task-retry");
         var capturedTrigger = CaptureTrigger(scheduler);
 
         await ScheduleRetryAsync(context);
 
-        Assert.Equal(context.Trigger.Key, capturedTrigger()!.Key);
-        Assert.Equal("test-trigger-retry", capturedTrigger()!.Key.Name);
+        var expectedRetryKey = QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key);
+        Assert.Equal(expectedRetryKey, capturedTrigger()!.Key);
+        scheduler.Verify(s => s.UnscheduleJob(expectedRetryKey, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ScheduleRetryAsync_WhenTheFiringTriggerIsAlreadyARetry_ReusesTheRetryKey()
+    {
+        var originalTriggerKey = new TriggerKey("test-trigger", "Default");
+        var retryTriggerKey = QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey);
+        var (context, scheduler) = CreateContext(retryAttempt: "1", triggerName: retryTriggerKey.Name, originalTriggerKey: originalTriggerKey);
+        var capturedTrigger = CaptureTrigger(scheduler);
+
+        await ScheduleRetryAsync(context);
+
+        Assert.Equal(retryTriggerKey, capturedTrigger()!.Key);
+        Assert.Equal(QuartzTriggerKeys.RetryGroup, capturedTrigger()!.Key.Group);
     }
 
     [Fact]
@@ -209,6 +225,32 @@ public class QuartzJobRetrySchedulerTests
     }
 
     [Fact]
+    public async Task ScheduleRetryAsync_WhenRetryTriggerIsCreatedConcurrently_TreatsDuplicateAsAlreadyScheduled()
+    {
+        var (context, scheduler) = CreateContext();
+        scheduler
+            .Setup(s => s.ScheduleJob(It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new ObjectAlreadyExistsException("retry already exists"));
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.True(scheduled);
+    }
+
+    [Fact]
+    public async Task ScheduleRetryAsync_WhenSqlStoreWrapsDuplicateRetryTrigger_TreatsItAsAlreadyScheduled()
+    {
+        var (context, scheduler) = CreateContext();
+        scheduler
+            .Setup(s => s.ScheduleJob(It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new JobPersistenceException("retry already exists", new ObjectAlreadyExistsException("duplicate")));
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.True(scheduled);
+    }
+
+    [Fact]
     public async Task CancelPendingRetryAsync_OriginalTrigger_UnschedulesTheDerivedRetryTrigger()
     {
         var (context, scheduler) = CreateContext();
@@ -223,7 +265,9 @@ public class QuartzJobRetrySchedulerTests
     [Fact]
     public async Task CancelPendingRetryAsync_RetryTrigger_DoesNotUnschedule()
     {
-        var (context, scheduler) = CreateContext(triggerName: "test-trigger-retry");
+        var originalTriggerKey = new TriggerKey("test-trigger", "Default");
+        var retryTriggerKey = QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey);
+        var (context, scheduler) = CreateContext(retryAttempt: "1", triggerName: retryTriggerKey.Name, originalTriggerKey: originalTriggerKey);
 
         await CreateSut().CancelPendingRetryAsync(context);
 
@@ -336,12 +380,20 @@ public class QuartzJobRetrySchedulerTests
         _transientDetector.Verify(x => x.IsTransient(It.IsAny<Exception>()), Times.Never);
     }
 
+    [Fact]
+    public async Task LegacyRetryScheduler_UsesTheDefaultNoOpForPendingRetryCancellation()
+    {
+        IQuartzJobRetryScheduler scheduler = new LegacyRetryScheduler();
+
+        await scheduler.CancelPendingRetryAsync(null!);
+    }
+
     private Task<bool> ScheduleRetryAsync(IJobExecutionContext context) => CreateSut().ScheduleRetryAsync(context, _exception);
 
     private QuartzJobRetryScheduler CreateSut() =>
         new(_clock.Object, _options.AsOptions(), new QuartzRetryDelayCalculator(), _transientDetector.Object, NullLogger<QuartzJobRetryScheduler>.Instance);
 
-    private static (IJobExecutionContext Context, Mock<QuartzScheduler> Scheduler) CreateContext(object? retryAttempt = null, string? triggerName = null)
+    private static (IJobExecutionContext Context, Mock<QuartzScheduler> Scheduler) CreateContext(object? retryAttempt = null, string? triggerName = null, TriggerKey? originalTriggerKey = null)
     {
         var triggerData = new Dictionary<string, object>
         {
@@ -349,7 +401,13 @@ public class QuartzJobRetrySchedulerTests
         };
 
         if (retryAttempt != null)
+        {
             triggerData[QuartzJobDataKeys.RetryAttempt] = retryAttempt;
+            triggerData[QuartzJobDataKeys.RetryTrigger] = bool.TrueString;
+            var originalKey = originalTriggerKey ?? new TriggerKey("test-trigger", "Default");
+            triggerData[QuartzJobDataKeys.RetryOriginalTriggerName] = originalKey.Name;
+            triggerData[QuartzJobDataKeys.RetryOriginalTriggerGroup] = originalKey.Group;
+        }
 
         return QuartzJobTestHelper.CreateJobExecutionContext(new Dictionary<string, object>(), triggerData: triggerData, triggerName: triggerName);
     }
@@ -367,4 +425,12 @@ public class QuartzJobRetrySchedulerTests
 
     private static void VerifyNotRescheduled(Mock<QuartzScheduler> scheduler) =>
         scheduler.Verify(s => s.ScheduleJob(It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()), Times.Never);
+
+    private sealed class LegacyRetryScheduler : IQuartzJobRetryScheduler
+    {
+        public bool IsRetryable(Exception exception) => false;
+
+        public Task<bool> ScheduleRetryAsync(IJobExecutionContext context, Exception exception, CancellationToken cancellationToken = default) =>
+            Task.FromResult(false);
+    }
 }

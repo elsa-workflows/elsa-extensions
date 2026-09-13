@@ -66,6 +66,31 @@ public class RunWorkflowJobTests
         scheduler.VerifyUnscheduled();
     }
 
+    [Fact]
+    public async Task Execute_WorkflowGraphNotFoundOnRetry_UnschedulesTheOriginalScheduleToo()
+    {
+        var jobData = new Dictionary<string, object>
+        {
+            ["DefinitionVersionId"] = "workflow-def-123",
+        };
+        var (context, scheduler) = QuartzJobTestHelper.CreateJobExecutionContext(
+            jobData,
+            triggerName: "task-retry-retry",
+            triggerData: new Dictionary<string, object>
+            {
+                [QuartzJobDataKeys.RetryTrigger] = bool.TrueString,
+                [QuartzJobDataKeys.RetryOriginalTriggerName] = "task-retry",
+                [QuartzJobDataKeys.RetryOriginalTriggerGroup] = new TriggerKey("task-retry").Group
+            });
+        var handle = WorkflowDefinitionHandle.ByDefinitionVersionId("workflow-def-123");
+        _workflowStarter.SetupStartWorkflowThrows(new WorkflowGraphNotFoundException("Not found", handle));
+
+        await _job.Execute(context);
+
+        scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("task-retry-retry"), It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("task-retry"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [Theory]
     [InlineData(typeof(TimeoutException))]
     [InlineData(typeof(HttpRequestException))]
