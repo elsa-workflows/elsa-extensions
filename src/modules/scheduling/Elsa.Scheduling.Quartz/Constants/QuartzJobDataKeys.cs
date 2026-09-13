@@ -35,6 +35,12 @@ public static class QuartzJobDataKeys
     public const string RetryOriginalIsRecurring = "Elsa.Scheduling.Quartz:RetryOriginalIsRecurring";
 
     /// <summary>
+    /// The value stored on a retry trigger indicating whether the original execution had another scheduled fire. This
+    /// distinguishes a final finite recurring occurrence from a recurring schedule that was unexpectedly removed.
+    /// </summary>
+    public const string RetryOriginalHasNextFireTime = "Elsa.Scheduling.Quartz:RetryOriginalHasNextFireTime";
+
+    /// <summary>
     /// The token identifying the schedule generation that produced a retry. New schedules get a fresh token; older
     /// triggers without this value use the stable legacy sentinel when compared with a retry.
     /// </summary>

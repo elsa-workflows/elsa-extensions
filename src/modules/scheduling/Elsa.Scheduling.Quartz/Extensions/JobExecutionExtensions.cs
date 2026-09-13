@@ -17,7 +17,7 @@ internal static class JobExecutionExtensions
     /// <param name="context">The Quartz job execution context.</param>
     /// <param name="exception">The exception the job failed with.</param>
     /// <param name="cancellationToken">An optional cancellation token.</param>
-    /// <returns>True if a retry was scheduled; otherwise, false.</returns>
+    /// <returns>True if the failure was handled by retry scheduling or suppression; otherwise, false.</returns>
     public static async Task<bool> TryScheduleRetryAsync(this IQuartzJobRetryScheduler retryScheduler, IJobExecutionContext context, Exception exception, CancellationToken cancellationToken = default)
     {
         // The retry scheduler logs the scheduled retry, including the attempt number and delay.

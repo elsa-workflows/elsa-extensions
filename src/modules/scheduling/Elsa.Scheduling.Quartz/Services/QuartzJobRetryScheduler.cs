@@ -133,7 +133,7 @@ public class QuartzJobRetryScheduler(
             // The per-original lock makes this check and removal one coordinated operation with explicit unscheduling
             // and rescheduling. The generation token also prevents a retry from an old schedule from surviving an
             // unschedule+reschedule of the same task key.
-            if (IsOriginalRecurring(retryTrigger) && !await IsCurrentRecurringScheduleAsync(context.Scheduler, retryTrigger, token))
+            if (!await IsCurrentRetryScheduleAsync(context.Scheduler, retryTrigger, token))
             {
                 await UnscheduleRetryIfGenerationMatchesAsync(context.Scheduler, retryTrigger, token);
                 logger.LogDebug("Original trigger {OriginalTriggerKey} was removed or replaced while retry {RetryTriggerKey} was being scheduled; removing the retry", originalTriggerKey, retryTrigger.Key);
@@ -147,6 +147,22 @@ public class QuartzJobRetryScheduler(
     {
         if (!retryTrigger.JobDataMap.TryGetValue(QuartzJobDataKeys.RetryOriginalIsRecurring, out var value))
             return false;
+
+        return value switch
+        {
+            bool boolValue => boolValue,
+            string stringValue => bool.TryParse(stringValue, out var parsedValue) && parsedValue,
+            _ => false
+        };
+    }
+
+    private static bool IsOriginalExpectedToRemain(ITrigger retryTrigger)
+    {
+        if (!IsOriginalRecurring(retryTrigger))
+            return false;
+
+        if (!retryTrigger.JobDataMap.TryGetValue(QuartzJobDataKeys.RetryOriginalHasNextFireTime, out var value))
+            return true;
 
         return value switch
         {
@@ -202,6 +218,9 @@ public class QuartzJobRetryScheduler(
         if (!jobDataMap.ContainsKey(QuartzJobDataKeys.RetryOriginalIsRecurring))
             jobDataMap[QuartzJobDataKeys.RetryOriginalIsRecurring] = IsRecurringTrigger(context.Trigger).ToString();
 
+        if (!jobDataMap.ContainsKey(QuartzJobDataKeys.RetryOriginalHasNextFireTime) && !QuartzTriggerKeys.IsRetryTrigger(context.Trigger))
+            jobDataMap[QuartzJobDataKeys.RetryOriginalHasNextFireTime] = context.NextFireTimeUtc.HasValue.ToString();
+
         var now = systemClock.UtcNow;
         var startAt = delay >= DateTimeOffset.MaxValue - now ? DateTimeOffset.MaxValue : now.Add(delay);
 
@@ -236,12 +255,12 @@ public class QuartzJobRetryScheduler(
         await scheduler.UnscheduleJob(expectedTrigger.Key, cancellationToken);
     }
 
-    private static async Task<bool> IsCurrentRecurringScheduleAsync(QuartzScheduler scheduler, ITrigger retryTrigger, CancellationToken cancellationToken)
+    private static async Task<bool> IsCurrentRetryScheduleAsync(QuartzScheduler scheduler, ITrigger retryTrigger, CancellationToken cancellationToken)
     {
         var originalTrigger = await scheduler.GetTrigger(QuartzTriggerKeys.GetOriginalTriggerKey(retryTrigger), cancellationToken);
 
         if (originalTrigger == null)
-            return false;
+            return !IsOriginalExpectedToRemain(retryTrigger);
 
         return string.Equals(
             QuartzTriggerKeys.GetScheduleGeneration(retryTrigger),
