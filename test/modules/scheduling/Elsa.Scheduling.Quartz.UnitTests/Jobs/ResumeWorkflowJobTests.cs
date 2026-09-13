@@ -5,6 +5,7 @@ using Elsa.Scheduling.Quartz.Jobs;
 using Elsa.Scheduling.Quartz.UnitTests.Helpers;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
+using Elsa.Workflows.Runtime.Exceptions;
 using Elsa.Workflows.Runtime.Messages;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -45,6 +46,51 @@ public class ResumeWorkflowJobTests
         await _job.Execute(context);
 
         workflowClient.VerifyRunInstanceCalled();
+    }
+
+    [Fact]
+    public async Task Execute_WorkflowGraphNotFound_UnschedulesTrigger()
+    {
+        var (context, scheduler) = CreateJobExecutionContext();
+        var handle = WorkflowDefinitionHandle.ByDefinitionVersionId("workflow-def-123");
+        _workflowRuntime.SetupCreateClientThrows(new WorkflowGraphNotFoundException("Not found", handle));
+
+        await _job.Execute(context);
+
+        scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("test-trigger"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Execute_WorkflowGraphNotFoundOnStaleRetry_DoesNotUnscheduleReplacementOriginal()
+    {
+        var jobData = new Dictionary<string, object>
+        {
+            ["WorkflowInstanceId"] = "workflow-instance-123",
+            ["BookmarkId"] = "bookmark-123"
+        };
+        var (context, scheduler) = QuartzJobTestHelper.CreateJobExecutionContext(
+            jobData,
+            triggerName: "task-retry-retry",
+            triggerData: new Dictionary<string, object>
+            {
+                [QuartzJobDataKeys.RetryTrigger] = bool.TrueString,
+                [QuartzJobDataKeys.RetryOriginalTriggerName] = "task-retry",
+                [QuartzJobDataKeys.RetryOriginalTriggerGroup] = new TriggerKey("task-retry").Group,
+                [QuartzJobDataKeys.RetryScheduleGeneration] = "old-generation"
+            });
+        var handle = WorkflowDefinitionHandle.ByDefinitionVersionId("workflow-def-123");
+        _workflowRuntime.SetupCreateClientThrows(new WorkflowGraphNotFoundException("Not found", handle));
+        var replacementTrigger = TriggerBuilder.Create()
+            .WithIdentity("task-retry")
+            .ForJob(new JobKey("test-job"))
+            .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "new-generation")
+            .Build();
+        scheduler.Setup(s => s.GetTrigger(new TriggerKey("task-retry"), It.IsAny<CancellationToken>())).ReturnsAsync(replacementTrigger);
+
+        await _job.Execute(context);
+
+        scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("task-retry-retry"), It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("task-retry"), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Theory]

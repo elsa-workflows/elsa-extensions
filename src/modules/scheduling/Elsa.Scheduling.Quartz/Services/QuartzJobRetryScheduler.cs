@@ -61,10 +61,11 @@ public class QuartzJobRetryScheduler(
             jobOptions.MaxRetryAttempts,
             delay);
 
-        // Replace any existing pending retry rather than the firing trigger, so a cron or repeating schedule keeps
-        // its next fire times. Unschedule-then-schedule covers both the first retry and a later attempt that reuses
-        // the same derived key.
-        await context.Scheduler.UnscheduleJob(retryTrigger.Key, cancellationToken);
+        // A recurring original can fire again while its deterministic retry is pending. Leave that pending retry in
+        // place; replacing it would reset the retry chain to attempt 1 on every recurrence. A firing retry, on the
+        // other hand, must replace its own key to advance the chain to the next attempt.
+        if (QuartzTriggerKeys.IsRetryTrigger(context.Trigger))
+            await context.Scheduler.UnscheduleJob(retryTrigger.Key, cancellationToken);
 
         try
         {
@@ -146,7 +147,7 @@ public class QuartzJobRetryScheduler(
             jobDataMap.PutAll(triggerJobDataMap);
 
         var originalTriggerKey = QuartzTriggerKeys.GetOriginalTriggerKey(context.Trigger);
-        var scheduleGeneration = GetScheduleGeneration(context.Trigger);
+        var scheduleGeneration = QuartzTriggerKeys.GetScheduleGeneration(context.Trigger);
         jobDataMap[QuartzJobDataKeys.RetryAttempt] = attemptNumber.ToString(CultureInfo.InvariantCulture);
         jobDataMap[QuartzJobDataKeys.RetryTrigger] = bool.TrueString;
         jobDataMap[QuartzJobDataKeys.RetryOriginalTriggerName] = originalTriggerKey.Name;
@@ -174,11 +175,6 @@ public class QuartzJobRetryScheduler(
         _ => false
     };
 
-    private static string GetScheduleGeneration(ITrigger trigger) =>
-        trigger.JobDataMap.TryGetValue(QuartzJobDataKeys.RetryScheduleGeneration, out var value) && value != null
-            ? Convert.ToString(value, CultureInfo.InvariantCulture) ?? QuartzJobDataKeys.LegacyScheduleGeneration
-            : QuartzJobDataKeys.LegacyScheduleGeneration;
-
     private static async Task<bool> IsCurrentRecurringScheduleAsync(QuartzScheduler scheduler, ITrigger retryTrigger, CancellationToken cancellationToken)
     {
         var originalTrigger = await scheduler.GetTrigger(QuartzTriggerKeys.GetOriginalTriggerKey(retryTrigger), cancellationToken);
@@ -187,8 +183,8 @@ public class QuartzJobRetryScheduler(
             return false;
 
         return string.Equals(
-            GetScheduleGeneration(retryTrigger),
-            GetScheduleGeneration(originalTrigger),
+            QuartzTriggerKeys.GetScheduleGeneration(retryTrigger),
+            QuartzTriggerKeys.GetScheduleGeneration(originalTrigger),
             StringComparison.Ordinal);
     }
 }

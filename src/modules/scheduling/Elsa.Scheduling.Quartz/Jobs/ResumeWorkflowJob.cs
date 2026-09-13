@@ -4,6 +4,7 @@ using Elsa.Extensions;
 using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Workflows.Models;
 using Elsa.Workflows.Runtime;
+using Elsa.Workflows.Runtime.Exceptions;
 using Elsa.Workflows.Runtime.Messages;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -48,6 +49,11 @@ public class ResumeWorkflowJob(
 
                 logger.LogInformation("Resumed workflow instance {WorkflowInstanceId}", workflowInstanceId);
             }
+        }
+        catch (WorkflowGraphNotFoundException e)
+        {
+            logger.LogWarning(e, "Could not find workflow graph while resuming workflow instance {WorkflowInstanceId}", workflowInstanceId);
+            await context.UnscheduleAfterWorkflowGraphNotFoundAsync(cancellationToken);
         }
         catch (Exception e) when (retryScheduler.IsRetryable(e))
         {

@@ -106,7 +106,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
         var scheduler = await schedulerFactoryFactory.GetScheduler(cancellationToken);
         var triggerKey = GetTriggerKey(taskName);
         var originalTrigger = await scheduler.GetTrigger(triggerKey, cancellationToken);
-        var scheduleGeneration = GetScheduleGeneration(originalTrigger);
+        var scheduleGeneration = QuartzTriggerKeys.GetScheduleGeneration(originalTrigger);
         await scheduler.UnscheduleJob(triggerKey, cancellationToken);
 
         var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(triggerKey, scheduleGeneration);
@@ -207,14 +207,6 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.Properties), request.Properties)
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.ActivityHandle), serializedActivityHandle)
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.BookmarkId), request.BookmarkId);
-    }
-
-    private static string GetScheduleGeneration(ITrigger? trigger)
-    {
-        if (trigger?.JobDataMap.TryGetValue(QuartzJobDataKeys.RetryScheduleGeneration, out var value) == true && value != null)
-            return value.ToString() ?? QuartzJobDataKeys.LegacyScheduleGeneration;
-
-        return QuartzJobDataKeys.LegacyScheduleGeneration;
     }
 
     private JobKey GetRunWorkflowJobKey() => jobKeyProvider.GetJobKey<RunWorkflowJob>();

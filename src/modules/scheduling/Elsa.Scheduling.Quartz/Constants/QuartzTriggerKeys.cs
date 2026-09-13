@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Quartz;
@@ -53,6 +54,18 @@ public static class QuartzTriggerKeys
             string stringValue => bool.TryParse(stringValue, out var parsedValue) && parsedValue,
             _ => false
         };
+    }
+
+    /// <summary>
+    /// Gets the schedule generation carried by a trigger. Triggers created before generation metadata was added
+    /// use a stable sentinel so their retry and cleanup behavior remains compatible.
+    /// </summary>
+    internal static string GetScheduleGeneration(ITrigger? trigger)
+    {
+        if (trigger?.JobDataMap.TryGetValue(QuartzJobDataKeys.RetryScheduleGeneration, out var value) == true && value != null)
+            return Convert.ToString(value, CultureInfo.InvariantCulture) ?? QuartzJobDataKeys.LegacyScheduleGeneration;
+
+        return QuartzJobDataKeys.LegacyScheduleGeneration;
     }
 
     /// <summary>

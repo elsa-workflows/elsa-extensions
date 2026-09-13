@@ -25,6 +25,35 @@ internal static class JobExecutionExtensions
     }
 
     /// <summary>
+    /// Removes a trigger whose workflow graph is no longer available. A retry may have been acquired before an
+    /// explicit unschedule and reschedule of the same task key; in that case, only remove the original trigger when
+    /// its schedule generation still belongs to the retry that acquired it.
+    /// </summary>
+    /// <param name="context">The Quartz job execution context.</param>
+    /// <param name="cancellationToken">An optional cancellation token.</param>
+    public static async Task UnscheduleAfterWorkflowGraphNotFoundAsync(this IJobExecutionContext context, CancellationToken cancellationToken = default)
+    {
+        await context.Scheduler.UnscheduleJob(context.Trigger.Key, cancellationToken);
+
+        if (!QuartzTriggerKeys.IsRetryTrigger(context.Trigger))
+            return;
+
+        var originalTriggerKey = QuartzTriggerKeys.GetOriginalTriggerKey(context.Trigger);
+        var originalTrigger = await context.Scheduler.GetTrigger(originalTriggerKey, cancellationToken);
+
+        if (originalTrigger == null)
+            return;
+
+        if (!string.Equals(
+                QuartzTriggerKeys.GetScheduleGeneration(context.Trigger),
+                QuartzTriggerKeys.GetScheduleGeneration(originalTrigger),
+                StringComparison.Ordinal))
+            return;
+
+        await context.Scheduler.UnscheduleJob(originalTriggerKey, cancellationToken);
+    }
+
+    /// <summary>
     /// Gets the number of retries that have already been scheduled for the currently executing trigger. Returns 0 when
     /// the trigger is the original schedule, i.e. when the current execution is not a retry.
     /// </summary>

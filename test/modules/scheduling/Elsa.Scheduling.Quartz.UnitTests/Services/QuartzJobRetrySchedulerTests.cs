@@ -89,7 +89,7 @@ public class QuartzJobRetrySchedulerTests
 
         var expectedRetryKey = QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key);
         Assert.Equal(expectedRetryKey, capturedTrigger()!.Key);
-        scheduler.Verify(s => s.UnscheduleJob(expectedRetryKey, It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(expectedRetryKey, It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -212,10 +212,27 @@ public class QuartzJobRetrySchedulerTests
     }
 
     [Fact]
-    public async Task ScheduleRetryAsync_ReplacesAnExistingPendingRetryTrigger()
+    public async Task ScheduleRetryAsync_OriginalTrigger_DoesNotRemoveAnExistingPendingRetryTrigger()
     {
         var (context, scheduler) = CreateContext();
         var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key);
+        scheduler
+            .Setup(s => s.ScheduleJob(It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new ObjectAlreadyExistsException("retry already exists"));
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.True(scheduled);
+        scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Never);
+        scheduler.Verify(s => s.ScheduleJob(It.Is<ITrigger>(t => t.Key.Equals(retryKey)), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ScheduleRetryAsync_FiringRetry_ReplacesItsOwnPendingRetryTrigger()
+    {
+        var originalTriggerKey = new TriggerKey("test-trigger", "Default");
+        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey);
+        var (context, scheduler) = CreateContext(retryAttempt: "1", triggerName: retryKey.Name, originalTriggerKey: originalTriggerKey);
 
         var scheduled = await ScheduleRetryAsync(context);
 
@@ -263,7 +280,7 @@ public class QuartzJobRetrySchedulerTests
 
         Assert.True(scheduled);
         Assert.NotNull(capturedTrigger());
-        scheduler.Verify(s => s.UnscheduleJob(capturedTrigger()!.Key, It.IsAny<CancellationToken>()), Times.Exactly(2));
+        scheduler.Verify(s => s.UnscheduleJob(capturedTrigger()!.Key, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -277,7 +294,7 @@ public class QuartzJobRetrySchedulerTests
         Assert.True(scheduled);
         Assert.NotNull(capturedTrigger());
         scheduler.Verify(s => s.GetTrigger(It.IsAny<TriggerKey>(), It.IsAny<CancellationToken>()), Times.Never);
-        scheduler.Verify(s => s.UnscheduleJob(capturedTrigger()!.Key, It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(capturedTrigger()!.Key, It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -297,7 +314,7 @@ public class QuartzJobRetrySchedulerTests
         Assert.Equal("old-generation", capturedTrigger()!.JobDataMap[QuartzJobDataKeys.RetryScheduleGeneration]);
         Assert.Equal(QuartzTriggerKeys.GetRetryTriggerKey(originalTrigger.Key, "old-generation"), capturedTrigger()!.Key);
         Assert.NotEqual(QuartzTriggerKeys.GetRetryTriggerKey(originalTrigger.Key, "new-generation"), capturedTrigger()!.Key);
-        scheduler.Verify(s => s.UnscheduleJob(capturedTrigger()!.Key, It.IsAny<CancellationToken>()), Times.Exactly(2));
+        scheduler.Verify(s => s.UnscheduleJob(capturedTrigger()!.Key, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
