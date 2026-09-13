@@ -154,17 +154,18 @@ public class QuartzJobTransientRetryTests(SchedulingApp app) : AppComponentTest(
         Assert.IsAssignableFrom<ICronTrigger>(cronAfterRetry);
         Assert.Equal(cronAfterFailure!.Key, cronAfterRetry!.Key);
 
-        // A later cron occurrence is a fresh attempt: it starts a new instance and does not need the leftover retry.
+        // A later cron occurrence is a fresh attempt. The pending retry remains eligible; allowing it to coexist
+        // avoids the race where its execution recreates the deterministic retry trigger after cancellation.
         scenario.Context.Trigger = cronAfterRetry;
         await scenario.ExecuteAsync();
 
         Assert.Equal(3, scenario.Starter.CallCount);
-        Assert.Null(await scenario.GetRetryTriggerAsync());
+        Assert.NotNull(await scenario.GetRetryTriggerAsync());
         Assert.IsAssignableFrom<ICronTrigger>((await scenario.GetOriginalTriggerAsync())!);
     }
 
     [Fact]
-    public async Task RunWorkflowJob_OriginalTriggerFiresWhileRetryPending_CancelsThePendingRetry()
+    public async Task RunWorkflowJob_OriginalTriggerFiresWhileRetryPending_LeavesThePendingRetryInPlace()
     {
         var scenario = await CreateScenarioAsync(
             "test-cancel-pending-retry",
@@ -174,14 +175,14 @@ public class QuartzJobTransientRetryTests(SchedulingApp app) : AppComponentTest(
         await scenario.ExecuteAsync();
         Assert.NotNull(await scenario.GetRetryTriggerAsync());
 
-        // Replay the original trigger as a later scheduled occurrence. RunWorkflowJob is not idempotent (each fire
-        // starts a new instance), so the leftover retry is cancelled instead of being allowed to run as well.
+        // Replay the original trigger as a later scheduled occurrence. The retry remains in place intentionally: the
+        // original and retry executions may overlap, but cancellation must not race with retry-chain advancement.
         scenario.Context.Trigger = (await scenario.GetOriginalTriggerAsync())!;
         scenario.Starter.FailuresBeforeSuccess = 0;
         await scenario.ExecuteAsync();
 
         Assert.Equal(2, scenario.Starter.CallCount);
-        Assert.Null(await scenario.GetRetryTriggerAsync());
+        Assert.NotNull(await scenario.GetRetryTriggerAsync());
     }
 
     /// <summary>

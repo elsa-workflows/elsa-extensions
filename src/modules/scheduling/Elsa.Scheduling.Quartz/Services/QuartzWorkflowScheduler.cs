@@ -105,8 +105,17 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
     {
         var scheduler = await schedulerFactoryFactory.GetScheduler(cancellationToken);
         var triggerKey = GetTriggerKey(taskName);
+        var originalTrigger = await scheduler.GetTrigger(triggerKey, cancellationToken);
+        var scheduleGeneration = GetScheduleGeneration(originalTrigger);
         await scheduler.UnscheduleJob(triggerKey, cancellationToken);
-        await scheduler.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(triggerKey), cancellationToken);
+
+        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(triggerKey, scheduleGeneration);
+        await scheduler.UnscheduleJob(retryKey, cancellationToken);
+
+        // Remove the legacy key as well when a generation-aware schedule is being removed. This cleans up retries
+        // created before generation metadata was introduced without changing the deterministic legacy identity.
+        if (!string.Equals(scheduleGeneration, QuartzJobDataKeys.LegacyScheduleGeneration, StringComparison.Ordinal))
+            await scheduler.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(triggerKey), cancellationToken);
     }
     
     private async Task ScheduleJobAsync<TJobType>(QuartzIScheduler scheduler, ITrigger trigger, CancellationToken cancellationToken) where TJobType : IJob
@@ -175,6 +184,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
     private JobDataMap CreateJobDataMap(ScheduleNewWorkflowInstanceRequest request)
     {
         return new JobDataMap()
+                .AddIfNotEmpty(QuartzJobDataKeys.RetryScheduleGeneration, Guid.NewGuid().ToString("N"))
                 .AddIfNotEmpty("TenantId", tenantAccessor.Tenant?.Id)
                 .AddIfNotEmpty(nameof(ScheduleNewWorkflowInstanceRequest.CorrelationId), request.CorrelationId)
                 .AddIfNotEmpty(nameof(ScheduleNewWorkflowInstanceRequest.WorkflowDefinitionHandle.DefinitionVersionId), request.WorkflowDefinitionHandle.DefinitionVersionId)
@@ -190,12 +200,21 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
         var serializedActivityHandle = request.ActivityHandle != null ? jsonSerializer.Serialize(request.ActivityHandle) : null;
 
         return new JobDataMap()
+            .AddIfNotEmpty(QuartzJobDataKeys.RetryScheduleGeneration, Guid.NewGuid().ToString("N"))
             .AddIfNotEmpty("TenantId", tenantAccessor.Tenant?.Id)
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.WorkflowInstanceId), request.WorkflowInstanceId)
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.Input), request.Input)
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.Properties), request.Properties)
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.ActivityHandle), serializedActivityHandle)
             .AddIfNotEmpty(nameof(ScheduleExistingWorkflowInstanceRequest.BookmarkId), request.BookmarkId);
+    }
+
+    private static string GetScheduleGeneration(ITrigger? trigger)
+    {
+        if (trigger?.JobDataMap.TryGetValue(QuartzJobDataKeys.RetryScheduleGeneration, out var value) == true && value != null)
+            return value.ToString() ?? QuartzJobDataKeys.LegacyScheduleGeneration;
+
+        return QuartzJobDataKeys.LegacyScheduleGeneration;
     }
 
     private JobKey GetRunWorkflowJobKey() => jobKeyProvider.GetJobKey<RunWorkflowJob>();

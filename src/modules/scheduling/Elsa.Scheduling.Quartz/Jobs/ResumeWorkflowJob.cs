@@ -26,8 +26,6 @@ public class ResumeWorkflowJob(
     {
         var cancellationToken = context.CancellationToken;
         string? workflowInstanceId = null;
-        await retryScheduler.CancelPendingRetryAsync(context, cancellationToken);
-
         try
         {
             var tenant = await context.GetTenantAsync(tenantFinder);

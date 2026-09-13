@@ -26,8 +26,6 @@ public class RunWorkflowJob(
     {
         var cancellationToken = context.CancellationToken;
         StartWorkflowRequest? startRequest = null;
-        await retryScheduler.CancelPendingRetryAsync(context, cancellationToken);
-
         try
         {
             var tenant = await context.GetTenantAsync(tenantFinder);

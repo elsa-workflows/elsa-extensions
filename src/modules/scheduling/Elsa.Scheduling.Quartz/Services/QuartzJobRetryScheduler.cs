@@ -7,6 +7,7 @@ using Elsa.Scheduling.Quartz.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
+using QuartzScheduler = global::Quartz.IScheduler;
 
 namespace Elsa.Scheduling.Quartz.Services;
 
@@ -81,20 +82,32 @@ public class QuartzJobRetryScheduler(
             logger.LogDebug("Retry trigger {RetryTriggerKey} already exists for job {JobKey}; keeping the existing retry", retryTrigger.Key, jobKey);
         }
 
+        // An explicit UnscheduleAsync removes the original trigger before it removes the derived retry trigger. If
+        // that operation overlaps this schedule, the retry can be created after its removal step. Re-checking the
+        // original after creating a retry closes that ordering gap without serializing unrelated workflows. A missing
+        // one-shot trigger is expected after it fires, so only recurring chains use this fence. The generation token
+        // also prevents a retry from an old schedule from surviving an unschedule+reschedule of the same task key.
+        if (IsOriginalRecurring(retryTrigger) && !await IsCurrentRecurringScheduleAsync(context.Scheduler, retryTrigger, cancellationToken))
+        {
+            await context.Scheduler.UnscheduleJob(retryTrigger.Key, cancellationToken);
+            logger.LogDebug("Original trigger {OriginalTriggerKey} was removed or replaced while retry {RetryTriggerKey} was being scheduled; removing the retry", QuartzTriggerKeys.GetOriginalTriggerKey(retryTrigger), retryTrigger.Key);
+            return true;
+        }
+
         return true;
     }
 
-    /// <inheritdoc />
-    public async Task CancelPendingRetryAsync(IJobExecutionContext context, CancellationToken cancellationToken = default)
+    private static bool IsOriginalRecurring(ITrigger retryTrigger)
     {
-        if (QuartzTriggerKeys.IsRetryTrigger(context.Trigger))
-            return;
+        if (!retryTrigger.JobDataMap.TryGetValue(QuartzJobDataKeys.RetryOriginalIsRecurring, out var value))
+            return false;
 
-        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key);
-        var cancelled = await context.Scheduler.UnscheduleJob(retryKey, cancellationToken);
-
-        if (cancelled)
-            logger.LogDebug("Cancelled pending retry trigger {RetryTriggerKey} for job {JobKey} because the original schedule fired again", retryKey, context.JobDetail.Key);
+        return value switch
+        {
+            bool boolValue => boolValue,
+            string stringValue => bool.TryParse(stringValue, out var parsedValue) && parsedValue,
+            _ => false
+        };
     }
 
     private TimeSpan GetDelay(IJobExecutionContext context, Exception exception, int attemptNumber, QuartzJobOptions jobOptions)
@@ -133,19 +146,49 @@ public class QuartzJobRetryScheduler(
             jobDataMap.PutAll(triggerJobDataMap);
 
         var originalTriggerKey = QuartzTriggerKeys.GetOriginalTriggerKey(context.Trigger);
+        var scheduleGeneration = GetScheduleGeneration(context.Trigger);
         jobDataMap[QuartzJobDataKeys.RetryAttempt] = attemptNumber.ToString(CultureInfo.InvariantCulture);
         jobDataMap[QuartzJobDataKeys.RetryTrigger] = bool.TrueString;
         jobDataMap[QuartzJobDataKeys.RetryOriginalTriggerName] = originalTriggerKey.Name;
         jobDataMap[QuartzJobDataKeys.RetryOriginalTriggerGroup] = originalTriggerKey.Group;
+        jobDataMap[QuartzJobDataKeys.RetryScheduleGeneration] = scheduleGeneration;
+
+        if (!jobDataMap.ContainsKey(QuartzJobDataKeys.RetryOriginalIsRecurring))
+            jobDataMap[QuartzJobDataKeys.RetryOriginalIsRecurring] = IsRecurringTrigger(context.Trigger).ToString();
 
         var now = systemClock.UtcNow;
         var startAt = delay >= DateTimeOffset.MaxValue - now ? DateTimeOffset.MaxValue : now.Add(delay);
 
         return TriggerBuilder.Create()
             .ForJob(context.JobDetail.Key)
-            .WithIdentity(QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey))
+            .WithIdentity(QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey, scheduleGeneration))
             .UsingJobData(jobDataMap)
             .StartAt(startAt)
             .Build();
+    }
+
+    private static bool IsRecurringTrigger(ITrigger trigger) => trigger switch
+    {
+        ICronTrigger => true,
+        ISimpleTrigger simpleTrigger => simpleTrigger.RepeatCount != 0,
+        _ => false
+    };
+
+    private static string GetScheduleGeneration(ITrigger trigger) =>
+        trigger.JobDataMap.TryGetValue(QuartzJobDataKeys.RetryScheduleGeneration, out var value) && value != null
+            ? Convert.ToString(value, CultureInfo.InvariantCulture) ?? QuartzJobDataKeys.LegacyScheduleGeneration
+            : QuartzJobDataKeys.LegacyScheduleGeneration;
+
+    private static async Task<bool> IsCurrentRecurringScheduleAsync(QuartzScheduler scheduler, ITrigger retryTrigger, CancellationToken cancellationToken)
+    {
+        var originalTrigger = await scheduler.GetTrigger(QuartzTriggerKeys.GetOriginalTriggerKey(retryTrigger), cancellationToken);
+
+        if (originalTrigger == null)
+            return false;
+
+        return string.Equals(
+            GetScheduleGeneration(retryTrigger),
+            GetScheduleGeneration(originalTrigger),
+            StringComparison.Ordinal);
     }
 }

@@ -45,7 +45,6 @@ public class ResumeWorkflowJobTests
         await _job.Execute(context);
 
         workflowClient.VerifyRunInstanceCalled();
-        _retryScheduler.Verify(x => x.CancelPendingRetryAsync(context, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]

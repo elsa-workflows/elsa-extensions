@@ -211,8 +211,6 @@ public static class QuartzJobTestHelper
             retryScheduler.Setup(x => x.IsRetryable(It.IsAny<Exception>())).Returns(isRetryable);
             retryScheduler.Setup(x => x.ScheduleRetryAsync(It.IsAny<IJobExecutionContext>(), It.IsAny<Exception>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(retryScheduled);
-            retryScheduler.Setup(x => x.CancelPendingRetryAsync(It.IsAny<IJobExecutionContext>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
         }
 
         /// <summary>

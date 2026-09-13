@@ -55,6 +55,25 @@ public class QuartzWorkflowSchedulerTests
     }
 
     [Fact]
+    public async Task ScheduleCronAsync_PersistsAScheduleGenerationOnTheOriginalTrigger()
+    {
+        var scheduler = new Mock<global::Quartz.IScheduler>();
+        scheduler.Setup(s => s.CheckExists(It.IsAny<JobKey>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        ITrigger? capturedTrigger = null;
+        scheduler.Setup(s => s.ScheduleJob(It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()))
+            .Callback<ITrigger, CancellationToken>((trigger, _) => capturedTrigger = trigger)
+            .ReturnsAsync(DateTimeOffset.UtcNow);
+
+        var sut = CreateScheduler(scheduler, out _);
+
+        await sut.ScheduleCronAsync("task-1", CreateNewRequest(), "0 0/5 * * * ?");
+
+        Assert.NotNull(capturedTrigger);
+        Assert.True(capturedTrigger!.JobDataMap.TryGetValue(QuartzJobDataKeys.RetryScheduleGeneration, out var generation));
+        Assert.NotNull(generation);
+    }
+
+    [Fact]
     public async Task ScheduleCronAsync_RegistersJobInTenantSpecificGroup()
     {
         // Arrange
@@ -203,6 +222,24 @@ public class QuartzWorkflowSchedulerTests
         scheduler.Verify(s => s.UnscheduleJob(It.Is<TriggerKey>(k => k.Name == "task-1" && k.Group == "tenant-a"), It.IsAny<CancellationToken>()), Times.Once);
         var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(new TriggerKey("task-1", "tenant-a"));
         scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UnscheduleAsync_GenerationAwareTrigger_RemovesCurrentAndLegacyRetryKeys()
+    {
+        var originalKey = new TriggerKey("task-1", "Default");
+        var originalTrigger = TriggerBuilder.Create()
+            .WithIdentity(originalKey)
+            .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "generation-1")
+            .Build();
+        var scheduler = new Mock<global::Quartz.IScheduler>();
+        scheduler.Setup(s => s.GetTrigger(originalKey, It.IsAny<CancellationToken>())).ReturnsAsync(originalTrigger);
+        var sut = CreateScheduler(scheduler, out _);
+
+        await sut.UnscheduleAsync("task-1");
+
+        scheduler.Verify(s => s.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(originalKey, "generation-1"), It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(originalKey), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

@@ -26,4 +26,22 @@ public static class QuartzJobDataKeys
     /// as a string so that job stores configured with <c>quartz.jobStore.useProperties</c> can persist it.
     /// </summary>
     public const string RetryAttempt = "Elsa.Scheduling.Quartz:RetryAttempt";
+
+    /// <summary>
+    /// The value stored on a retry trigger indicating whether its original trigger is a recurring schedule. This lets
+    /// the retry scheduler perform a post-schedule existence check without treating a naturally completed one-shot
+    /// trigger as an externally unscheduled recurring chain.
+    /// </summary>
+    public const string RetryOriginalIsRecurring = "Elsa.Scheduling.Quartz:RetryOriginalIsRecurring";
+
+    /// <summary>
+    /// The token identifying the schedule generation that produced a retry. New schedules get a fresh token; older
+    /// triggers without this value use the stable legacy sentinel when compared with a retry.
+    /// </summary>
+    public const string RetryScheduleGeneration = "Elsa.Scheduling.Quartz:RetryScheduleGeneration";
+
+    /// <summary>
+    /// Stable compatibility value for original triggers created before schedule-generation metadata was introduced.
+    /// </summary>
+    public const string LegacyScheduleGeneration = "legacy";
 }

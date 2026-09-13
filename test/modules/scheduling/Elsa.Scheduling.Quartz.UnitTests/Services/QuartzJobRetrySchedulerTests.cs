@@ -251,27 +251,53 @@ public class QuartzJobRetrySchedulerTests
     }
 
     [Fact]
-    public async Task CancelPendingRetryAsync_OriginalTrigger_UnschedulesTheDerivedRetryTrigger()
+    public async Task ScheduleRetryAsync_RecurringOriginalRemovedAfterScheduling_RemovesRetryAsHandled()
     {
         var (context, scheduler) = CreateContext();
-        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key);
+        var cronTrigger = CreateCronTrigger();
+        Mock.Get(context).Setup(c => c.Trigger).Returns(cronTrigger);
+        scheduler.Setup(s => s.GetTrigger(cronTrigger.Key, It.IsAny<CancellationToken>())).ReturnsAsync((ITrigger?)null);
+        var capturedTrigger = CaptureTrigger(scheduler);
 
-        await CreateSut().CancelPendingRetryAsync(context);
+        var scheduled = await ScheduleRetryAsync(context);
 
-        scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Once);
-        scheduler.Verify(s => s.UnscheduleJob(context.Trigger.Key, It.IsAny<CancellationToken>()), Times.Never);
+        Assert.True(scheduled);
+        Assert.NotNull(capturedTrigger());
+        scheduler.Verify(s => s.UnscheduleJob(capturedTrigger()!.Key, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
-    public async Task CancelPendingRetryAsync_RetryTrigger_DoesNotUnschedule()
+    public async Task ScheduleRetryAsync_OneShotOriginalMissingAfterScheduling_KeepsRetry()
     {
-        var originalTriggerKey = new TriggerKey("test-trigger", "Default");
-        var retryTriggerKey = QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey);
-        var (context, scheduler) = CreateContext(retryAttempt: "1", triggerName: retryTriggerKey.Name, originalTriggerKey: originalTriggerKey);
+        var (context, scheduler) = CreateContext();
+        var capturedTrigger = CaptureTrigger(scheduler);
 
-        await CreateSut().CancelPendingRetryAsync(context);
+        var scheduled = await ScheduleRetryAsync(context);
 
-        scheduler.Verify(s => s.UnscheduleJob(It.IsAny<TriggerKey>(), It.IsAny<CancellationToken>()), Times.Never);
+        Assert.True(scheduled);
+        Assert.NotNull(capturedTrigger());
+        scheduler.Verify(s => s.GetTrigger(It.IsAny<TriggerKey>(), It.IsAny<CancellationToken>()), Times.Never);
+        scheduler.Verify(s => s.UnscheduleJob(capturedTrigger()!.Key, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ScheduleRetryAsync_RescheduledRecurringOriginal_HasDifferentGeneration_RemovesStaleRetry()
+    {
+        var (context, scheduler) = CreateContext();
+        var originalTrigger = CreateCronTrigger("old-generation");
+        var rescheduledTrigger = CreateCronTrigger("new-generation");
+        Mock.Get(context).Setup(c => c.Trigger).Returns(originalTrigger);
+        scheduler.Setup(s => s.GetTrigger(originalTrigger.Key, It.IsAny<CancellationToken>())).ReturnsAsync(rescheduledTrigger);
+        var capturedTrigger = CaptureTrigger(scheduler);
+
+        var scheduled = await ScheduleRetryAsync(context);
+
+        Assert.True(scheduled);
+        Assert.NotNull(capturedTrigger());
+        Assert.Equal("old-generation", capturedTrigger()!.JobDataMap[QuartzJobDataKeys.RetryScheduleGeneration]);
+        Assert.Equal(QuartzTriggerKeys.GetRetryTriggerKey(originalTrigger.Key, "old-generation"), capturedTrigger()!.Key);
+        Assert.NotEqual(QuartzTriggerKeys.GetRetryTriggerKey(originalTrigger.Key, "new-generation"), capturedTrigger()!.Key);
+        scheduler.Verify(s => s.UnscheduleJob(capturedTrigger()!.Key, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -380,14 +406,6 @@ public class QuartzJobRetrySchedulerTests
         _transientDetector.Verify(x => x.IsTransient(It.IsAny<Exception>()), Times.Never);
     }
 
-    [Fact]
-    public async Task LegacyRetryScheduler_UsesTheDefaultNoOpForPendingRetryCancellation()
-    {
-        IQuartzJobRetryScheduler scheduler = new LegacyRetryScheduler();
-
-        await scheduler.CancelPendingRetryAsync(null!);
-    }
-
     private Task<bool> ScheduleRetryAsync(IJobExecutionContext context) => CreateSut().ScheduleRetryAsync(context, _exception);
 
     private QuartzJobRetryScheduler CreateSut() =>
@@ -423,14 +441,20 @@ public class QuartzJobRetrySchedulerTests
         return () => capturedTrigger;
     }
 
+    private static ITrigger CreateCronTrigger(string? generation = null)
+    {
+        var builder = TriggerBuilder.Create()
+            .WithIdentity("test-trigger")
+            .ForJob(new JobKey("test-job"))
+            .WithCronSchedule("0 0 12 1 1 ? 2099");
+
+        if (generation != null)
+            builder.UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, generation);
+
+        return builder.Build();
+    }
+
     private static void VerifyNotRescheduled(Mock<QuartzScheduler> scheduler) =>
         scheduler.Verify(s => s.ScheduleJob(It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()), Times.Never);
 
-    private sealed class LegacyRetryScheduler : IQuartzJobRetryScheduler
-    {
-        public bool IsRetryable(Exception exception) => false;
-
-        public Task<bool> ScheduleRetryAsync(IJobExecutionContext context, Exception exception, CancellationToken cancellationToken = default) =>
-            Task.FromResult(false);
-    }
 }
