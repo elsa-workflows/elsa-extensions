@@ -20,7 +20,8 @@ public class ResumeWorkflowJob(
     ITenantFinder tenantFinder,
     ITenantAccessor tenantAccessor,
     IQuartzJobRetryScheduler retryScheduler,
-    ILogger<ResumeWorkflowJob> logger) : IJob
+    ILogger<ResumeWorkflowJob> logger,
+    IQuartzScheduleCoordinator? scheduleCoordinator = null) : IJob
 {
     /// <inheritdoc />
     public async Task Execute(IJobExecutionContext context)
@@ -53,7 +54,7 @@ public class ResumeWorkflowJob(
         catch (WorkflowGraphNotFoundException e)
         {
             logger.LogWarning(e, "Could not find workflow graph while resuming workflow instance {WorkflowInstanceId}", workflowInstanceId);
-            await context.UnscheduleAfterWorkflowGraphNotFoundAsync(cancellationToken);
+            await context.UnscheduleAfterWorkflowGraphNotFoundAsync(scheduleCoordinator, cancellationToken);
         }
         catch (Exception e) when (retryScheduler.IsRetryable(e))
         {

@@ -57,4 +57,5 @@ public class QuartzTriggerKeysTests
 
         Assert.Equal(new TriggerKey("task-1-retry", "Default"), QuartzTriggerKeys.GetOriginalTriggerKey(trigger));
     }
+
 }

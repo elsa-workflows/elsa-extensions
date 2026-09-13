@@ -12,7 +12,13 @@ namespace Elsa.Scheduling.Quartz.Services;
 /// <summary>
 /// An implementation of <see cref="IWorkflowScheduler"/> that uses Quartz.NET.
 /// </summary>
-public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, IJsonSerializer jsonSerializer, ITenantAccessor tenantAccessor, IJobKeyProvider jobKeyProvider, ILogger<QuartzWorkflowScheduler> logger) : IWorkflowScheduler
+public class QuartzWorkflowScheduler(
+    ISchedulerFactory schedulerFactoryFactory,
+    IJsonSerializer jsonSerializer,
+    ITenantAccessor tenantAccessor,
+    IJobKeyProvider jobKeyProvider,
+    ILogger<QuartzWorkflowScheduler> logger,
+    IQuartzScheduleCoordinator? scheduleCoordinator = null) : IWorkflowScheduler
 {
     /// <inheritdoc />
     public async ValueTask ScheduleAtAsync(string taskName, ScheduleNewWorkflowInstanceRequest request, DateTimeOffset at, CancellationToken cancellationToken = default)
@@ -105,51 +111,81 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
     {
         var scheduler = await schedulerFactoryFactory.GetScheduler(cancellationToken);
         var triggerKey = GetTriggerKey(taskName);
-        var originalTrigger = await scheduler.GetTrigger(triggerKey, cancellationToken);
-        var scheduleGeneration = QuartzTriggerKeys.GetScheduleGeneration(originalTrigger);
-        await scheduler.UnscheduleJob(triggerKey, cancellationToken);
+        await ExecuteCoordinatedAsync(triggerKey, async token =>
+        {
+            var originalTrigger = await scheduler.GetTrigger(triggerKey, token);
+            var scheduleGeneration = QuartzTriggerKeys.GetScheduleGeneration(originalTrigger);
+            var retryKeys = new HashSet<TriggerKey>
+            {
+                QuartzTriggerKeys.GetRetryTriggerKey(triggerKey, scheduleGeneration),
+                QuartzTriggerKeys.GetRetryTriggerKey(triggerKey)
+            };
 
-        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(triggerKey, scheduleGeneration);
-        await scheduler.UnscheduleJob(retryKey, cancellationToken);
+            await scheduler.UnscheduleJob(triggerKey, token);
 
-        // Remove the legacy key as well when a generation-aware schedule is being removed. This cleans up retries
-        // created before generation metadata was introduced without changing the deterministic legacy identity.
-        if (!string.Equals(scheduleGeneration, QuartzJobDataKeys.LegacyScheduleGeneration, StringComparison.Ordinal))
-            await scheduler.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(triggerKey), cancellationToken);
+            // A one-shot original naturally disappears before UnscheduleAsync is called, so there is no generation
+            // to derive its retry key from. Enumerate the Elsa job triggers while holding the same per-original lock
+            // and match persisted original identity to discover generation-aware and legacy retries alike.
+            // Always inspect both durable workflow jobs. A task key can be unscheduled and then reused for a
+            // different workflow operation (run versus resume), leaving an acquired retry from the previous job
+            // attached to the other durable job. Looking at only the currently registered original would strand
+            // that retry, even though its persisted original identity still points at this task.
+            var jobKeys = new[] { GetRunWorkflowJobKey(), GetResumeWorkflowJobKey() };
+
+            foreach (var jobKey in jobKeys.Distinct())
+            {
+                var triggers = await scheduler.GetTriggersOfJob(jobKey, token) ?? Array.Empty<ITrigger>();
+
+                foreach (var trigger in triggers)
+                {
+                    if (QuartzTriggerKeys.IsRetryTrigger(trigger) && QuartzTriggerKeys.GetOriginalTriggerKey(trigger).Equals(triggerKey))
+                        retryKeys.Add(trigger.Key);
+                }
+            }
+
+            foreach (var retryKey in retryKeys)
+                await scheduler.UnscheduleJob(retryKey, token);
+        }, cancellationToken);
     }
     
     private async Task ScheduleJobAsync<TJobType>(QuartzIScheduler scheduler, ITrigger trigger, CancellationToken cancellationToken) where TJobType : IJob
     {
-        // Ensure the durable job referenced by the trigger exists before scheduling.
-        // The job is normally registered at startup by RegisterJobsTask, but it can be absent here when:
-        // - the trigger targets a tenant-specific job group that was never registered at startup,
-        // - the startup task has not run yet (or was skipped), or
-        // - the job rows were removed from the Quartz job store at runtime.
-        // Without this, Quartz throws "The job (...RunWorkflowJob) referenced by the trigger does not exist".
-        await EnsureJobAsync<TJobType>(scheduler, trigger.JobKey, cancellationToken);
+        await ExecuteCoordinatedAsync(QuartzTriggerKeys.GetOriginalTriggerKey(trigger), async token =>
+        {
+            // Ensure the durable job referenced by the trigger exists before scheduling.
+            // The job is normally registered at startup by RegisterJobsTask, but it can be absent here when:
+            // - the trigger targets a tenant-specific job group that was never registered at startup,
+            // - the startup task has not run yet (or was skipped), or
+            // - the job rows were removed from the Quartz job store at runtime.
+            // Without this, Quartz throws "The job (...RunWorkflowJob) referenced by the trigger does not exist".
+            await EnsureJobAsync<TJobType>(scheduler, trigger.JobKey, token);
 
-        try
-        {
-            // Try to schedule the trigger. In clustered mode, multiple instances may attempt this simultaneously.
-            // The ScheduleJob method will throw ObjectAlreadyExistsException if a trigger with the same key already exists.
-            // Unlike AddJob, ScheduleJob does not have a 'replace' parameter - it always fails if the trigger exists.
-            // Note: To update an existing trigger, callers should first use UnscheduleAsync before scheduling the new trigger.
-            await scheduler.ScheduleJob(trigger, cancellationToken);
-        }
-        catch (JobPersistenceException e) when (e.InnerException is ObjectAlreadyExistsException)
-        {
-            // SQL-backed Quartz stores (AdoJobStore) wrap the duplicate-trigger error in a JobPersistenceException.
-            // In clustered mode, this is an expected race condition when multiple pods attempt to schedule the same trigger.
-            logger.LogDebug("Trigger {TriggerKey} already exists (wrapped), skipping scheduling. This is expected in clustered deployments during concurrent operations", trigger.Key);
-        }
-        catch (ObjectAlreadyExistsException)
-        {
-            // Trigger already exists. In clustered scenarios, this is an expected race condition
-            // when multiple pods attempt to schedule the same trigger during tenant activation or startup.
-            // We can safely ignore this and continue, as the trigger is already scheduled.
-            logger.LogDebug("Trigger {TriggerKey} already exists, skipping scheduling. This is expected in clustered deployments during concurrent operations", trigger.Key);
-        }
+            try
+            {
+                // Try to schedule the trigger. In clustered mode, multiple instances may attempt this simultaneously.
+                // The ScheduleJob method will throw ObjectAlreadyExistsException if a trigger with the same key already exists.
+                // Unlike AddJob, ScheduleJob does not have a 'replace' parameter - it always fails if the trigger exists.
+                // Note: To update an existing trigger, callers should first use UnscheduleAsync before scheduling the new trigger.
+                await scheduler.ScheduleJob(trigger, token);
+            }
+            catch (JobPersistenceException e) when (e.InnerException is ObjectAlreadyExistsException)
+            {
+                // SQL-backed Quartz stores (AdoJobStore) wrap the duplicate-trigger error in a JobPersistenceException.
+                // In clustered mode, this is an expected race condition when multiple pods attempt to schedule the same trigger.
+                logger.LogDebug("Trigger {TriggerKey} already exists (wrapped), skipping scheduling. This is expected in clustered deployments during concurrent operations", trigger.Key);
+            }
+            catch (ObjectAlreadyExistsException)
+            {
+                // Trigger already exists. In clustered scenarios, this is an expected race condition
+                // when multiple instances attempt to schedule the same trigger during tenant activation or startup.
+                // We can safely ignore this and continue, as the trigger is already scheduled.
+                logger.LogDebug("Trigger {TriggerKey} already exists, skipping scheduling. This is expected in clustered deployments during concurrent operations", trigger.Key);
+            }
+        }, cancellationToken);
     }
+
+    private Task ExecuteCoordinatedAsync(TriggerKey originalTriggerKey, Func<CancellationToken, Task> action, CancellationToken cancellationToken) =>
+        scheduleCoordinator?.ExecuteAsync(originalTriggerKey, action, cancellationToken) ?? action(cancellationToken);
 
     private async Task EnsureJobAsync<TJobType>(QuartzIScheduler scheduler, JobKey jobKey, CancellationToken cancellationToken) where TJobType : IJob
     {

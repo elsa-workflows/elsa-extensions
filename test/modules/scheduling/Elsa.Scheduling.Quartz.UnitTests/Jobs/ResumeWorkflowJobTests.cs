@@ -61,6 +61,35 @@ public class ResumeWorkflowJobTests
     }
 
     [Fact]
+    public async Task Execute_WorkflowGraphNotFoundOnStaleOriginal_DoesNotUnscheduleReplacementOriginal()
+    {
+        var jobData = new Dictionary<string, object>
+        {
+            ["WorkflowInstanceId"] = "workflow-instance-123",
+            ["BookmarkId"] = "bookmark-123"
+        };
+        var (context, scheduler) = QuartzJobTestHelper.CreateJobExecutionContext(
+            jobData,
+            triggerName: "task-1",
+            triggerData: new Dictionary<string, object>
+            {
+                [QuartzJobDataKeys.RetryScheduleGeneration] = "old-generation"
+            });
+        var handle = WorkflowDefinitionHandle.ByDefinitionVersionId("workflow-def-123");
+        _workflowRuntime.SetupCreateClientThrows(new WorkflowGraphNotFoundException("Not found", handle));
+        var replacementTrigger = TriggerBuilder.Create()
+            .WithIdentity(context.Trigger.Key)
+            .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "new-generation")
+            .Build();
+        scheduler.Setup(s => s.GetTrigger(context.Trigger.Key, It.IsAny<CancellationToken>())).ReturnsAsync(replacementTrigger);
+
+        await _job.Execute(context);
+
+        scheduler.Verify(s => s.UnscheduleJob(context.Trigger.Key, It.IsAny<CancellationToken>()), Times.Never);
+        scheduler.Verify(s => s.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key, "old-generation"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task Execute_WorkflowGraphNotFoundOnStaleRetry_DoesNotUnscheduleReplacementOriginal()
     {
         var jobData = new Dictionary<string, object>

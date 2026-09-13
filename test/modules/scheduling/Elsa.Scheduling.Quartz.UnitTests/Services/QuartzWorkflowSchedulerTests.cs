@@ -1,5 +1,6 @@
 using Elsa.Common;
 using Elsa.Common.Multitenancy;
+using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Jobs;
 using Elsa.Scheduling.Quartz.Services;
 using Elsa.Workflows.Models;
@@ -243,6 +244,61 @@ public class QuartzWorkflowSchedulerTests
     }
 
     [Fact]
+    public async Task UnscheduleAsync_WhenOneShotOriginalIsGone_DiscoversGenerationAwareRetryByOriginalIdentity()
+    {
+        var originalKey = new TriggerKey("task-1", "Default");
+        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(originalKey, "generation-1");
+        var retryTrigger = TriggerBuilder.Create()
+            .WithIdentity(retryKey)
+            .ForJob(new JobKey(nameof(RunWorkflowJob), "Default"))
+            .UsingJobData(QuartzJobDataKeys.RetryTrigger, bool.TrueString)
+            .UsingJobData(QuartzJobDataKeys.RetryOriginalTriggerName, originalKey.Name)
+            .UsingJobData(QuartzJobDataKeys.RetryOriginalTriggerGroup, originalKey.Group)
+            .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "generation-1")
+            .Build();
+        var scheduler = new Mock<global::Quartz.IScheduler>();
+        scheduler.Setup(s => s.GetTrigger(originalKey, It.IsAny<CancellationToken>())).ReturnsAsync((ITrigger?)null);
+        scheduler.Setup(s => s.GetTriggersOfJob(It.IsAny<JobKey>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { retryTrigger });
+        var sut = CreateScheduler(scheduler, out _);
+
+        await sut.UnscheduleAsync("task-1");
+
+        scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UnscheduleAsync_WhenOneShotOriginalIsGone_SearchesBothDurableWorkflowJobs()
+    {
+        var originalKey = new TriggerKey("task-1", "Default");
+        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(originalKey, "generation-1");
+        var retryTrigger = TriggerBuilder.Create()
+            .WithIdentity(retryKey)
+            .ForJob(new JobKey(nameof(ResumeWorkflowJob), "Default"))
+            .UsingJobData(QuartzJobDataKeys.RetryTrigger, bool.TrueString)
+            .UsingJobData(QuartzJobDataKeys.RetryOriginalTriggerName, originalKey.Name)
+            .UsingJobData(QuartzJobDataKeys.RetryOriginalTriggerGroup, originalKey.Group)
+            .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "generation-1")
+            .Build();
+        var scheduler = new Mock<global::Quartz.IScheduler>();
+        scheduler.Setup(s => s.GetTrigger(originalKey, It.IsAny<CancellationToken>())).ReturnsAsync((ITrigger?)null);
+        scheduler.Setup(s => s.GetTriggersOfJob(It.IsAny<JobKey>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((JobKey jobKey, CancellationToken _) =>
+                jobKey.Name == nameof(ResumeWorkflowJob) ? new[] { retryTrigger } : Array.Empty<ITrigger>());
+        var sut = CreateScheduler(scheduler, out _);
+
+        await sut.UnscheduleAsync("task-1");
+
+        scheduler.Verify(s => s.GetTriggersOfJob(
+            new JobKey(nameof(RunWorkflowJob), "Default"),
+            It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.GetTriggersOfJob(
+            new JobKey(nameof(ResumeWorkflowJob), "Default"),
+            It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task UnscheduleAsync_TaskNameEndingWithRetry_DoesNotDeleteAnotherTaskRetryKey()
     {
         var scheduler = new Mock<global::Quartz.IScheduler>();
@@ -272,7 +328,22 @@ public class QuartzWorkflowSchedulerTests
         await sut.ScheduleCronAsync("task-1", request, "0 0/5 * * * ?");
     }
 
-    private static QuartzWorkflowScheduler CreateScheduler(Mock<global::Quartz.IScheduler> scheduler, out Mock<global::Quartz.ISchedulerFactory> factory, string? tenantId = null)
+    [Fact]
+    public async Task ScheduleAndUnscheduleAsync_UseTheOriginalScheduleCoordinator()
+    {
+        var scheduler = new Mock<global::Quartz.IScheduler>();
+        scheduler.Setup(s => s.CheckExists(It.IsAny<JobKey>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var coordinator = new InlineScheduleCoordinator();
+        var sut = CreateScheduler(scheduler, out _, coordinator: coordinator);
+
+        await sut.ScheduleCronAsync("task-1", CreateNewRequest(), "0 0/5 * * * ?");
+        await sut.UnscheduleAsync("task-1");
+
+        Assert.Equal(2, coordinator.Keys.Count);
+        Assert.All(coordinator.Keys, key => Assert.Equal(new TriggerKey("task-1", "Default"), key));
+    }
+
+    private static QuartzWorkflowScheduler CreateScheduler(Mock<global::Quartz.IScheduler> scheduler, out Mock<global::Quartz.ISchedulerFactory> factory, string? tenantId = null, IQuartzScheduleCoordinator? coordinator = null)
     {
         factory = new Mock<global::Quartz.ISchedulerFactory>();
         factory.Setup(f => f.GetScheduler(It.IsAny<CancellationToken>())).ReturnsAsync(scheduler.Object);
@@ -288,7 +359,19 @@ public class QuartzWorkflowSchedulerTests
             jsonSerializer.Object,
             tenantAccessor.Object,
             jobKeyProvider,
-            NullLogger<QuartzWorkflowScheduler>.Instance);
+            NullLogger<QuartzWorkflowScheduler>.Instance,
+            coordinator);
+    }
+
+    private sealed class InlineScheduleCoordinator : IQuartzScheduleCoordinator
+    {
+        public List<TriggerKey> Keys { get; } = [];
+
+        public async Task ExecuteAsync(TriggerKey originalTriggerKey, Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
+        {
+            Keys.Add(originalTriggerKey);
+            await action(cancellationToken);
+        }
     }
 
     private static global::Elsa.Scheduling.ScheduleNewWorkflowInstanceRequest CreateNewRequest() => new()

@@ -69,6 +69,18 @@ public static class QuartzTriggerKeys
     }
 
     /// <summary>
+    /// Gets a bounded distributed lock name for an original schedule. The group is part of the hashed identity so
+    /// tenant schedules with the same task name do not block one another, while caller-controlled Quartz names do not
+    /// become provider resource names.
+    /// </summary>
+    internal static string GetScheduleLockKey(TriggerKey triggerKey)
+    {
+        var identity = $"{triggerKey.Group}\u001F{triggerKey.Name}";
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity))).ToLowerInvariant();
+        return $"Elsa.Scheduling.Quartz:Schedule:{hash}";
+    }
+
+    /// <summary>
     /// Returns the original schedule's key for <paramref name="trigger"/> using the original name and group persisted
     /// in the retry trigger's data.
     /// </summary>

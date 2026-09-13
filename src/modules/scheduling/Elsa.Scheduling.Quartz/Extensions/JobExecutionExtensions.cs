@@ -3,6 +3,7 @@ using Elsa.Common.Multitenancy;
 using Elsa.Scheduling.Quartz.Contracts;
 using Elsa.Scheduling.Quartz.Jobs;
 using Quartz;
+using QuartzScheduler = global::Quartz.IScheduler;
 
 namespace Elsa.Scheduling.Quartz;
 
@@ -31,27 +32,85 @@ internal static class JobExecutionExtensions
     /// </summary>
     /// <param name="context">The Quartz job execution context.</param>
     /// <param name="cancellationToken">An optional cancellation token.</param>
-    public static async Task UnscheduleAfterWorkflowGraphNotFoundAsync(this IJobExecutionContext context, CancellationToken cancellationToken = default)
+    public static Task UnscheduleAfterWorkflowGraphNotFoundAsync(this IJobExecutionContext context, CancellationToken cancellationToken = default) =>
+        context.UnscheduleAfterWorkflowGraphNotFoundAsync(null, cancellationToken);
+
+    /// <summary>
+    /// Removes a graph-not-found trigger under the optional per-original coordinator.
+    /// </summary>
+    /// <param name="context">The Quartz job execution context.</param>
+    /// <param name="scheduleCoordinator">The optional per-original schedule coordinator.</param>
+    /// <param name="cancellationToken">An optional cancellation token.</param>
+    public static async Task UnscheduleAfterWorkflowGraphNotFoundAsync(this IJobExecutionContext context, IQuartzScheduleCoordinator? scheduleCoordinator, CancellationToken cancellationToken = default)
     {
-        await context.Scheduler.UnscheduleJob(context.Trigger.Key, cancellationToken);
-
-        if (!QuartzTriggerKeys.IsRetryTrigger(context.Trigger))
-            return;
-
         var originalTriggerKey = QuartzTriggerKeys.GetOriginalTriggerKey(context.Trigger);
-        var originalTrigger = await context.Scheduler.GetTrigger(originalTriggerKey, cancellationToken);
+        var action = async (CancellationToken token) =>
+        {
+            var isRetryTrigger = QuartzTriggerKeys.IsRetryTrigger(context.Trigger);
+            var scheduleGeneration = QuartzTriggerKeys.GetScheduleGeneration(context.Trigger);
+            var originalTrigger = await context.Scheduler.GetTrigger(originalTriggerKey, token);
 
-        if (originalTrigger == null)
-            return;
+            if (!isRetryTrigger)
+            {
+                // The original trigger key is shared by every schedule generation. If this execution was acquired
+                // before an unschedule+reschedule, deleting it now would remove the replacement generation. A null
+                // result is the normal one-shot case after Quartz has completed the firing, so it is safe to retain
+                // the existing best-effort unschedule in that case.
+                if (originalTrigger != null && !HasSameScheduleGeneration(context.Trigger, originalTrigger))
+                {
+                    await UnschedulePendingRetriesAsync(context.Scheduler, originalTriggerKey, scheduleGeneration, includeLegacy: false, cancellationToken: token);
+                    return;
+                }
 
-        if (!string.Equals(
-                QuartzTriggerKeys.GetScheduleGeneration(context.Trigger),
-                QuartzTriggerKeys.GetScheduleGeneration(originalTrigger),
-                StringComparison.Ordinal))
-            return;
+                await context.Scheduler.UnscheduleJob(context.Trigger.Key, token);
 
-        await context.Scheduler.UnscheduleJob(originalTriggerKey, cancellationToken);
+                // A generated schedule can have a pending retry even when this graph-not-found failure came from the
+                // original occurrence. Remove only this generation's retry chain; never touch a replacement key.
+                if (!string.Equals(scheduleGeneration, QuartzJobDataKeys.LegacyScheduleGeneration, StringComparison.Ordinal) || IsRecurringTrigger(context.Trigger))
+                    await UnschedulePendingRetriesAsync(context.Scheduler, originalTriggerKey, scheduleGeneration, includeLegacy: true, cancellationToken: token);
+
+                return;
+            }
+
+            // The retry trigger itself has a generation-specific key, so removing it is safe. The original trigger
+            // still needs the compare-and-delete guard below because its key is shared across generations.
+            await context.Scheduler.UnscheduleJob(context.Trigger.Key, token);
+
+            if (originalTrigger == null)
+                return;
+
+            if (!HasSameScheduleGeneration(context.Trigger, originalTrigger))
+                return;
+
+            await context.Scheduler.UnscheduleJob(originalTriggerKey, token);
+        };
+
+        if (scheduleCoordinator == null)
+            await action(cancellationToken);
+        else
+            await scheduleCoordinator.ExecuteAsync(originalTriggerKey, action, cancellationToken);
     }
+
+    private static bool HasSameScheduleGeneration(ITrigger left, ITrigger right) =>
+        string.Equals(
+            QuartzTriggerKeys.GetScheduleGeneration(left),
+            QuartzTriggerKeys.GetScheduleGeneration(right),
+            StringComparison.Ordinal);
+
+    private static async Task UnschedulePendingRetriesAsync(QuartzScheduler scheduler, TriggerKey originalTriggerKey, string scheduleGeneration, bool includeLegacy, CancellationToken cancellationToken)
+    {
+        await scheduler.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey, scheduleGeneration), cancellationToken);
+
+        if (includeLegacy && !string.Equals(scheduleGeneration, QuartzJobDataKeys.LegacyScheduleGeneration, StringComparison.Ordinal))
+            await scheduler.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey), cancellationToken);
+    }
+
+    private static bool IsRecurringTrigger(ITrigger trigger) => trigger switch
+    {
+        ICronTrigger => true,
+        ISimpleTrigger simpleTrigger => simpleTrigger.RepeatCount != 0,
+        _ => false
+    };
 
     /// <summary>
     /// Gets the number of retries that have already been scheduled for the currently executing trigger. Returns 0 when

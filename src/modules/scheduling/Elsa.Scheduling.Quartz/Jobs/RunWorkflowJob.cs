@@ -19,7 +19,8 @@ public class RunWorkflowJob(
     ITenantFinder tenantFinder,
     IWorkflowStarter workflowStarter,
     IQuartzJobRetryScheduler retryScheduler,
-    ILogger<RunWorkflowJob> logger) : IJob
+    ILogger<RunWorkflowJob> logger,
+    IQuartzScheduleCoordinator? scheduleCoordinator = null) : IJob
 {
     /// <inheritdoc />
     public async Task Execute(IJobExecutionContext context)
@@ -58,7 +59,7 @@ public class RunWorkflowJob(
         catch (WorkflowGraphNotFoundException e)
         {
             logger.LogWarning(e, "Could not find workflow graph for workflow definition handle {WorkflowDefinitionHandle}", startRequest?.WorkflowDefinitionHandle);
-            await context.UnscheduleAfterWorkflowGraphNotFoundAsync(cancellationToken);
+            await context.UnscheduleAfterWorkflowGraphNotFoundAsync(scheduleCoordinator, cancellationToken);
         }
         catch (Exception e) when (retryScheduler.IsRetryable(e))
         {
