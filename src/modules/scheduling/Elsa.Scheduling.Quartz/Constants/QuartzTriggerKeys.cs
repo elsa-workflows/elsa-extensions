@@ -18,23 +18,13 @@ public static class QuartzTriggerKeys
     public const string RetryGroup = "Elsa.Scheduling.Quartz:Retries";
 
     /// <summary>
-    /// Returns the key of the one-shot retry trigger that belongs to the original <paramref name="triggerKey"/>. The
-    /// key does not expose caller-controlled names and is distinct from every ordinary trigger in its tenant group.
-    /// Legacy schedules without a generation token use the original deterministic key for compatibility.
+    /// Returns the stable key of the one-shot retry trigger that belongs to the original <paramref name="triggerKey"/>.
+    /// The key does not expose caller-controlled names and is distinct from every ordinary trigger in its tenant group.
+    /// Schedule generations are persisted in trigger data and used as a fence; they do not change the retry identity.
     /// </summary>
     public static TriggerKey GetRetryTriggerKey(TriggerKey triggerKey)
-        => GetRetryTriggerKey(triggerKey, QuartzJobDataKeys.LegacyScheduleGeneration);
-
-    /// <summary>
-    /// Returns the retry key for a specific schedule generation. Including the generation keeps an old retry from
-    /// being able to remove a newer retry after an unschedule+reschedule of the same original trigger key.
-    /// </summary>
-    public static TriggerKey GetRetryTriggerKey(TriggerKey triggerKey, string? scheduleGeneration)
     {
         var identity = $"{triggerKey.Group}\u001F{triggerKey.Name}";
-        if (!string.IsNullOrWhiteSpace(scheduleGeneration) && !string.Equals(scheduleGeneration, QuartzJobDataKeys.LegacyScheduleGeneration, StringComparison.Ordinal))
-            identity += $"\u001F{scheduleGeneration}";
-
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity))).ToLowerInvariant();
         return new TriggerKey($"retry-{hash}", RetryGroup);
     }

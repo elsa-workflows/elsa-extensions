@@ -86,11 +86,16 @@ public class RunWorkflowJobTests
             .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "new-generation")
             .Build();
         scheduler.Setup(s => s.GetTrigger(context.Trigger.Key, It.IsAny<CancellationToken>())).ReturnsAsync(replacementTrigger);
+        var replacementRetryTrigger = TriggerBuilder.Create()
+            .WithIdentity(QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key))
+            .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "new-generation")
+            .Build();
+        scheduler.Setup(s => s.GetTrigger(replacementRetryTrigger.Key, It.IsAny<CancellationToken>())).ReturnsAsync(replacementRetryTrigger);
 
         await _job.Execute(context);
 
         scheduler.Verify(s => s.UnscheduleJob(context.Trigger.Key, It.IsAny<CancellationToken>()), Times.Never);
-        scheduler.Verify(s => s.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key, "old-generation"), It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -116,10 +121,15 @@ public class RunWorkflowJobTests
             .ForJob(new JobKey("test-job"))
             .Build();
         scheduler.Setup(s => s.GetTrigger(new TriggerKey("task-retry"), It.IsAny<CancellationToken>())).ReturnsAsync(originalTrigger);
+        var retryTrigger = TriggerBuilder.Create()
+            .WithIdentity(QuartzTriggerKeys.GetRetryTriggerKey(originalTrigger.Key))
+            .ForJob(new JobKey("test-job"))
+            .Build();
+        scheduler.Setup(s => s.GetTrigger(retryTrigger.Key, It.IsAny<CancellationToken>())).ReturnsAsync(retryTrigger);
 
         await _job.Execute(context);
 
-        scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("task-retry-retry"), It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(retryTrigger.Key, It.IsAny<CancellationToken>()), Times.Once);
         scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("task-retry"), It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -148,10 +158,16 @@ public class RunWorkflowJobTests
             .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "new-generation")
             .Build();
         scheduler.Setup(s => s.GetTrigger(new TriggerKey("task-retry"), It.IsAny<CancellationToken>())).ReturnsAsync(replacementTrigger);
+        var replacementRetryTrigger = TriggerBuilder.Create()
+            .WithIdentity(QuartzTriggerKeys.GetRetryTriggerKey(replacementTrigger.Key))
+            .ForJob(new JobKey("test-job"))
+            .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "new-generation")
+            .Build();
+        scheduler.Setup(s => s.GetTrigger(replacementRetryTrigger.Key, It.IsAny<CancellationToken>())).ReturnsAsync(replacementRetryTrigger);
 
         await _job.Execute(context);
 
-        scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("task-retry-retry"), It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(replacementTrigger.Key), It.IsAny<CancellationToken>()), Times.Never);
         scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("task-retry"), It.IsAny<CancellationToken>()), Times.Never);
     }
 

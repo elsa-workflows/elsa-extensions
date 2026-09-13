@@ -23,9 +23,10 @@ public interface IQuartzJobRetryScheduler
     /// <param name="exception">The exception the job failed with.</param>
     /// <param name="cancellationToken">An optional cancellation token.</param>
     /// <returns>
-    /// True if a retry was scheduled or the original recurring schedule was removed while the retry was being
-    /// created; false if retries are disabled or the configured maximum number of retries has been exhausted, in
-    /// which case the caller is responsible for reporting the failure.
+    /// True if the failure was handled by retry scheduling, an already-pending retry, cancellation, or stale-generation
+    /// suppression; false if retries are disabled or the configured maximum number of retries has been exhausted, in
+    /// which case the caller is responsible for reporting the failure. A true result does not guarantee that a retry
+    /// trigger still exists after a concurrent cancellation or generation replacement.
     /// </returns>
     Task<bool> ScheduleRetryAsync(IJobExecutionContext context, Exception exception, CancellationToken cancellationToken = default);
 }

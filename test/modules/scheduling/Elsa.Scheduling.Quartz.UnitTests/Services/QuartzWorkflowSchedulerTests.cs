@@ -226,76 +226,16 @@ public class QuartzWorkflowSchedulerTests
     }
 
     [Fact]
-    public async Task UnscheduleAsync_GenerationAwareTrigger_RemovesCurrentAndLegacyRetryKeys()
+    public async Task UnscheduleAsync_RemovesTheStableRetryKeyWithoutGenerationLookup()
     {
         var originalKey = new TriggerKey("task-1", "Default");
-        var originalTrigger = TriggerBuilder.Create()
-            .WithIdentity(originalKey)
-            .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "generation-1")
-            .Build();
         var scheduler = new Mock<global::Quartz.IScheduler>();
-        scheduler.Setup(s => s.GetTrigger(originalKey, It.IsAny<CancellationToken>())).ReturnsAsync(originalTrigger);
         var sut = CreateScheduler(scheduler, out _);
 
         await sut.UnscheduleAsync("task-1");
 
-        scheduler.Verify(s => s.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(originalKey, "generation-1"), It.IsAny<CancellationToken>()), Times.Once);
         scheduler.Verify(s => s.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(originalKey), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task UnscheduleAsync_WhenOneShotOriginalIsGone_DiscoversGenerationAwareRetryByOriginalIdentity()
-    {
-        var originalKey = new TriggerKey("task-1", "Default");
-        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(originalKey, "generation-1");
-        var retryTrigger = TriggerBuilder.Create()
-            .WithIdentity(retryKey)
-            .ForJob(new JobKey(nameof(RunWorkflowJob), "Default"))
-            .UsingJobData(QuartzJobDataKeys.RetryTrigger, bool.TrueString)
-            .UsingJobData(QuartzJobDataKeys.RetryOriginalTriggerName, originalKey.Name)
-            .UsingJobData(QuartzJobDataKeys.RetryOriginalTriggerGroup, originalKey.Group)
-            .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "generation-1")
-            .Build();
-        var scheduler = new Mock<global::Quartz.IScheduler>();
-        scheduler.Setup(s => s.GetTrigger(originalKey, It.IsAny<CancellationToken>())).ReturnsAsync((ITrigger?)null);
-        scheduler.Setup(s => s.GetTriggersOfJob(It.IsAny<JobKey>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new[] { retryTrigger });
-        var sut = CreateScheduler(scheduler, out _);
-
-        await sut.UnscheduleAsync("task-1");
-
-        scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task UnscheduleAsync_WhenOneShotOriginalIsGone_SearchesBothDurableWorkflowJobs()
-    {
-        var originalKey = new TriggerKey("task-1", "Default");
-        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(originalKey, "generation-1");
-        var retryTrigger = TriggerBuilder.Create()
-            .WithIdentity(retryKey)
-            .ForJob(new JobKey(nameof(ResumeWorkflowJob), "Default"))
-            .UsingJobData(QuartzJobDataKeys.RetryTrigger, bool.TrueString)
-            .UsingJobData(QuartzJobDataKeys.RetryOriginalTriggerName, originalKey.Name)
-            .UsingJobData(QuartzJobDataKeys.RetryOriginalTriggerGroup, originalKey.Group)
-            .UsingJobData(QuartzJobDataKeys.RetryScheduleGeneration, "generation-1")
-            .Build();
-        var scheduler = new Mock<global::Quartz.IScheduler>();
-        scheduler.Setup(s => s.GetTrigger(originalKey, It.IsAny<CancellationToken>())).ReturnsAsync((ITrigger?)null);
-        scheduler.Setup(s => s.GetTriggersOfJob(It.IsAny<JobKey>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((JobKey jobKey, CancellationToken _) =>
-                jobKey.Name == nameof(ResumeWorkflowJob) ? new[] { retryTrigger } : Array.Empty<ITrigger>());
-        var sut = CreateScheduler(scheduler, out _);
-
-        await sut.UnscheduleAsync("task-1");
-
-        scheduler.Verify(s => s.GetTriggersOfJob(
-            new JobKey(nameof(RunWorkflowJob), "Default"),
-            It.IsAny<CancellationToken>()), Times.Once);
-        scheduler.Verify(s => s.GetTriggersOfJob(
-            new JobKey(nameof(ResumeWorkflowJob), "Default"),
-            It.IsAny<CancellationToken>()), Times.Once);
-        scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.GetTriggersOfJob(It.IsAny<JobKey>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

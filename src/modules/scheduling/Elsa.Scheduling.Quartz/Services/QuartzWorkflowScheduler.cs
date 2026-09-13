@@ -113,39 +113,8 @@ public class QuartzWorkflowScheduler(
         var triggerKey = GetTriggerKey(taskName);
         await ExecuteCoordinatedAsync(triggerKey, async token =>
         {
-            var originalTrigger = await scheduler.GetTrigger(triggerKey, token);
-            var scheduleGeneration = QuartzTriggerKeys.GetScheduleGeneration(originalTrigger);
-            var retryKeys = new HashSet<TriggerKey>
-            {
-                QuartzTriggerKeys.GetRetryTriggerKey(triggerKey, scheduleGeneration),
-                QuartzTriggerKeys.GetRetryTriggerKey(triggerKey)
-            };
-
             await scheduler.UnscheduleJob(triggerKey, token);
-
-            // A one-shot original naturally disappears before UnscheduleAsync is called, so there is no generation
-            // to derive its retry key from. Enumerate the Elsa job triggers while holding the same per-original lock
-            // and match persisted original identity to discover generation-aware and legacy retries alike.
-            // Always inspect both durable workflow jobs. A task key can be unscheduled and then reused for a
-            // different workflow operation (run versus resume), leaving an acquired retry from the previous job
-            // attached to the other durable job. Looking at only the currently registered original would strand
-            // that retry, even though its persisted original identity still points at this task.
-            var jobKeys = new[] { GetRunWorkflowJobKey(), GetResumeWorkflowJobKey() };
-
-            foreach (var jobKey in jobKeys.Distinct())
-            {
-                var triggers = await scheduler.GetTriggersOfJob(jobKey, token) ?? Array.Empty<ITrigger>();
-
-                foreach (var trigger in triggers.Where(trigger =>
-                             QuartzTriggerKeys.IsRetryTrigger(trigger) &&
-                             QuartzTriggerKeys.GetOriginalTriggerKey(trigger).Equals(triggerKey)))
-                {
-                    retryKeys.Add(trigger.Key);
-                }
-            }
-
-            foreach (var retryKey in retryKeys)
-                await scheduler.UnscheduleJob(retryKey, token);
+            await scheduler.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(triggerKey), token);
         }, cancellationToken);
     }
     

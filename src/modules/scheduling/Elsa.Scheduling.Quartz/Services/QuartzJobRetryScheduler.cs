@@ -70,6 +70,22 @@ public class QuartzJobRetryScheduler(
             // other hand, atomically replaces its own key to advance the chain to the next attempt.
             if (QuartzTriggerKeys.IsRetryTrigger(context.Trigger))
             {
+                // The retry identity is stable across generations. Fence both the stored retry and the original before
+                // replacing it so an acquired stale retry cannot advance a replacement generation's retry chain.
+                var currentRetryTrigger = await context.Scheduler.GetTrigger(retryTrigger.Key, token);
+                if (currentRetryTrigger != null && !HasSameScheduleGeneration(context.Trigger, currentRetryTrigger))
+                {
+                    logger.LogDebug("Retry trigger {RetryTriggerKey} was replaced by a newer generation; treating the acquired retry as handled", retryTrigger.Key);
+                    return;
+                }
+
+                var currentOriginalTrigger = await context.Scheduler.GetTrigger(originalTriggerKey, token);
+                if (currentOriginalTrigger != null && !HasSameScheduleGeneration(context.Trigger, currentOriginalTrigger))
+                {
+                    logger.LogDebug("Original trigger {OriginalTriggerKey} was replaced while retry {RetryTriggerKey} was in flight; treating the acquired retry as handled", originalTriggerKey, retryTrigger.Key);
+                    return;
+                }
+
                 var nextFireTime = await context.Scheduler.RescheduleJob(retryTrigger.Key, retryTrigger, token);
 
                 if (nextFireTime == null)
@@ -91,7 +107,7 @@ public class QuartzJobRetryScheduler(
 
                     if (currentOriginalTrigger != null && !HasSameScheduleGeneration(context.Trigger, currentOriginalTrigger))
                     {
-                        await context.Scheduler.UnscheduleJob(retryTrigger.Key, token);
+                        await UnscheduleRetryIfGenerationMatchesAsync(context.Scheduler, retryTrigger, token);
                         logger.LogDebug("Original trigger {OriginalTriggerKey} was replaced while one-shot execution was in flight; removing stale retry {RetryTriggerKey}", originalTriggerKey, retryTrigger.Key);
                         return;
                     }
@@ -119,7 +135,7 @@ public class QuartzJobRetryScheduler(
             // unschedule+reschedule of the same task key.
             if (IsOriginalRecurring(retryTrigger) && !await IsCurrentRecurringScheduleAsync(context.Scheduler, retryTrigger, token))
             {
-                await context.Scheduler.UnscheduleJob(retryTrigger.Key, token);
+                await UnscheduleRetryIfGenerationMatchesAsync(context.Scheduler, retryTrigger, token);
                 logger.LogDebug("Original trigger {OriginalTriggerKey} was removed or replaced while retry {RetryTriggerKey} was being scheduled; removing the retry", originalTriggerKey, retryTrigger.Key);
             }
         }, cancellationToken);
@@ -191,7 +207,7 @@ public class QuartzJobRetryScheduler(
 
         return TriggerBuilder.Create()
             .ForJob(context.JobDetail.Key)
-            .WithIdentity(QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey, scheduleGeneration))
+            .WithIdentity(QuartzTriggerKeys.GetRetryTriggerKey(originalTriggerKey))
             .UsingJobData(jobDataMap)
             .StartAt(startAt)
             .Build();
@@ -209,6 +225,16 @@ public class QuartzJobRetryScheduler(
             QuartzTriggerKeys.GetScheduleGeneration(left),
             QuartzTriggerKeys.GetScheduleGeneration(right),
             StringComparison.Ordinal);
+
+    private static async Task UnscheduleRetryIfGenerationMatchesAsync(QuartzScheduler scheduler, ITrigger expectedTrigger, CancellationToken cancellationToken)
+    {
+        var currentRetryTrigger = await scheduler.GetTrigger(expectedTrigger.Key, cancellationToken);
+
+        if (currentRetryTrigger == null || !HasSameScheduleGeneration(expectedTrigger, currentRetryTrigger))
+            return;
+
+        await scheduler.UnscheduleJob(expectedTrigger.Key, cancellationToken);
+    }
 
     private static async Task<bool> IsCurrentRecurringScheduleAsync(QuartzScheduler scheduler, ITrigger retryTrigger, CancellationToken cancellationToken)
     {
