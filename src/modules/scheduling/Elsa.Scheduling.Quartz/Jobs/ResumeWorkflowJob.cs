@@ -26,6 +26,7 @@ public class ResumeWorkflowJob(
     {
         var cancellationToken = context.CancellationToken;
         string? workflowInstanceId = null;
+        await retryScheduler.CancelPendingRetryAsync(context, cancellationToken);
 
         try
         {
@@ -57,7 +58,7 @@ public class ResumeWorkflowJob(
 
             logger.LogError(
                 e,
-                "No retry was scheduled for job {JobKey} after {RetryAttempts} retry attempt(s) (retries disabled, exhausted, or trigger no longer present). Giving up on resuming workflow instance {WorkflowInstanceId}",
+                "No retry was scheduled for job {JobKey} after {RetryAttempts} retry attempt(s) (retries disabled or exhausted). Giving up on resuming workflow instance {WorkflowInstanceId}",
                 context.JobDetail.Key,
                 context.GetRetryAttempt(),
                 workflowInstanceId);

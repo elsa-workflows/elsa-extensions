@@ -40,6 +40,7 @@ public class RunWorkflowJobTests
         await _job.Execute(context);
 
         _workflowStarter.VerifyStartWorkflowCalled();
+        _retryScheduler.Verify(x => x.CancelPendingRetryAsync(context, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

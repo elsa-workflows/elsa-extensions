@@ -26,7 +26,7 @@ internal static class JobExecutionExtensions
 
     /// <summary>
     /// Gets the number of retries that have already been scheduled for the currently executing trigger. Returns 0 when
-    /// the trigger is the original one, i.e. when the current execution is not a retry.
+    /// the trigger is the original schedule, i.e. when the current execution is not a retry.
     /// </summary>
     /// <param name="context">The Quartz job execution context.</param>
     public static int GetRetryAttempt(this IJobExecutionContext context)

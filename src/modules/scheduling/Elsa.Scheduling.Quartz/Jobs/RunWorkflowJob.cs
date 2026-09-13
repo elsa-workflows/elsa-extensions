@@ -26,6 +26,7 @@ public class RunWorkflowJob(
     {
         var cancellationToken = context.CancellationToken;
         StartWorkflowRequest? startRequest = null;
+        await retryScheduler.CancelPendingRetryAsync(context, cancellationToken);
 
         try
         {
@@ -68,7 +69,7 @@ public class RunWorkflowJob(
 
             logger.LogError(
                 e,
-                "No retry was scheduled for job {JobKey} after {RetryAttempts} retry attempt(s) (retries disabled, exhausted, or trigger no longer present). Giving up on starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}",
+                "No retry was scheduled for job {JobKey} after {RetryAttempts} retry attempt(s) (retries disabled or exhausted). Giving up on starting workflow {WorkflowDefinitionHandle} with correlation ID {CorrelationId}",
                 context.JobDetail.Key,
                 context.GetRetryAttempt(),
                 startRequest?.WorkflowDefinitionHandle,

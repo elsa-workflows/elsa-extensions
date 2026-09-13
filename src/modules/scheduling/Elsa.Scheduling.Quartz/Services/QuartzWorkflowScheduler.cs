@@ -106,6 +106,7 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
         var scheduler = await schedulerFactoryFactory.GetScheduler(cancellationToken);
         var triggerKey = GetTriggerKey(taskName);
         await scheduler.UnscheduleJob(triggerKey, cancellationToken);
+        await scheduler.UnscheduleJob(QuartzTriggerKeys.GetRetryTriggerKey(triggerKey), cancellationToken);
     }
     
     private async Task ScheduleJobAsync<TJobType>(QuartzIScheduler scheduler, ITrigger trigger, CancellationToken cancellationToken) where TJobType : IJob

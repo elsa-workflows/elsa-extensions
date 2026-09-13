@@ -12,9 +12,10 @@ namespace Elsa.Scheduling.Quartz.Services;
 
 /// <summary>
 /// Default implementation of <see cref="IQuartzJobRetryScheduler"/>. Rather than retrying in-process, each retry is
-/// scheduled as a new Quartz trigger, so that a pending retry does not occupy a Quartz worker thread while waiting,
-/// and it survives an application restart when Quartz is configured with a persistent job store (with the default
-/// in-memory store, pending retries are lost on restart).
+/// scheduled as a separate one-shot Quartz trigger for the same job, so that a pending retry does not occupy a Quartz
+/// worker thread while waiting, the original schedule (cron or repeating) is left intact, and the retry survives an
+/// application restart when Quartz is configured with a persistent job store (with the default in-memory store,
+/// pending retries are lost on restart).
 /// </summary>
 public class QuartzJobRetryScheduler(
     ISystemClock systemClock,
@@ -38,7 +39,7 @@ public class QuartzJobRetryScheduler(
 
         if (!jobOptions.RetryEnabled)
         {
-            logger.LogDebug("Retries are disabled. Not rescheduling job {JobKey}", jobKey);
+            logger.LogDebug("Retries are disabled. Not scheduling a retry for job {JobKey}", jobKey);
             return false;
         }
 
@@ -59,15 +60,26 @@ public class QuartzJobRetryScheduler(
             jobOptions.MaxRetryAttempts,
             delay);
 
-        var scheduledStartTime = await context.Scheduler.RescheduleJob(context.Trigger.Key, retryTrigger, cancellationToken);
-
-        if (scheduledStartTime == null)
-        {
-            logger.LogWarning("Trigger {TriggerKey} for job {JobKey} was no longer present. No retry was scheduled", context.Trigger.Key, jobKey);
-            return false;
-        }
+        // Replace any existing pending retry rather than the firing trigger, so a cron or repeating schedule keeps
+        // its next fire times. Unschedule-then-schedule covers both the first retry and a later attempt that reuses
+        // the same derived key.
+        await context.Scheduler.UnscheduleJob(retryTrigger.Key, cancellationToken);
+        await context.Scheduler.ScheduleJob(retryTrigger, cancellationToken);
 
         return true;
+    }
+
+    /// <inheritdoc />
+    public async Task CancelPendingRetryAsync(IJobExecutionContext context, CancellationToken cancellationToken = default)
+    {
+        if (QuartzTriggerKeys.IsRetryTrigger(context.Trigger.Key))
+            return;
+
+        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key);
+        var cancelled = await context.Scheduler.UnscheduleJob(retryKey, cancellationToken);
+
+        if (cancelled)
+            logger.LogDebug("Cancelled pending retry trigger {RetryTriggerKey} for job {JobKey} because the original schedule fired again", retryKey, context.JobDetail.Key);
     }
 
     private TimeSpan GetDelay(IJobExecutionContext context, Exception exception, int attemptNumber, QuartzJobOptions jobOptions)
@@ -97,8 +109,8 @@ public class QuartzJobRetryScheduler(
 
     private ITrigger CreateRetryTrigger(IJobExecutionContext context, int attemptNumber, TimeSpan delay)
     {
-        // Carry over the job data of the failed trigger so that the workflow inputs it carries are not lost, and keep
-        // the original trigger key so that the retry remains addressable (for example, to unschedule it).
+        // Carry over the job data of the failed trigger so that the workflow inputs it carries are not lost. Use a
+        // derived key so the original trigger (and its cron / repeating schedule) is left in place.
         var jobDataMap = new JobDataMap();
         var triggerJobDataMap = context.Trigger.JobDataMap;
 
@@ -112,7 +124,7 @@ public class QuartzJobRetryScheduler(
 
         return TriggerBuilder.Create()
             .ForJob(context.JobDetail.Key)
-            .WithIdentity(context.Trigger.Key)
+            .WithIdentity(QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key))
             .UsingJobData(jobDataMap)
             .StartAt(startAt)
             .Build();

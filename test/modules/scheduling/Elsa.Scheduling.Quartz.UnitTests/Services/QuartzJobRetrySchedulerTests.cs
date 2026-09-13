@@ -1,6 +1,7 @@
 using System.Globalization;
 using Elsa.Common;
 using Elsa.Resilience;
+using Elsa.Scheduling.Quartz;
 using Elsa.Scheduling.Quartz.Models;
 using Elsa.Scheduling.Quartz.Options;
 using Elsa.Scheduling.Quartz.Services;
@@ -65,15 +66,28 @@ public class QuartzJobRetrySchedulerTests
     }
 
     [Fact]
-    public async Task ScheduleRetryAsync_KeepsTheOriginalTriggerKeySoTheRetryRemainsAddressable()
+    public async Task ScheduleRetryAsync_UsesADerivedTriggerKeySoTheOriginalScheduleIsLeftInPlace()
     {
         var (context, scheduler) = CreateContext();
         var capturedTrigger = CaptureTrigger(scheduler);
 
         await ScheduleRetryAsync(context);
 
-        Assert.Equal(context.Trigger.Key, capturedTrigger()!.Key);
+        Assert.Equal(QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key), capturedTrigger()!.Key);
         Assert.Equal(context.JobDetail.Key, capturedTrigger()!.JobKey);
+        scheduler.Verify(s => s.RescheduleJob(It.IsAny<TriggerKey>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ScheduleRetryAsync_WhenTheFiringTriggerIsAlreadyARetry_ReusesTheRetryKey()
+    {
+        var (context, scheduler) = CreateContext(retryAttempt: "1", triggerName: "test-trigger-retry");
+        var capturedTrigger = CaptureTrigger(scheduler);
+
+        await ScheduleRetryAsync(context);
+
+        Assert.Equal(context.Trigger.Key, capturedTrigger()!.Key);
+        Assert.Equal("test-trigger-retry", capturedTrigger()!.Key.Name);
     }
 
     [Fact]
@@ -182,16 +196,38 @@ public class QuartzJobRetrySchedulerTests
     }
 
     [Fact]
-    public async Task ScheduleRetryAsync_RescheduleJobReturnsNull_ReturnsFalse()
+    public async Task ScheduleRetryAsync_ReplacesAnExistingPendingRetryTrigger()
     {
         var (context, scheduler) = CreateContext();
-        scheduler
-            .Setup(s => s.RescheduleJob(It.IsAny<TriggerKey>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DateTimeOffset?)null);
+        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key);
 
         var scheduled = await ScheduleRetryAsync(context);
 
-        Assert.False(scheduled);
+        Assert.True(scheduled);
+        scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.ScheduleJob(It.Is<ITrigger>(t => t.Key.Equals(retryKey)), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelPendingRetryAsync_OriginalTrigger_UnschedulesTheDerivedRetryTrigger()
+    {
+        var (context, scheduler) = CreateContext();
+        var retryKey = QuartzTriggerKeys.GetRetryTriggerKey(context.Trigger.Key);
+
+        await CreateSut().CancelPendingRetryAsync(context);
+
+        scheduler.Verify(s => s.UnscheduleJob(retryKey, It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(context.Trigger.Key, It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CancelPendingRetryAsync_RetryTrigger_DoesNotUnschedule()
+    {
+        var (context, scheduler) = CreateContext(triggerName: "test-trigger-retry");
+
+        await CreateSut().CancelPendingRetryAsync(context);
+
+        scheduler.Verify(s => s.UnscheduleJob(It.IsAny<TriggerKey>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -305,7 +341,7 @@ public class QuartzJobRetrySchedulerTests
     private QuartzJobRetryScheduler CreateSut() =>
         new(_clock.Object, _options.AsOptions(), new QuartzRetryDelayCalculator(), _transientDetector.Object, NullLogger<QuartzJobRetryScheduler>.Instance);
 
-    private static (IJobExecutionContext Context, Mock<QuartzScheduler> Scheduler) CreateContext(object? retryAttempt = null)
+    private static (IJobExecutionContext Context, Mock<QuartzScheduler> Scheduler) CreateContext(object? retryAttempt = null, string? triggerName = null)
     {
         var triggerData = new Dictionary<string, object>
         {
@@ -315,20 +351,20 @@ public class QuartzJobRetrySchedulerTests
         if (retryAttempt != null)
             triggerData[QuartzJobDataKeys.RetryAttempt] = retryAttempt;
 
-        return QuartzJobTestHelper.CreateJobExecutionContext(new Dictionary<string, object>(), triggerData: triggerData);
+        return QuartzJobTestHelper.CreateJobExecutionContext(new Dictionary<string, object>(), triggerData: triggerData, triggerName: triggerName);
     }
 
     private static Func<ITrigger?> CaptureTrigger(Mock<QuartzScheduler> scheduler)
     {
         ITrigger? capturedTrigger = null;
         scheduler
-            .Setup(s => s.RescheduleJob(It.IsAny<TriggerKey>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()))
-            .Callback<TriggerKey, ITrigger, CancellationToken>((_, t, _) => capturedTrigger = t)
+            .Setup(s => s.ScheduleJob(It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()))
+            .Callback<ITrigger, CancellationToken>((t, _) => capturedTrigger = t)
             .ReturnsAsync(Now);
 
         return () => capturedTrigger;
     }
 
     private static void VerifyNotRescheduled(Mock<QuartzScheduler> scheduler) =>
-        scheduler.Verify(s => s.RescheduleJob(It.IsAny<TriggerKey>(), It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()), Times.Never);
+        scheduler.Verify(s => s.ScheduleJob(It.IsAny<ITrigger>(), It.IsAny<CancellationToken>()), Times.Never);
 }

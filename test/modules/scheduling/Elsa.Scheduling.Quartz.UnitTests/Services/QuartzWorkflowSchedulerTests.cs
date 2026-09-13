@@ -177,6 +177,33 @@ public class QuartzWorkflowSchedulerTests
     }
 
     [Fact]
+    public async Task UnscheduleAsync_RemovesTheTaskTriggerAndAnyPendingRetryTrigger()
+    {
+        // Arrange
+        var scheduler = new Mock<global::Quartz.IScheduler>();
+        var sut = CreateScheduler(scheduler, out _);
+
+        // Act
+        await sut.UnscheduleAsync("task-1");
+
+        // Assert: both the original schedule and its derived retry trigger are removed.
+        scheduler.Verify(s => s.UnscheduleJob(It.Is<TriggerKey>(k => k.Name == "task-1" && k.Group == "Default"), It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(It.Is<TriggerKey>(k => k.Name == "task-1-retry" && k.Group == "Default"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UnscheduleAsync_TenantSpecificGroup_RemovesRetryTriggerFromTheSameGroup()
+    {
+        var scheduler = new Mock<global::Quartz.IScheduler>();
+        var sut = CreateScheduler(scheduler, out _, "tenant-a");
+
+        await sut.UnscheduleAsync("task-1");
+
+        scheduler.Verify(s => s.UnscheduleJob(It.Is<TriggerKey>(k => k.Name == "task-1" && k.Group == "tenant-a"), It.IsAny<CancellationToken>()), Times.Once);
+        scheduler.Verify(s => s.UnscheduleJob(It.Is<TriggerKey>(k => k.Name == "task-1-retry" && k.Group == "tenant-a"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task ScheduleCronAsync_WhenTriggerScheduledConcurrentlyViaSqlStore_SwallowsWrappedPersistenceException()
     {
         // Arrange: SQL-backed Quartz stores (AdoJobStore) can wrap the duplicate-trigger error in a
