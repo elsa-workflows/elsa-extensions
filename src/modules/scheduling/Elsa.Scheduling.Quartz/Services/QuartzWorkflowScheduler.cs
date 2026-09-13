@@ -136,10 +136,11 @@ public class QuartzWorkflowScheduler(
             {
                 var triggers = await scheduler.GetTriggersOfJob(jobKey, token) ?? Array.Empty<ITrigger>();
 
-                foreach (var trigger in triggers)
+                foreach (var trigger in triggers.Where(trigger =>
+                             QuartzTriggerKeys.IsRetryTrigger(trigger) &&
+                             QuartzTriggerKeys.GetOriginalTriggerKey(trigger).Equals(triggerKey)))
                 {
-                    if (QuartzTriggerKeys.IsRetryTrigger(trigger) && QuartzTriggerKeys.GetOriginalTriggerKey(trigger).Equals(triggerKey))
-                        retryKeys.Add(trigger.Key);
+                    retryKeys.Add(trigger.Key);
                 }
             }
 
