@@ -7,7 +7,7 @@ namespace Elsa.Persistence.MongoDb.Modules.Labels;
 
 /// <inheritdoc />
 [UsedImplicitly]
-public class MongoWorkflowDefinitionLabelStore(MongoDbStore<WorkflowDefinitionLabel> mongoDbStore) : IWorkflowDefinitionLabelStore
+public class MongoWorkflowDefinitionLabelStore(MongoDbStore<WorkflowDefinitionLabel> mongoDbStore) : IWorkflowDefinitionLabelStore, IWorkflowDefinitionLabelQuery
 {
     /// <inheritdoc />
     public Task SaveAsync(WorkflowDefinitionLabel record, CancellationToken cancellationToken = default)
@@ -31,6 +31,18 @@ public class MongoWorkflowDefinitionLabelStore(MongoDbStore<WorkflowDefinitionLa
     public Task<IEnumerable<WorkflowDefinitionLabel>> FindByWorkflowDefinitionVersionIdAsync(string workflowDefinitionVersionId, CancellationToken cancellationToken = default)
     {
         return mongoDbStore.FindManyAsync(x => x.WorkflowDefinitionVersionId == workflowDefinitionVersionId, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<IEnumerable<WorkflowDefinitionLabel>> FindByLabelIdsAsync(IEnumerable<string> labelIds, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(labelIds);
+
+        var ids = labelIds.Distinct().ToList();
+
+        return ids.Count == 0
+            ? Task.FromResult<IEnumerable<WorkflowDefinitionLabel>>(Array.Empty<WorkflowDefinitionLabel>())
+            : mongoDbStore.FindManyAsync(x => ids.Contains(x.LabelId), cancellationToken);
     }
 
     /// <inheritdoc />

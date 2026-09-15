@@ -11,6 +11,7 @@ using Elsa.Extensions;
 using Elsa.Features.Services;
 using Elsa.Identity.Multitenancy;
 using Elsa.Ldap.Extensions;
+using Elsa.Mqtt.Options;
 using Elsa.OpenTelemetry.Middleware;
 using Elsa.Persistence.Dapper.Extensions;
 using Elsa.Persistence.Dapper.Contracts;
@@ -351,6 +352,9 @@ services
                     runtime.WorkflowExecutionLogStore = sp => sp.GetRequiredService<MemoryWorkflowExecutionLogStore>();
                 }
 
+                if (useQuartz)
+                    runtime.UseQuartzBackgroundActivityScheduler();
+
                 if (useCaching)
                     runtime.UseCache();
 
@@ -453,6 +457,17 @@ services
                         Host = configuration.GetValue<string>("Ldap:Host")!,
                         Port = configuration.GetValue<int>("Ldap:Port"),
                         UseSsl = configuration.GetValue<bool>("Ldap:UseSsl"),
+                    });
+                };
+            })
+            .UseMqtt(mqtt =>
+            {
+                mqtt.ConfigureOptions = options =>
+                {
+                    options.AddDefaultConnection(new MqttConnectionOptions
+                    {
+                        Host = configuration.GetValue<string>("Mqtt:Host")!,
+                        Port = configuration.GetValue<int>("Mqtt:Port"),
                     });
                 };
             })

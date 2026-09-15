@@ -9,14 +9,12 @@
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Http\Elsa.Http.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
         <PackageReference Include="Elsa.Http" />
-    </ItemGroup>
-	
-    <ItemGroup>
-      <ProjectReference Include="..\..\http\Elsa.Http.Webhooks\Elsa.Http.Webhooks.csproj" />
+        <PackageReference Include="Elsa.Http.Webhooks" />
     </ItemGroup>
     
 </Project>

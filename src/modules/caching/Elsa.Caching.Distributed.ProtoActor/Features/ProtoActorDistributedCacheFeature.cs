@@ -1,7 +1,6 @@
 using Elsa.Caching.Distributed.Features;
 using Elsa.Caching.Distributed.ProtoActor.Actors;
 using Elsa.Caching.Distributed.ProtoActor.HostedServices;
-using Elsa.Caching.Distributed.ProtoActor.ProtoBuf;
 using Elsa.Caching.Distributed.ProtoActor.Providers;
 using Elsa.Caching.Distributed.ProtoActor.Services;
 using Elsa.Features.Abstractions;
@@ -39,13 +38,12 @@ public class ProtoActorDistributedCacheFeature : FeatureBase
     public override void Apply()
     {
         var services = Services;
-        
+
         // Actor providers.
         services.AddSingleton<IVirtualActorsProvider, LocalCacheVirtualActorProvider>();
 
         // Actors.
-        services
-            .AddTransient(sp => new LocalCacheActor((context, _) => ActivatorUtilities.CreateInstance<LocalCache>(sp, context)));
+        services.AddTransient<MemoryCacheInvalidatorActor>();
 
         // Distributed runtime.
         services.AddSingleton<ProtoActorChangeTokenSignalPublisher>();

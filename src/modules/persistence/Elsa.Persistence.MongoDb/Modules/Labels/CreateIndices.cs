@@ -31,7 +31,8 @@ internal class CreateIndices(IServiceProvider serviceProvider) : IHostedService
                     new List<CreateIndexModel<WorkflowDefinitionLabel>>
                     {
                         new(indexBuilder.Ascending(x => x.WorkflowDefinitionId)),
-                        new(indexBuilder.Ascending(x => x.WorkflowDefinitionVersionId))
+                        new(indexBuilder.Ascending(x => x.WorkflowDefinitionVersionId)),
+                        new(indexBuilder.Ascending(x => x.LabelId))
                     },
                     cancellationToken));
     }

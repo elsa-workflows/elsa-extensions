@@ -1,4 +1,4 @@
-using Elsa.Expressions.Services;
+using Elsa.Common.Serialization;
 using Elsa.Workflows;
 using Elsa.Workflows.Memory;
 using Elsa.Workflows.Models;
@@ -20,8 +20,8 @@ public class VariableSerializer : IBsonSerializer<Variable>
     /// </summary>
     public VariableSerializer()
     {
-        var wellKnownTypeRegistry = WellKnownTypeRegistry.CreateDefault();
-        _mapper = new VariableMapper(wellKnownTypeRegistry, NullLogger<VariableMapper>.Instance);
+        var serializationTypeRegistry = SerializationTypeRegistry.CreateDefault();
+        _mapper = new VariableMapper(serializationTypeRegistry, NullLogger<VariableMapper>.Instance);
     }
     
     /// <inheritdoc />

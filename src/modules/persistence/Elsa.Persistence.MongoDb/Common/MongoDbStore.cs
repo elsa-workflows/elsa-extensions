@@ -12,14 +12,29 @@ namespace Elsa.Persistence.MongoDb.Common;
 /// <summary>
 /// A generic repository class around MongoDb for accessing documents.
 /// </summary>
+/// <remarks>
+/// For documents that derive from <see cref="Entity"/>, an ambient tenant ID is assigned only when
+/// the document's <see cref="Entity.TenantId"/> is <see langword="null"/>. Explicit tenant IDs,
+/// including <see cref="Tenant.AgnosticTenantId"/>, are preserved. Tenant-scoped reads include
+/// agnostic documents, while tenant-scoped deletes exclude them. Pass <c>tenantAgnostic: true</c>
+/// (or use an explicit <c>*</c> tenant context) when an operation is intended to manage shared
+/// documents.
+///
+/// Existing documents with a <see langword="null"/> tenant ID are not migrated automatically. They
+/// remain in the ambient/default scope; deployments that need them to be shared must migrate those
+/// records to <see cref="Tenant.AgnosticTenantId"/> explicitly. Operations performed through
+/// <see cref="GetCollection"/> bypass these tenant filters and are responsible for applying their
+/// own scope.
+/// </remarks>
 /// <typeparam name="TDocument">The type of the document.</typeparam>
 [PublicAPI]
 public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITenantAccessor tenantAccessor)
     where TDocument : class
 {
     /// <summary>
-    /// Returns a queryable collection of documents.
+    /// Returns the underlying collection of documents.
     /// </summary>
+    /// <remarks>Direct collection operations bypass the store's tenant filters.</remarks>
     public IMongoCollection<TDocument> GetCollection() => collection;
 
     /// <summary>
@@ -374,10 +389,11 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
     /// <returns>The number of documents deleted.</returns>
     public async Task<long> DeleteWhereAsync(Expression<Func<TDocument, bool>> predicate, string key, bool tenantAgnostic = false, CancellationToken cancellationToken = default)
     {
-        var queryable = GetQueryableCollection(tenantAgnostic);
+        // Strict tenant scoping on delete: never match shared "*" entities under a concrete tenant.
+        var queryable = GetQueryableCollection(tenantAgnostic, includeTenantAgnostic: false);
         var documentsToDelete = await queryable.Where(predicate).ToListAsync(cancellationToken);
         var count = documentsToDelete.LongCount();
-        var filter = documentsToDelete.BuildIdFilterForList(key);
+        var filter = ApplyTenantScope(documentsToDelete.BuildIdFilterForList(key), tenantAgnostic);
         await collection.DeleteManyAsync(filter, cancellationToken);
 
         return count;
@@ -417,16 +433,17 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
     /// <returns>The number of documents deleted.</returns>
     public async Task<long> DeleteWhereAsync(Func<IQueryable<TDocument>, IQueryable<TDocument>> query, string key = nameof(Entity.Id), bool tenantAgnostic = false, CancellationToken cancellationToken = default)
     {
-        var queryable = GetQueryableCollection(tenantAgnostic);
+        // Strict tenant scoping on delete: never match shared "*" entities under a concrete tenant.
+        var queryable = GetQueryableCollection(tenantAgnostic, includeTenantAgnostic: false);
         var documentsToDelete = await query(queryable).ToListAsync(cancellationToken);
         var count = documentsToDelete.LongCount();
-        var filter = documentsToDelete.BuildIdFilterForList(key);
+        var filter = ApplyTenantScope(documentsToDelete.BuildIdFilterForList(key), tenantAgnostic);
         await collection.DeleteManyAsync(filter, cancellationToken);
 
         return count;
     }
 
-    private IQueryable<TDocument> GetQueryableCollection(bool tenantAgnostic = false)
+    private IQueryable<TDocument> GetQueryableCollection(bool tenantAgnostic = false, bool includeTenantAgnostic = true)
     {
         var queryable = collection.AsQueryable();
 
@@ -435,9 +452,16 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
 
         if (typeof(Entity).IsAssignableFrom(typeof(TDocument)))
         {
-            var tenant = tenantAccessor.Tenant;
-            var tenantId = tenant?.Id.EmptyToNull();
-            queryable = queryable.Where(x => (x as Entity)!.TenantId == tenantId);
+            var tenantId = GetTenantId();
+            // Reads include tenant-agnostic ("*") rows so global entities (e.g. CLR workflow
+            // definitions) remain visible under a specific tenant, matching the EFCore provider.
+            // Deletes pass includeTenantAgnostic: false so a tenant-scoped delete cannot remove a
+            // shared "*" entity. This is intentionally strict even for the default (null)
+            // tenant; only an explicit tenant-agnostic operation or the "*" tenant can delete
+            // shared data.
+            queryable = includeTenantAgnostic
+                ? queryable.Where(x => (x as Entity)!.TenantId == tenantId || (x as Entity)!.TenantId == Tenant.AgnosticTenantId)
+                : queryable.Where(x => (x as Entity)!.TenantId == tenantId);
         }
 
         return queryable;
@@ -445,22 +469,33 @@ public class MongoDbStore<TDocument>(IMongoCollection<TDocument> collection, ITe
 
     private void ApplyTenantId(TDocument document)
     {
-        var tenant = tenantAccessor.Tenant;
-        var tenantId = tenant?.Id;
+        var tenantId = GetTenantId();
 
-        if (document is Entity tenantDocument)
-            tenantDocument.TenantId = tenantId.EmptyToNull();
+        // Preserve explicit tenant IDs, including tenant-agnostic ("*") entities. Only stamp
+        // entities that have not been assigned an owner yet.
+        if (document is Entity { TenantId: null } tenantDocument)
+            tenantDocument.TenantId = tenantId;
     }
 
     private void ApplyTenantId(IEnumerable<TDocument> documents)
     {
-        var tenant = tenantAccessor.Tenant;
-        var tenantId = tenant?.Id;
+        var tenantId = GetTenantId();
 
         foreach (var document in documents)
         {
-            if (document is Entity tenantDocument)
-                tenantDocument.TenantId = tenantId.EmptyToNull();
+            if (document is Entity { TenantId: null } tenantDocument)
+                tenantDocument.TenantId = tenantId;
         }
     }
+
+    private FilterDefinition<TDocument> ApplyTenantScope(FilterDefinition<TDocument> filter, bool tenantAgnostic)
+    {
+        if (tenantAgnostic || !typeof(Entity).IsAssignableFrom(typeof(TDocument)))
+            return filter;
+
+        var tenantId = GetTenantId();
+        return filter & Builders<TDocument>.Filter.Where(x => (x as Entity)!.TenantId == tenantId);
+    }
+
+    private string? GetTenantId() => tenantAccessor.Tenant?.Id.EmptyToNull();
 }

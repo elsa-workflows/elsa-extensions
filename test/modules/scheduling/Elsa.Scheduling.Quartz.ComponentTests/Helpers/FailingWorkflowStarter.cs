@@ -11,6 +11,13 @@ public class FailingWorkflowStarter(IWorkflowStarter innerStarter) : IWorkflowSt
 
     public int FailuresBeforeSuccess { get; set; }
     public Exception? ExceptionToThrow { get; set; }
+
+    /// <summary>
+    /// The response to return once the configured number of failures has been exhausted. When not set, the call is
+    /// forwarded to the inner starter.
+    /// </summary>
+    public StartWorkflowResponse? SuccessResponse { get; set; }
+
     public int CallCount => _callCount;
 
     public async Task<StartWorkflowResponse> StartWorkflowAsync(StartWorkflowRequest request, CancellationToken cancellationToken = default)
@@ -21,6 +28,9 @@ public class FailingWorkflowStarter(IWorkflowStarter innerStarter) : IWorkflowSt
         {
             throw ExceptionToThrow;
         }
+
+        if (SuccessResponse != null)
+            return SuccessResponse;
 
         return await innerStarter.StartWorkflowAsync(request, cancellationToken);
     }
