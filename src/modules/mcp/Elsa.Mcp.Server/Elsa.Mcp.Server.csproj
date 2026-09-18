@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>
+            Exposes Elsa workflows as Model Context Protocol (MCP) tools.
+        </Description>
+        <PackageTags>elsa extension module mcp model context protocol ai</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Elsa.Mcp.Server.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ModelContextProtocol.AspNetCore" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa\Elsa.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Core\Elsa.Workflows.Core.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Management\Elsa.Workflows.Management.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Runtime\Elsa.Workflows.Runtime.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="Elsa" />
+        <PackageReference Include="Elsa.Workflows.Core" />
+        <PackageReference Include="Elsa.Workflows.Management" />
+        <PackageReference Include="Elsa.Workflows.Runtime" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\bookmarks\Elsa.Bookmarks.Ui\Elsa.Bookmarks.Ui.csproj" />
+        <ProjectReference Include="..\Elsa.Mcp.Abstractions\Elsa.Mcp.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>
