@@ -128,6 +128,33 @@ public class MongoWorkflowDefinitionStore(MongoDbStore<WorkflowDefinition> mongo
     }
 
     /// <inheritdoc />
+    public async Task<WorkflowDefinitionUpdateResult> TryUpdateLatestAsync(
+        WorkflowDefinitionFilter filter,
+        Func<WorkflowDefinition, bool> matchesExpected,
+        Func<WorkflowDefinition, WorkflowDefinition> update,
+        CancellationToken cancellationToken = default)
+    {
+        var current = await mongoDbStore.FindAsync(queryable => Filter(queryable, filter), filter.TenantAgnostic, cancellationToken);
+
+        if (current == null)
+            return WorkflowDefinitionUpdateResult.NotFound();
+
+        if (!current.IsLatest || !matchesExpected(current))
+            return WorkflowDefinitionUpdateResult.Conflict();
+
+        var next = update(current);
+
+        if (next.Id != current.Id)
+        {
+            current.IsLatest = false;
+            await mongoDbStore.SaveAsync(current, cancellationToken);
+        }
+
+        await mongoDbStore.SaveAsync(next, cancellationToken);
+        return WorkflowDefinitionUpdateResult.Updated(next);
+    }
+
+    /// <inheritdoc />
     public async Task<long> DeleteAsync(WorkflowDefinitionFilter filter, CancellationToken cancellationToken = default)
     {
         var queryable = mongoDbStore.GetCollection().AsQueryable();

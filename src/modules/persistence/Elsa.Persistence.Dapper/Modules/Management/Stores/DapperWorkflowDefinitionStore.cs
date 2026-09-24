@@ -121,6 +121,35 @@ internal class DapperWorkflowDefinitionStore(Store<WorkflowDefinitionRecord> sto
     }
 
     /// <inheritdoc />
+    public async Task<WorkflowDefinitionUpdateResult> TryUpdateLatestAsync(
+        WorkflowDefinitionFilter filter,
+        Func<WorkflowDefinition, bool> matchesExpected,
+        Func<WorkflowDefinition, WorkflowDefinition> update,
+        CancellationToken cancellationToken = default)
+    {
+        var record = await store.FindAsync(q => ApplyFilter(q, filter), cancellationToken);
+
+        if (record == null)
+            return WorkflowDefinitionUpdateResult.NotFound();
+
+        var current = Map(record);
+
+        if (!current.IsLatest || !matchesExpected(current))
+            return WorkflowDefinitionUpdateResult.Conflict();
+
+        var next = update(current);
+
+        if (next.Id != current.Id)
+        {
+            current.IsLatest = false;
+            await store.SaveAsync(Map(current), cancellationToken);
+        }
+
+        await store.SaveAsync(Map(next), cancellationToken);
+        return WorkflowDefinitionUpdateResult.Updated(next);
+    }
+
+    /// <inheritdoc />
     public async Task<long> DeleteAsync(WorkflowDefinitionFilter filter, CancellationToken cancellationToken = default)
     {
         return await store.DeleteAsync(q => ApplyFilter(q, filter), cancellationToken);
