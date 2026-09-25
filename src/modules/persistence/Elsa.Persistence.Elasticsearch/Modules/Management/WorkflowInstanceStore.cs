@@ -151,38 +151,23 @@ public class ElasticWorkflowInstanceStore : IWorkflowInstanceStore
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <paramref name="allowFinishedCancelled"/> is unused: drain no longer promotes Finished/Cancelled (#8419).
+    /// The parameter remains so the 3.8.4 signature stays binary-compatible.
+    /// </remarks>
     public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default, bool allowFinishedCancelled = false)
     {
         // Conditional write: do not SaveAsync a Find snapshot. Id is a document field
-        // (not mapped as _id), so Update-by-id is unavailable. Default UpdateByQuery
-        // refuses every Finished row (#8052). Drain PersistInterrupted alone may pass
-        // allowFinishedCancelled to add Status != Finished OR SubStatus == Cancelled.
+        // (not mapped as _id), so Update-by-id is unavailable. Refuse every Finished
+        // row (#8419). allowFinishedCancelled is ignored.
         var updated = await _store.UpdateByQueryAsync(d =>
         {
             d.Refresh(true);
-            if (allowFinishedCancelled)
-            {
-                d.Query(q => q.Bool(b => b
-                    .Must(
-                        m => m.Match(mt => mt.Field(f => f.Id).Query(workflowInstanceId)),
-                        m => m.Bool(s => s
-                            .Should(
-                                sh => sh.Bool(n => n.MustNot(mn => mn.Match(mt => mt
-                                    .Field(f => f.Status)
-                                    .Query(WorkflowStatus.Finished.ToString()!)))),
-                                sh => sh.Match(mt => mt
-                                    .Field(f => f.SubStatus)
-                                    .Query(WorkflowSubStatus.Cancelled.ToString()!)))
-                            .MinimumShouldMatch(1)))));
-            }
-            else
-            {
-                d.Query(q => q.Bool(b => b
-                    .Must(m => m.Match(mt => mt.Field(f => f.Id).Query(workflowInstanceId)))
-                    .MustNot(mn => mn.Match(mt => mt
-                        .Field(f => f.Status)
-                        .Query(WorkflowStatus.Finished.ToString()!)))));
-            }
+            d.Query(q => q.Bool(b => b
+                .Must(m => m.Match(mt => mt.Field(f => f.Id).Query(workflowInstanceId)))
+                .MustNot(mn => mn.Match(mt => mt
+                    .Field(f => f.Status)
+                    .Query(WorkflowStatus.Finished.ToString()!)))));
 
             d.Script(s => s
                 .Source("ctx._source.status = params.status; ctx._source.subStatus = params.subStatus; ctx._source.isExecuting = params.isExecuting;")

@@ -139,20 +139,17 @@ public class MongoWorkflowInstanceStore(MongoDbStore<WorkflowInstance> mongoDbSt
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <paramref name="allowFinishedCancelled"/> is unused: drain no longer promotes Finished/Cancelled (#8419).
+    /// The parameter remains so the 3.8.4 signature stays binary-compatible.
+    /// </remarks>
     public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default, bool allowFinishedCancelled = false)
     {
         var collection = mongoDbStore.GetCollection();
-        // Default: refuse every Finished row (#8052). Drain PersistInterrupted alone may pass
-        // allowFinishedCancelled to promote Finished/Cancelled → Running+Interrupted.
+        // Refuse every Finished row (#8419). allowFinishedCancelled is ignored.
         var idFilter = Builders<WorkflowInstance>.Filter.Eq(x => x.Id, workflowInstanceId);
         var notFinished = Builders<WorkflowInstance>.Filter.Ne(x => x.Status, WorkflowStatus.Finished);
-        var filter = allowFinishedCancelled
-            ? Builders<WorkflowInstance>.Filter.And(
-                idFilter,
-                Builders<WorkflowInstance>.Filter.Or(
-                    notFinished,
-                    Builders<WorkflowInstance>.Filter.Eq(x => x.SubStatus, WorkflowSubStatus.Cancelled)))
-            : Builders<WorkflowInstance>.Filter.And(idFilter, notFinished);
+        var filter = Builders<WorkflowInstance>.Filter.And(idFilter, notFinished);
         var update = Builders<WorkflowInstance>.Update
             .Set(x => x.Status, WorkflowStatus.Running)
             .Set(x => x.SubStatus, WorkflowSubStatus.Interrupted)

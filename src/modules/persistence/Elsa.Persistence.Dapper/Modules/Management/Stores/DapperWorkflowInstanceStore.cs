@@ -171,6 +171,10 @@ internal class DapperWorkflowInstanceStore(Store<WorkflowInstanceRecord> store, 
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <paramref name="allowFinishedCancelled"/> is unused: drain no longer promotes Finished/Cancelled (#8419).
+    /// The parameter remains so the 3.8.4 signature stays binary-compatible.
+    /// </remarks>
     public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default, bool allowFinishedCancelled = false)
     {
         var record = new WorkflowInstanceRecord
@@ -187,19 +191,10 @@ internal class DapperWorkflowInstanceStore(Store<WorkflowInstanceRecord> store, 
             q =>
             {
                 q.Is(nameof(WorkflowInstanceRecord.Id), workflowInstanceId);
-                // Default: refuse every Finished row (#8052). Distinct param names avoid
-                // colliding with SET Status = Running. Drain PersistInterrupted alone may
-                // pass allowFinishedCancelled (elsa-core#8069).
+                // Refuse every Finished row (#8419). Distinct param names avoid colliding
+                // with SET Status = Running.
                 q.Parameters.Add("@FinishedStatus", WorkflowStatus.Finished.ToString());
-                if (allowFinishedCancelled)
-                {
-                    q.Sql.AppendLine("and (not Status = @FinishedStatus or SubStatus = @CancelledSubStatus)");
-                    q.Parameters.Add("@CancelledSubStatus", WorkflowSubStatus.Cancelled.ToString());
-                }
-                else
-                {
-                    q.Sql.AppendLine("and not Status = @FinishedStatus");
-                }
+                q.Sql.AppendLine("and not Status = @FinishedStatus");
             },
             cancellationToken);
 
