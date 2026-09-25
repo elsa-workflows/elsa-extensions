@@ -118,7 +118,7 @@ public sealed class DapperWorkflowInstanceStoreTests : IDisposable
         Assert.Equal(("Running", "Interrupted", 0), ReadMarkers("running-1"));
     }
 
-    [Fact(DisplayName = "TryMarkInterruptedAsync refuses Finished/Cancelled unless allowFinishedCancelled is set")]
+    [Fact(DisplayName = "TryMarkInterruptedAsync refuses Finished/Cancelled")]
     public async Task TryMarkInterruptedAsync_DoesNotOverwriteCancelledInstanceByDefault()
     {
         InsertInterruptible("cancelled-1", WorkflowStatus.Finished, WorkflowSubStatus.Cancelled, isExecuting: false);
@@ -130,16 +130,16 @@ public sealed class DapperWorkflowInstanceStoreTests : IDisposable
         Assert.Equal(("Finished", "Cancelled", 0), ReadMarkers("cancelled-1"));
     }
 
-    [Fact(DisplayName = "TryMarkInterruptedAsync promotes Finished/Cancelled only when allowFinishedCancelled is true")]
-    public async Task TryMarkInterruptedAsync_PromotesCancelledWhenAllowed()
+    [Fact(DisplayName = "TryMarkInterruptedAsync refuses Finished/Cancelled even when allowFinishedCancelled is true")]
+    public async Task TryMarkInterruptedAsync_RefusesCancelledWhenAllowed()
     {
         InsertInterruptible("cancelled-1", WorkflowStatus.Finished, WorkflowSubStatus.Cancelled, isExecuting: false);
 
         using var tenantScope = _tenantAccessor.PushContext(new Tenant { Id = "tenant-a" });
         var marked = await _store.TryMarkInterruptedAsync("cancelled-1", allowFinishedCancelled: true);
 
-        Assert.True(marked);
-        Assert.Equal(("Running", "Interrupted", 0), ReadMarkers("cancelled-1"));
+        Assert.False(marked);
+        Assert.Equal(("Finished", "Cancelled", 0), ReadMarkers("cancelled-1"));
     }
 
     [Fact(DisplayName = "TryMarkInterruptedAsync refuses Finished/Finished")]

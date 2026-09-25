@@ -24,24 +24,6 @@ public class TryMarkInterruptedQueryTests
         Assert.Equal(WorkflowStatus.Finished.ToString(), query.Parameters.Get<string>("FinishedStatus"));
     }
 
-    [Fact(DisplayName = "Conditional interrupt update allows Running or Finished/Cancelled when flag is set")]
-    public void UpdateQuery_AllowsRunningOrFinishedCancelledWhenFlagSet()
-    {
-        var query = CreateInterruptUpdate();
-        query.Sql.AppendLine("and (not Status = @FinishedStatus or SubStatus = @CancelledSubStatus)");
-        query.Parameters.Add("@FinishedStatus", WorkflowStatus.Finished.ToString());
-        query.Parameters.Add("@CancelledSubStatus", WorkflowSubStatus.Cancelled.ToString());
-
-        var sql = query.Sql.ToString();
-
-        Assert.Contains("UPDATE WorkflowInstances SET Status = @Status, SubStatus = @SubStatus, IsExecuting = @IsExecuting WHERE 1=1", sql, StringComparison.Ordinal);
-        Assert.Contains("and Id = @Id", sql, StringComparison.Ordinal);
-        Assert.Contains("and (not Status = @FinishedStatus or SubStatus = @CancelledSubStatus)", sql, StringComparison.Ordinal);
-        AssertSharedInterruptParameters(query);
-        Assert.Equal(WorkflowStatus.Finished.ToString(), query.Parameters.Get<string>("FinishedStatus"));
-        Assert.Equal(WorkflowSubStatus.Cancelled.ToString(), query.Parameters.Get<string>("CancelledSubStatus"));
-    }
-
     private static ParameterizedQuery CreateInterruptUpdate()
     {
         var record = new

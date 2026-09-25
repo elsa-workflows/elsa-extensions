@@ -28,7 +28,7 @@ public class MongoWorkflowInstanceStoreTests
             Arg.Any<CancellationToken>());
     }
 
-    [Fact(DisplayName = "TryMarkInterruptedAsync refuses Finished/Cancelled unless allowFinishedCancelled is set")]
+    [Fact(DisplayName = "TryMarkInterruptedAsync refuses Finished/Cancelled")]
     public async Task TryMarkInterruptedAsync_FilterRefusesFinishedCancelledByDefault()
     {
         var (store, collection) = CreateStore(matchedCount: 0);
@@ -43,16 +43,16 @@ public class MongoWorkflowInstanceStoreTests
             Arg.Any<CancellationToken>());
     }
 
-    [Fact(DisplayName = "TryMarkInterruptedAsync filter allows Finished/Cancelled only when allowFinishedCancelled is true")]
-    public async Task TryMarkInterruptedAsync_FilterAllowsFinishedCancelledWhenFlagSet()
+    [Fact(DisplayName = "TryMarkInterruptedAsync still refuses Finished/Cancelled when allowFinishedCancelled is true")]
+    public async Task TryMarkInterruptedAsync_FilterRefusesFinishedCancelledWhenFlagSet()
     {
-        var (store, collection) = CreateStore(matchedCount: 1);
+        var (store, collection) = CreateStore(matchedCount: 0);
 
         var marked = await store.TryMarkInterruptedAsync("cancelled-1", allowFinishedCancelled: true);
 
-        Assert.True(marked);
+        Assert.False(marked);
         await collection.Received(1).UpdateOneAsync(
-            Arg.Is<FilterDefinition<WorkflowInstance>>(filter => FilterAllowsFinishedCancelled(filter, "cancelled-1")),
+            Arg.Is<FilterDefinition<WorkflowInstance>>(filter => FilterRefusesFinished(filter, "cancelled-1")),
             Arg.Is<UpdateDefinition<WorkflowInstance>>(update => UpdatePromotesToRunningInterrupted(update)),
             Arg.Any<UpdateOptions>(),
             Arg.Any<CancellationToken>());
@@ -120,22 +120,6 @@ public class MongoWorkflowInstanceStoreTests
                && rendered.Contains(((int)WorkflowStatus.Finished).ToString(), StringComparison.Ordinal)
                && !rendered.Contains("$or", StringComparison.Ordinal)
                && !rendered.Contains(((int)WorkflowSubStatus.Cancelled).ToString(), StringComparison.Ordinal);
-    }
-
-    /// <summary>
-    /// Flag-true filter: Id match plus Status != Finished OR SubStatus == Cancelled.
-    /// Still refuses Finished/Finished and Finished/Faulted at the filter.
-    /// </summary>
-    private static bool FilterAllowsFinishedCancelled(FilterDefinition<WorkflowInstance> filter, string id)
-    {
-        var rendered = Render(filter);
-        return rendered.Contains(id, StringComparison.Ordinal)
-               && rendered.Contains("$or", StringComparison.Ordinal)
-               && rendered.Contains("Status", StringComparison.Ordinal)
-               && rendered.Contains("$ne", StringComparison.Ordinal)
-               && rendered.Contains(((int)WorkflowStatus.Finished).ToString(), StringComparison.Ordinal)
-               && rendered.Contains("SubStatus", StringComparison.Ordinal)
-               && rendered.Contains(((int)WorkflowSubStatus.Cancelled).ToString(), StringComparison.Ordinal);
     }
 
     private static bool UpdatePromotesToRunningInterrupted(UpdateDefinition<WorkflowInstance> update)
