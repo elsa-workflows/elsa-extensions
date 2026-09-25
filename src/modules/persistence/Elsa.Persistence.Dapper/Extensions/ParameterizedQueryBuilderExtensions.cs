@@ -166,6 +166,22 @@ public static class ParameterizedQueryBuilderExtensions
     }
 
     /// <summary>
+    /// Appends an AND clause matching values strictly less than the specified value, if the value is not null.
+    /// </summary>
+    /// <param name="query">The query.</param>
+    /// <param name="field">The field.</param>
+    /// <param name="value">The value.</param>
+    public static ParameterizedQuery LessThan(this ParameterizedQuery query, string field, object? value)
+    {
+        if (value == null) return query;
+
+        query.Sql.AppendLine($"and {field} < @{field}");
+        query.Parameters.Add($"@{field}", value);
+
+        return query;
+    }
+
+    /// <summary>
     /// Appends a search term for workflow definitions to the search.
     /// </summary>
     /// <param name="query">The query.</param>
@@ -454,6 +470,27 @@ public static class ParameterizedQueryBuilderExtensions
 
         var primaryKeyValue = record.GetType().GetProperty(primaryKeyField)?.GetValue(record);
         query.Parameters.Add($"@{getParameterName(primaryKeyField)}", primaryKeyValue);
+
+        var recordType = record.GetType();
+        foreach (var field in fields)
+        {
+            var prop = recordType.GetProperty(field)!;
+            var propType = prop.PropertyType;
+            var value = prop.GetValue(record);
+            var dbType = value == null ? GetDbType(propType) : null;
+            query.Parameters.Add($"@{getParameterName(field)}", value, dbType);
+        }
+
+        return query;
+    }
+
+    /// <summary>
+    /// Begins an UPDATE query with a <c>WHERE 1=1</c> clause so additional filters can be appended.
+    /// </summary>
+    public static ParameterizedQuery Update(this ParameterizedQuery query, string table, object record, string[] fields, Func<string, string>? getParameterName = null)
+    {
+        getParameterName ??= x => x;
+        query.Sql.AppendLine(query.Dialect.Update(table, fields, getParameterName));
 
         var recordType = record.GetType();
         foreach (var field in fields)

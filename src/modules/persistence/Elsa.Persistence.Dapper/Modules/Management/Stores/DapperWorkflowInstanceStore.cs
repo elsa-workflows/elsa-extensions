@@ -170,6 +170,42 @@ internal class DapperWorkflowInstanceStore(Store<WorkflowInstanceRecord> store, 
         await store.UpdateAsync(record, [x => x.UpdatedAt], cancellationToken);
     }
 
+    /// <inheritdoc />
+    public async ValueTask<bool> TryMarkInterruptedAsync(string workflowInstanceId, CancellationToken cancellationToken = default, bool allowFinishedCancelled = false)
+    {
+        var record = new WorkflowInstanceRecord
+        {
+            Id = workflowInstanceId,
+            Status = WorkflowStatus.Running.ToString(),
+            SubStatus = WorkflowSubStatus.Interrupted.ToString(),
+            IsExecuting = false
+        };
+
+        var updated = await store.UpdateAsync(
+            record,
+            [x => x.Status, x => x.SubStatus, x => x.IsExecuting],
+            q =>
+            {
+                q.Is(nameof(WorkflowInstanceRecord.Id), workflowInstanceId);
+                // Default: refuse every Finished row (#8052). Distinct param names avoid
+                // colliding with SET Status = Running. Drain PersistInterrupted alone may
+                // pass allowFinishedCancelled (elsa-core#8069).
+                q.Parameters.Add("@FinishedStatus", WorkflowStatus.Finished.ToString());
+                if (allowFinishedCancelled)
+                {
+                    q.Sql.AppendLine("and (not Status = @FinishedStatus or SubStatus = @CancelledSubStatus)");
+                    q.Parameters.Add("@CancelledSubStatus", WorkflowSubStatus.Cancelled.ToString());
+                }
+                else
+                {
+                    q.Sql.AppendLine("and not Status = @FinishedStatus");
+                }
+            },
+            cancellationToken);
+
+        return updated > 0;
+    }
+
     private void ApplyFilter(ParameterizedQuery query, WorkflowInstanceFilter filter)
     {
         query
@@ -188,6 +224,7 @@ internal class DapperWorkflowInstanceStore(Store<WorkflowInstanceRecord> store, 
             .In(nameof(WorkflowInstance.Status), filter.WorkflowStatuses?.Select(x => x.ToString()))
             .In(nameof(WorkflowInstance.SubStatus), filter.WorkflowSubStatuses?.Select(x => x.ToString()))
             .Is(nameof(WorkflowInstance.IsExecuting), filter.IsExecuting)
+            .LessThan(nameof(WorkflowInstance.UpdatedAt), filter.BeforeLastUpdated)
             .AndWorkflowInstanceSearchTerm(filter.SearchTerm);
     }
 
