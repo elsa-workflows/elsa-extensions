@@ -170,6 +170,40 @@ public sealed class MongoTenantOwnedUpsertTests : IClassFixture<MongoTenantOwned
     }
 
     [Fact]
+    public async Task TenantB_SaveAsync_WithForgedTenantAOwner_IsRefused_AndARowUnchanged()
+    {
+        // Arrange
+        using (var tenantA = _tenantAccessor.PushContext(TenantA()))
+            await _definitions.SaveAsync(Definition("forged-a", "owned-by-a"));
+
+        // Act
+        Exception? exception;
+        using (var tenantB = _tenantAccessor.PushContext(TenantB()))
+            exception = await Record.ExceptionAsync(() => _definitions.SaveAsync(Definition("forged-a", "taken-by-b", "tenant-a")));
+
+        // Assert
+        AssertDuplicateKey(exception);
+        await AssertDefinitionUnchanged("forged-a", "tenant-a", "owned-by-a");
+    }
+
+    [Fact]
+    public async Task TenantB_SaveManyAsync_WithForgedTenantAOwner_IsRefused_AndARowUnchanged()
+    {
+        // Arrange
+        using (var tenantA = _tenantAccessor.PushContext(TenantA()))
+            await _definitions.SaveAsync(Definition("forged-many-a", "owned-by-a"));
+
+        // Act
+        Exception? exception;
+        using (var tenantB = _tenantAccessor.PushContext(TenantB()))
+            exception = await Record.ExceptionAsync(() => _definitions.SaveManyAsync([Definition("forged-many-a", "taken-by-b", "tenant-a")], cancellationToken: default));
+
+        // Assert
+        AssertDuplicateKey(exception);
+        await AssertDefinitionUnchanged("forged-many-a", "tenant-a", "owned-by-a");
+    }
+
+    [Fact]
     public async Task SameTenant_SaveAsync_UpdatesOwnRow()
     {
         // Arrange
@@ -307,8 +341,17 @@ public sealed class MongoTenantOwnedUpsertTests : IClassFixture<MongoTenantOwned
     private static void AssertDuplicateKey(Exception? exception)
     {
         Assert.NotNull(exception);
-        Assert.Contains("E11000", exception.ToString(), StringComparison.Ordinal);
+        Assert.True(IsDuplicateKey(exception), exception.ToString());
     }
+
+    private static bool IsDuplicateKey(Exception exception) =>
+        exception switch
+        {
+            MongoWriteException write => write.WriteError.Category == ServerErrorCategory.DuplicateKey || write.WriteError.Code == 11000,
+            MongoCommandException command => command.Code == 11000,
+            MongoBulkWriteException bulk => bulk.WriteErrors.Any(error => error.Category == ServerErrorCategory.DuplicateKey || error.Code == 11000),
+            _ => exception.InnerException is { } inner && IsDuplicateKey(inner)
+        };
 
     private static Tenant TenantA() => new() { Id = "tenant-a" };
     private static Tenant TenantB() => new() { Id = "tenant-b" };
