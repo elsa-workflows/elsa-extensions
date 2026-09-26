@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\modules\mcp\Elsa.Mcp.Server\Elsa.Mcp.Server.csproj" />
+        <ProjectReference Include="..\..\..\..\src\modules\bookmarks\Elsa.Bookmarks.Ui\Elsa.Bookmarks.Ui.csproj" />
+    </ItemGroup>
+
+</Project>
