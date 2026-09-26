@@ -60,7 +60,7 @@ public sealed class MongoTenantOwnedUpsertTests : IClassFixture<MongoTenantOwned
         // Act
         Exception? exception;
         using (var tenantB = _tenantAccessor.PushContext(TenantB()))
-            exception = await Record.ExceptionAsync(() => _instances.SaveManyAsync([Instance("instance-many-a", "taken-by-b")]));
+            exception = await Record.ExceptionAsync(() => _instances.SaveManyAsync([Instance("instance-many-a", "taken-by-b")], cancellationToken: default));
 
         // Assert
         AssertDuplicateKey(exception);
@@ -94,7 +94,7 @@ public sealed class MongoTenantOwnedUpsertTests : IClassFixture<MongoTenantOwned
         // Act
         Exception? exception;
         using (var tenantB = _tenantAccessor.PushContext(TenantB()))
-            exception = await Record.ExceptionAsync(() => _definitions.SaveManyAsync([Definition("definition-many-a", "taken-by-b")]));
+            exception = await Record.ExceptionAsync(() => _definitions.SaveManyAsync([Definition("definition-many-a", "taken-by-b")], cancellationToken: default));
 
         // Assert
         AssertDuplicateKey(exception);
@@ -162,7 +162,7 @@ public sealed class MongoTenantOwnedUpsertTests : IClassFixture<MongoTenantOwned
         // Act
         Exception? exception;
         using (var tenantB = _tenantAccessor.PushContext(TenantB()))
-            exception = await Record.ExceptionAsync(() => _roles.SaveManyAsync([Role("admin-many", "Admin", "perm-b")]));
+            exception = await Record.ExceptionAsync(() => _roles.SaveManyAsync([Role("admin-many", "Admin", "perm-b")], cancellationToken: default));
 
         // Assert
         AssertDuplicateKey(exception);
