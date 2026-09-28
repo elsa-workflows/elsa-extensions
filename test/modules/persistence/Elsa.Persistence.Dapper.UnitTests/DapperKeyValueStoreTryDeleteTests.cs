@@ -15,7 +15,7 @@ namespace Elsa.Persistence.Dapper.UnitTests;
 
 /// <summary>
 /// Atomic <see cref="IKeyValueStore.TryDeleteAsync"/> on a migration-built SQLite DB (#260).
-/// There is no PostgreSQL Testcontainers setup on this branch.
+/// There is no PostgreSQL Testcontainers setup on this 3.9 branch.
 /// </summary>
 public sealed class DapperKeyValueStoreTryDeleteTests : IDisposable
 {
