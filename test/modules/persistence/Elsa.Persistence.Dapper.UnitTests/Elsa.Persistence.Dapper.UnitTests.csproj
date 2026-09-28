@@ -1,10 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+<<<<<<< HEAD
         <PackageReference Include="FluentMigrator.Runner.MySql" />
         <PackageReference Include="FluentMigrator.Runner.Oracle" />
         <PackageReference Include="FluentMigrator.Runner.Postgres" />
         <PackageReference Include="FluentMigrator.Runner.SqlServer" />
+=======
+        <PackageReference Include="Elsa" />
+>>>>>>> 360f2fa (fix(dapper): create KeyValues and add BookmarkQueueItems.SerializedOptions)
         <PackageReference Include="FluentMigrator.Runner.SQLite" />
         <PackageReference Include="Microsoft.Data.Sqlite" />
         <PackageReference Include="Npgsql" />
