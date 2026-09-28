@@ -14,6 +14,7 @@ using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Activities;
 using Elsa.Workflows.Runtime.Entities;
 using Elsa.Workflows.Runtime.Filters;
+using Elsa.Workflows.Runtime.Models;
 using Elsa.Workflows.Runtime.Options;
 using FluentMigrator.Runner;
 using Microsoft.Data.Sqlite;
@@ -62,6 +63,59 @@ public sealed class DapperKeyValuesAndBookmarkQueueTests : IDisposable
         Assert.Equal(["app:alpha", "app:beta"], many.Select(x => x.Key).Order().ToArray());
         Assert.Null(deleted);
         Assert.Equal(["app:alpha", "other:gamma"], remaining.Select(x => x.Key).Order().ToArray());
+    }
+
+    [Fact(DisplayName = "#263: prefix FindMany returns only matching keys and exact Find still works")]
+    public async Task FreshMigratedDatabase_KeyValueStore_PrefixFindMany_ReturnsMatchingKeys()
+    {
+        // Arrange
+        MigrateUp();
+        await using var services = CreateElsaServices();
+        using var scope = services.CreateScope();
+        using var tenant = scope.ServiceProvider.GetRequiredService<ITenantAccessor>().PushContext(Tenant.Default);
+        var store = scope.ServiceProvider.GetRequiredService<IKeyValueStore>();
+
+        await store.SaveAsync(Pair("app:1", "one"), CancellationToken.None);
+        await store.SaveAsync(Pair("app:2", "two"), CancellationToken.None);
+        await store.SaveAsync(Pair("other:1", "other"), CancellationToken.None);
+
+        // Act
+        var prefixed = (await store.FindManyAsync(new KeyValueFilter { Key = "app:", StartsWith = true }, CancellationToken.None)).ToList();
+        var exact = await store.FindAsync(new KeyValueFilter { Key = "app:1" }, CancellationToken.None);
+        var missing = await store.FindAsync(new KeyValueFilter { Key = "app:" }, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(["app:1", "app:2"], prefixed.Select(x => x.Key).Order().ToArray());
+        Assert.DoesNotContain(prefixed, x => x.Key == "other:1");
+        Assert.Equal("one", exact?.SerializedValue);
+        Assert.Null(missing);
+    }
+
+    [Fact(DisplayName = "#263: the KV outbox store can Save and FindMany on a migration-built DB")]
+    public async Task FreshMigratedDatabase_OutboxStore_SaveAndFindMany()
+    {
+        // Arrange
+        MigrateUp();
+        await using var services = CreateElsaServices();
+        using var scope = services.CreateScope();
+        using var tenant = scope.ServiceProvider.GetRequiredService<ITenantAccessor>().PushContext(Tenant.Default);
+        var outbox = scope.ServiceProvider.GetRequiredService<IWorkflowDispatchOutboxStore>();
+        var item = new WorkflowDispatchOutboxItem
+        {
+            Id = "outbox-1",
+            OwnerWorkflowInstanceId = "wf-owner",
+            Kind = WorkflowDispatchOutboxItemKind.WorkflowDefinition,
+            CreatedAt = DateTimeOffset.Parse("2026-09-28T00:00:00+00:00")
+        };
+
+        // Act
+        await outbox.SaveAsync(item, CancellationToken.None);
+        var found = (await outbox.FindManyAsync(CancellationToken.None)).ToList();
+
+        // Assert
+        var loaded = Assert.Single(found);
+        Assert.Equal("outbox-1", loaded.Id);
+        Assert.Equal("wf-owner", loaded.OwnerWorkflowInstanceId);
     }
 
     [Fact(DisplayName = "#264: a migration-built DB can enqueue a bookmark-queue item with Options and read it back")]

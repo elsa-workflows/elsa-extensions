@@ -29,12 +29,11 @@ public class V3_9 : Migration
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Leave KeyValues and SerializedOptions in place. Rolling them back would
+    /// drop a hand-created KeyValues table or SerializedOptions column and their data.
+    /// </remarks>
     public override void Down()
     {
-        if (Schema.Table("BookmarkQueueItems").Column("SerializedOptions").Exists())
-            Delete.Column("SerializedOptions").FromTable("BookmarkQueueItems");
-
-        if (Schema.Table("KeyValues").Exists())
-            Delete.Table("KeyValues");
     }
 }
