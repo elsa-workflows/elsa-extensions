@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>
+            The shape of a bookmark's user interface: what to show, what to ask before resuming, and the
+            contracts a provider implements. Deliberately free of any Elsa dependency, so a client that only
+            reads a described bookmark - a Blazor host, a mobile app - can take this package without taking
+            the workflow engine with it. The providers and the mapper live in Elsa.Bookmarks.Ui.
+        </Description>
+        <PackageTags>elsa extension module workflows bookmarks ui contracts</PackageTags>
+    </PropertyGroup>
+
+    <!--
+        No PackageReference beyond the build-only ones every module inherits. That is not tidiness but the whole
+        reason this package exists, and DomainPackageTests pins it. System.Text.Json and System.Globalization come
+        from the BCL.
+    -->
+
+</Project>

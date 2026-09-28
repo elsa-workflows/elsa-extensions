@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>
+            The names and rules an MCP tool derived from an Elsa workflow is built on, shared by the server that
+            exposes the tool and by any editor that lets an author configure it.
+        </Description>
+        <PackageTags>elsa extension module mcp model context protocol ai</PackageTags>
+    </PropertyGroup>
+
+</Project>

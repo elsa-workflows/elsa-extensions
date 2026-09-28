@@ -85,6 +85,7 @@ Below is the current status of each extension. Icons indicate implementation pro
 | 🔲 | **Google AI** | AI-enhanced search, translation | `Elsa.GoogleAI` | [Open Issue](https://github.com/elsa-workflows/elsa-extensions/issues/new) |
 | 🔲 | **AWS Comprehend** | NLP services for text analysis | `Elsa.AWSComprehend` | [Open Issue](https://github.com/elsa-workflows/elsa-extensions/issues/new) |
 | 🔲 | **Azure AI** | Vision, speech, language processing | `Elsa.AzureAI` | [Open Issue](https://github.com/elsa-workflows/elsa-extensions/issues/new) |
+| [✅](https://github.com/elsa-workflows/elsa-extensions/tree/main/src/modules/mcp/Elsa.Mcp.Server/README.md) | **Model Context Protocol** | Expose workflows as MCP tools an agent can call and resume | `Elsa.Mcp.Server` | [Fixed Issue](https://github.com/elsa-workflows/elsa-extensions/issues/210) |
 
 ### 🎥 Video & Streaming Platforms
 | Status | Extension | Description | Module Name | Issue |

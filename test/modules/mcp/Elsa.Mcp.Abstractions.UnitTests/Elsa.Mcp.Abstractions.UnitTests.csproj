@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\modules\mcp\Elsa.Mcp.Abstractions\Elsa.Mcp.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

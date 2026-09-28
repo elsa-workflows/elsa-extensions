@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>
+            Describes what a suspended workflow's bookmarks should look like to a user: what to show, what to ask
+            before resuming, and whether the bookmark is answerable at all. Each feature registers a provider for its
+            own bookmark types.
+        </Description>
+        <PackageTags>elsa extension module workflows bookmarks ui</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Elsa.Bookmarks.Ui.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- IServiceCollection, so a feature can register its provider next to its activities. -->
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!--
+            The models and contracts have lived next door since the split, Elsa-free, so a client can
+            read them without the engine. dotnet pack turns this into a package dependency at the same
+            version, because both projects share their version from Directory.Build.props.
+        -->
+        <ProjectReference Include="..\Elsa.Bookmarks.Ui.Domain\Elsa.Bookmarks.Ui.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa\Elsa.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Core\Elsa.Workflows.Core.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Runtime\Elsa.Workflows.Runtime.csproj" />
+        <!-- DelayPayload, the bookmark payload every scheduling activity suspends on. -->
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Scheduling\Elsa.Scheduling.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="Elsa" />
+        <PackageReference Include="Elsa.Workflows.Core" />
+        <PackageReference Include="Elsa.Workflows.Runtime" />
+        <!-- DelayPayload, the bookmark payload every scheduling activity suspends on. -->
+        <PackageReference Include="Elsa.Scheduling" />
+    </ItemGroup>
+
+</Project>
