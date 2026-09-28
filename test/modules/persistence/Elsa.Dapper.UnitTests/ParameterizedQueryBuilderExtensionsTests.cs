@@ -51,4 +51,14 @@ public class ParameterizedQueryBuilderExtensionsTests
         Assert.Equal("app:%", query.Parameters.Get<string>("IdStartsWith"));
         Assert.DoesNotContain("Id", query.Parameters.ParameterNames.Where(name => name == "Id"));
     }
+
+    [Fact(DisplayName = "IsNullOrEmpty matches NULL or empty string for the default tenant")]
+    public void IsNullOrEmpty_MatchesNullOrEmptyTenantId()
+    {
+        var query = new ParameterizedQuery(new SqliteDialect())
+            .From("KeyValues")
+            .IsNullOrEmpty("TenantId");
+
+        Assert.Contains("and (TenantId is null or TenantId = '')", query.Sql.ToString(), StringComparison.Ordinal);
+    }
 }

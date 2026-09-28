@@ -42,6 +42,12 @@ internal class DapperKeyValueStore(Store<KeyValuePairRecord> store) : IKeyValueS
         return store.DeleteAsync(query => query.Is(nameof(KeyValuePairRecord.Id), key), cancellationToken);
     }
 
+    /// <inheritdoc />
+    public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
+    {
+        return await store.DeleteAsync(query => query.Is(nameof(KeyValuePairRecord.Id), key), cancellationToken) > 0;
+    }
+
     private void ApplyFilter(ParameterizedQuery query, KeyValueFilter filter)
     {
         if (filter.StartsWith)
