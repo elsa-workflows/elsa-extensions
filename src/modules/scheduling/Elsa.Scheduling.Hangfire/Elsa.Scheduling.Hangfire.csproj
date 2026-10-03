@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+      <PackageReference Include="Newtonsoft.Json" />
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\common\Elsa.Features\Elsa.Features.csproj"/>
         <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Scheduling\Elsa.Scheduling.csproj"/>
     </ItemGroup>
