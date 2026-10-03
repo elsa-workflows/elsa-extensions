@@ -99,12 +99,22 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
+    # 3.10.x is feedz-only. A GitHub Release event whose tag starts with 3.10. or v3.10.
+    # must never publish to nuget.org. Feedz publishing is unchanged.
+    if: ${{ github.event_name == 'release' && github.event.action == 'published' && !startsWith(github.event.release.tag_name, '3.10.') && !startsWith(github.event.release.tag_name, 'v3.10.') }}
     permissions:
       # Required to request the OIDC token that nuget.org exchanges for a short-lived API key (Trusted Publishing).
       id-token: write
       contents: read
     steps:
+      - name: Refuse 3.10.x public publish
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          if [[ "$TAG" == 3.10.* || "$TAG" == v3.10.* ]]; then
+            echo "::error::3.10.x is feedz-only; refusing to publish $TAG to nuget.org"
+            exit 1
+          fi
+
       - name: Download Packages
         uses: actions/download-artifact@v7
         with:
