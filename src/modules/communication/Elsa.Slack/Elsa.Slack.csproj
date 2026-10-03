@@ -5,6 +5,8 @@
 		    Provides integration with Slack.
 	    </Description>
 	    <PackageTags>elsa extension module slack</PackageTags>
+        <!-- Exclude only this package at the approved Core publisher handoff. -->
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
