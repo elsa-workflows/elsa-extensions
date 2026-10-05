@@ -34,9 +34,7 @@ public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexM
     {
         await SeedVersion390ShapeAsync();
 
-        Assert.Equal(
-            ["_id_", "Name_1", "TenantId_1"],
-            (await ListIndexNamesAsync(_roles)).OrderBy(x => x, StringComparer.Ordinal).ToArray());
+        Assert.True((await ListIndexNamesAsync(_roles)).SetEquals(["_id_", "Name_1", "TenantId_1"]));
         Assert.Contains("Name_1", await ListIndexNamesAsync(_users));
         Assert.Contains("Name_1", await ListIndexNamesAsync(_applications));
         Assert.Contains("ClientId_1", await ListIndexNamesAsync(_applications));
@@ -44,9 +42,7 @@ public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexM
         var logger = new CollectingLogger();
         await RunCreateIndicesAsync(logger);
 
-        Assert.Equal(
-            ["_id_", "TenantId_1", "TenantId_1_Name_1"],
-            (await ListIndexNamesAsync(_roles)).OrderBy(x => x, StringComparer.Ordinal).ToArray());
+        Assert.True((await ListIndexNamesAsync(_roles)).SetEquals(["_id_", "TenantId_1", "TenantId_1_Name_1"]));
         Assert.DoesNotContain(IdentityRoleIndexes.LegacyNameUnique, await ListIndexNamesAsync(_roles));
         Assert.Contains("Name_1", await ListIndexNamesAsync(_users));
         Assert.Contains("Name_1", await ListIndexNamesAsync(_applications));
@@ -68,9 +64,7 @@ public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexM
         logger.Messages.Clear();
         await RunCreateIndicesAsync(logger);
 
-        Assert.Equal(
-            ["_id_", "TenantId_1", "TenantId_1_Name_1"],
-            (await ListIndexNamesAsync(_roles)).OrderBy(x => x, StringComparer.Ordinal).ToArray());
+        Assert.True((await ListIndexNamesAsync(_roles)).SetEquals(["_id_", "TenantId_1", "TenantId_1_Name_1"]));
         Assert.Contains("Name_1", await ListIndexNamesAsync(_users));
         Assert.Contains("ClientId_1", await ListIndexNamesAsync(_applications));
         Assert.Contains(logger.Messages, m => m.Contains("was not found", StringComparison.Ordinal) && m.Contains(IdentityRoleIndexes.LegacyNameUnique, StringComparison.Ordinal));
