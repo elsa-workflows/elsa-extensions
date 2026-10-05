@@ -15,10 +15,26 @@ namespace Elsa.Persistence.Dapper.Modules.Identity.Stores;
 internal class DapperRoleStore(Store<RoleRecord> store) : IRoleStore
 {
     /// <inheritdoc />
-    public async Task SaveAsync(Role application, CancellationToken cancellationToken = default)
+    public async Task SaveAsync(Role role, CancellationToken cancellationToken = default)
     {
-        var record = Map(application);
-        await store.SaveAsync(record, cancellationToken);
+        var record = Map(role);
+
+        // Store.SaveAsync upserts on Id alone (SQLite INSERT OR REPLACE / SQL Server MERGE).
+        // That re-homes another tenant's row when ids collide, which is what happened when
+        // role ids were derived from the name. Only update a row this tenant already owns;
+        // otherwise insert, or refuse if the id belongs to a different tenant.
+        var owned = await store.FindAsync(q => q.Is(nameof(RoleRecord.Id), record.Id), tenantAgnostic: false, cancellationToken);
+        if (owned != null)
+        {
+            await store.UpdateAsync(record, cancellationToken);
+            return;
+        }
+
+        var existing = await store.FindAsync(q => q.Is(nameof(RoleRecord.Id), record.Id), tenantAgnostic: true, cancellationToken);
+        if (existing != null)
+            throw new InvalidOperationException($"A role with ID '{record.Id}' already exists in another tenant.");
+
+        await store.AddAsync(record, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -52,8 +68,8 @@ internal class DapperRoleStore(Store<RoleRecord> store) : IRoleStore
     {
         query
             .Is(nameof(RoleRecord.Id), filter.Id)
-            .In(nameof(RoleRecord.Name), filter.Ids)
-            ;   
+            .In(nameof(RoleRecord.Id), filter.Ids)
+            ;
     }
     
     private RoleRecord Map(Role source)

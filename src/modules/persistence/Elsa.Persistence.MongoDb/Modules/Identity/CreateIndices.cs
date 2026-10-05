@@ -2,9 +2,25 @@ using Elsa.Identity.Entities;
 using Elsa.Persistence.MongoDb.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Elsa.Persistence.MongoDb.Modules.Identity;
+
+internal static class IdentityRoleIndexes
+{
+    /// <summary>
+    /// Store-wide unique index on <see cref="Role.Name"/> created by 3.9.0 and earlier.
+    /// </summary>
+    public const string LegacyNameUnique = "Name_1";
+
+    /// <summary>
+    /// Per-tenant unique index on (TenantId, Name).
+    /// </summary>
+    public const string TenantIdNameUnique = "TenantId_1_Name_1";
+}
 
 internal class CreateIndices(IServiceProvider serviceProvider) : IHostedService
 {
@@ -74,19 +90,62 @@ internal class CreateIndices(IServiceProvider serviceProvider) : IHostedService
         var roleCollection = serviceScope.ServiceProvider.GetService<IMongoCollection<Role>>();
         if (roleCollection == null) return Task.CompletedTask;
 
+        var logger = serviceScope.ServiceProvider.GetService<ILogger<CreateIndices>>() ?? NullLogger<CreateIndices>.Instance;
+
         return IndexHelpers.CreateAsync(
             roleCollection,
             async (collection, indexBuilder) =>
+            {
+                var existingNames = await ListIndexNamesAsync(collection, cancellationToken);
+
+                if (existingNames.Contains(IdentityRoleIndexes.LegacyNameUnique))
+                {
+                    await collection.Indexes.DropOneAsync(IdentityRoleIndexes.LegacyNameUnique, cancellationToken);
+                    logger.LogInformation("Dropped Role unique index '{IndexName}'.", IdentityRoleIndexes.LegacyNameUnique);
+                }
+                else
+                {
+                    logger.LogInformation("Role unique index '{IndexName}' was not found.", IdentityRoleIndexes.LegacyNameUnique);
+                }
+
+                existingNames = await ListIndexNamesAsync(collection, cancellationToken);
+                if (existingNames.Contains(IdentityRoleIndexes.TenantIdNameUnique))
+                {
+                    logger.LogInformation("Role unique index '{IndexName}' is already present.", IdentityRoleIndexes.TenantIdNameUnique);
+                }
+                else
+                {
+                    await collection.Indexes.CreateOneAsync(
+                        new CreateIndexModel<Role>(
+                            indexBuilder.Ascending(x => x.TenantId).Ascending(x => x.Name),
+                            new CreateIndexOptions
+                            {
+                                Unique = true,
+                                Name = IdentityRoleIndexes.TenantIdNameUnique
+                            }),
+                        cancellationToken: cancellationToken);
+                    logger.LogInformation("Created Role unique index '{IndexName}' on (TenantId, Name).", IdentityRoleIndexes.TenantIdNameUnique);
+                }
+
                 await collection.Indexes.CreateManyAsync(
                     new List<CreateIndexModel<Role>>
                     {
-                        new(indexBuilder.Ascending(x => x.Name),
-                            new CreateIndexOptions
-                            {
-                                Unique = true
-                            }),
                         new(indexBuilder.Ascending(x => x.TenantId))
                     },
-                    cancellationToken));
+                    cancellationToken);
+            });
+    }
+
+    private static async Task<HashSet<string>> ListIndexNamesAsync<T>(IMongoCollection<T> collection, CancellationToken cancellationToken)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        using var cursor = await collection.Indexes.ListAsync(cancellationToken);
+        foreach (var index in await cursor.ToListAsync(cancellationToken))
+        {
+            if (index.TryGetValue("name", out var name) && name.BsonType == BsonType.String)
+                names.Add(name.AsString);
+        }
+
+        return names;
     }
 }
