@@ -1,3 +1,4 @@
+using Elsa.Common.Multitenancy;
 using Elsa.Persistence.Dapper.Extensions;
 using Elsa.Persistence.Dapper.Models;
 using Elsa.Persistence.Dapper.Modules.Identity.Records;
@@ -26,13 +27,22 @@ internal class DapperRoleStore(Store<RoleRecord> store) : IRoleStore
         var owned = await store.FindAsync(q => q.Is(nameof(RoleRecord.Id), record.Id), tenantAgnostic: false, cancellationToken);
         if (owned != null)
         {
-            await store.UpdateAsync(record, cancellationToken);
+            await store.UpdateAsync(
+                record,
+                [x => x.Name, x => x.Permissions],
+                q => q.Is(nameof(RoleRecord.Id), record.Id),
+                cancellationToken);
             return;
         }
 
         var existing = await store.FindAsync(q => q.Is(nameof(RoleRecord.Id), record.Id), tenantAgnostic: true, cancellationToken);
         if (existing != null)
-            throw new InvalidOperationException($"A role with ID '{record.Id}' already exists in another tenant.");
+        {
+            var message = string.Equals(existing.TenantId, Tenant.AgnosticTenantId, StringComparison.Ordinal)
+                ? $"A role with ID '{record.Id}' already exists as a shared ('*') role."
+                : $"A role with ID '{record.Id}' already exists in another tenant.";
+            throw new InvalidOperationException(message);
+        }
 
         await store.AddAsync(record, cancellationToken);
     }

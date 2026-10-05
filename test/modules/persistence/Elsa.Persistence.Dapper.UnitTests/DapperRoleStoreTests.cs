@@ -129,6 +129,7 @@ public sealed class DapperRoleStoreTests : IDisposable
 
         Assert.NotNull(exception);
         Assert.IsType<InvalidOperationException>(exception);
+        Assert.Contains("another tenant", exception.Message, StringComparison.Ordinal);
 
         using var tenantARead = _tenantAccessor.PushContext(TenantA());
         var stored = await _store.FindAsync(new RoleFilter { Id = "admin" });
@@ -137,6 +138,25 @@ public sealed class DapperRoleStoreTests : IDisposable
         Assert.Equal("tenant-a", stored.TenantId);
         Assert.Equal(["perm-a-updated"], stored.Permissions);
         Assert.Equal("admin", stored.Name);
+    }
+
+    [Fact]
+    public async Task Upsert_CannotHijackSharedStarRow()
+    {
+        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = _databasePath, Pooling = false }.ToString());
+        await connection.ExecuteAsync(
+            "insert into Roles (Id, Name, Permissions, TenantId) values ('admin', 'admin', 'perm-star', @tenantId)",
+            new { tenantId = Tenant.AgnosticTenantId });
+
+        Exception? exception;
+        using (var tenantB = _tenantAccessor.PushContext(TenantB()))
+            exception = await Record.ExceptionAsync(() => _store.SaveAsync(Role("admin", "admin", "perm-b")));
+
+        Assert.NotNull(exception);
+        Assert.Contains("shared ('*')", exception.Message, StringComparison.Ordinal);
+
+        using var tenantARead = _tenantAccessor.PushContext(TenantA());
+        Assert.Null(await _store.FindAsync(new RoleFilter { Id = "admin" }));
     }
 
     public void Dispose()
@@ -153,22 +173,4 @@ public sealed class DapperRoleStoreTests : IDisposable
         Name = name,
         Permissions = [permission]
     };
-
-    private sealed class TestTenantAccessor : ITenantAccessor
-    {
-        public string TenantId => Tenant?.Id ?? Tenant.DefaultTenantId;
-        public Tenant? Tenant { get; private set; }
-
-        public IDisposable PushContext(Tenant? tenant)
-        {
-            var previousTenant = Tenant;
-            Tenant = tenant;
-            return new Restore(() => Tenant = previousTenant);
-        }
-
-        private sealed class Restore(Action restore) : IDisposable
-        {
-            public void Dispose() => restore();
-        }
-    }
 }

@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using FluentMigrator;
 using JetBrains.Annotations;
+using Elsa.Persistence.Dapper.Migrations;
 
 namespace Elsa.Persistence.Dapper.Migrations.Identity;
 
@@ -20,7 +21,9 @@ namespace Elsa.Persistence.Dapper.Migrations.Identity;
 /// per name). SQLite, PostgreSQL, MySQL and Oracle treat NULLs as distinct, so a later
 /// <c>NULL</c>/<c>''</c> pair is not rejected by the index (elsa-extensions#245 / #242
 /// normalisation). The index follows the database collation: typically case-insensitive
-/// on SQL Server, case-sensitive on SQLite / PostgreSQL / MySQL / Oracle.
+/// on SQL Server, case-sensitive on SQLite / PostgreSQL / MySQL / Oracle. Case variants
+/// on SQLite and PostgreSQL therefore rely on core's <c>OrdinalIgnoreCase</c> pre-save
+/// check; the index only rejects exact stored names there.
 /// </remarks>
 [Migration(30005, "Elsa:Identity:V3.10")]
 [PublicAPI]
@@ -41,7 +44,12 @@ public class V3_10 : Migration
         if (Schema.Table("Roles").Index(TenantIdNameUniqueIndex).Exists())
             return;
 
-        Execute.WithConnection(ThrowIfDuplicateTenantRoleNames);
+        IfDatabase(MigrationDatabases.QuotedIdentifiers)
+            .Execute.WithConnection((connection, transaction) =>
+                ThrowIfDuplicateTenantRoleNames(connection, transaction, quoted: true));
+        IfDatabase(MigrationDatabases.UnquotedIdentifiers)
+            .Execute.WithConnection((connection, transaction) =>
+                ThrowIfDuplicateTenantRoleNames(connection, transaction, quoted: false));
 
         Create.Index(TenantIdNameUniqueIndex)
             .OnTable("Roles")
@@ -57,9 +65,9 @@ public class V3_10 : Migration
             Delete.Index(TenantIdNameUniqueIndex).OnTable("Roles");
     }
 
-    internal static void ThrowIfDuplicateTenantRoleNames(IDbConnection connection, IDbTransaction? transaction)
+    internal static void ThrowIfDuplicateTenantRoleNames(IDbConnection connection, IDbTransaction? transaction, bool quoted = false)
     {
-        var roles = ReadRoles(connection, transaction);
+        var roles = ReadRoles(connection, transaction, quoted);
         var duplicates = roles
             .GroupBy(role => (TenantKey: NormalizeTenantKey(role.TenantId), NameKey: role.Name.ToLowerInvariant()))
             .Where(group => group.Count() > 1)
@@ -90,12 +98,14 @@ public class V3_10 : Migration
         throw new InvalidOperationException(message.ToString());
     }
 
-    private static List<RoleNameRow> ReadRoles(IDbConnection connection, IDbTransaction? transaction)
+    private static List<RoleNameRow> ReadRoles(IDbConnection connection, IDbTransaction? transaction, bool quoted)
     {
         var rows = new List<RoleNameRow>();
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = RolesSelectSql(connection);
+        command.CommandText = quoted
+            ? "SELECT \"Id\", \"TenantId\", \"Name\" FROM \"Roles\""
+            : "SELECT Id, TenantId, Name FROM Roles";
         using var reader = command.ExecuteReader();
         while (reader.Read())
         {
@@ -106,16 +116,6 @@ public class V3_10 : Migration
         }
 
         return rows;
-    }
-
-    private static string RolesSelectSql(IDbConnection connection)
-    {
-        var typeName = connection.GetType().Name;
-        if (typeName.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) ||
-            typeName.Contains("Oracle", StringComparison.OrdinalIgnoreCase))
-            return "SELECT \"Id\", \"TenantId\", \"Name\" FROM \"Roles\"";
-
-        return "SELECT Id, TenantId, Name FROM Roles";
     }
 
     private static string NormalizeTenantKey(string? tenantId) =>

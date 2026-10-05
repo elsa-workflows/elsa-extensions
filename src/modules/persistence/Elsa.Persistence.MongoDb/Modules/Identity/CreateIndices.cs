@@ -100,7 +100,7 @@ internal class CreateIndices(IServiceProvider serviceProvider) : IHostedService
                 var existingNames = await ListIndexNamesAsync(collection, cancellationToken);
                 if (existingNames.Contains(IdentityRoleIndexes.TenantIdNameUnique))
                 {
-                    logger.LogInformation("Role unique index '{IndexName}' is already present.", IdentityRoleIndexes.TenantIdNameUnique);
+                    logger.LogDebug("Role unique index '{IndexName}' is already present.", IdentityRoleIndexes.TenantIdNameUnique);
                 }
                 else
                 {
@@ -113,7 +113,7 @@ internal class CreateIndices(IServiceProvider serviceProvider) : IHostedService
                                 Name = IdentityRoleIndexes.TenantIdNameUnique
                             }),
                         cancellationToken: cancellationToken);
-                    logger.LogInformation("Created Role unique index '{IndexName}' on (TenantId, Name).", IdentityRoleIndexes.TenantIdNameUnique);
+                    logger.LogDebug("Created Role unique index '{IndexName}' on (TenantId, Name).", IdentityRoleIndexes.TenantIdNameUnique);
                 }
 
                 // Create the compound unique index before dropping Name_1 so two nodes
@@ -126,7 +126,7 @@ internal class CreateIndices(IServiceProvider serviceProvider) : IHostedService
                 }
                 catch (MongoCommandException exception) when (exception.Code == 27 || exception.InnerException is MongoCommandException { Code: 27 })
                 {
-                    logger.LogInformation("Role unique index '{IndexName}' was not found.", IdentityRoleIndexes.LegacyNameUnique);
+                    logger.LogDebug("Role unique index '{IndexName}' was not found.", IdentityRoleIndexes.LegacyNameUnique);
                 }
 
                 await collection.Indexes.CreateManyAsync(

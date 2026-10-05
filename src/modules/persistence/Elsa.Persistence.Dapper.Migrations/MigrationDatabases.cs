@@ -32,4 +32,25 @@ internal static class MigrationDatabases
         "PostgreSQL",
         "PostgreSQL92"
     ];
+
+    /// <summary>
+    /// Providers whose FluentMigrator tables use quoted identifiers (PostgreSQL ForceQuote, Oracle).
+    /// </summary>
+    public static readonly string[] QuotedIdentifiers =
+    [
+        "Oracle",
+        "Postgres",
+        "PostgreSQL",
+        "PostgreSQL92"
+    ];
+
+    /// <summary>
+    /// Providers whose FluentMigrator tables use unquoted identifiers.
+    /// </summary>
+    public static readonly string[] UnquotedIdentifiers =
+    [
+        "Sqlite",
+        "SqlServer",
+        "MySql"
+    ];
 }

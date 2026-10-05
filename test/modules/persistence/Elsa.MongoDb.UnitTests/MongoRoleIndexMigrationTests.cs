@@ -50,14 +50,14 @@ public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexM
         Assert.Contains("Name_1", await ListIndexNamesAsync(_users));
         Assert.Contains("Name_1", await ListIndexNamesAsync(_applications));
         Assert.Contains("ClientId_1", await ListIndexNamesAsync(_applications));
-        Assert.Contains(logger.Messages, m => m.Contains("Dropped", StringComparison.Ordinal) && m.Contains(IdentityRoleIndexes.LegacyNameUnique, StringComparison.Ordinal));
-        Assert.Contains(logger.Messages, m => m.Contains("Created", StringComparison.Ordinal) && m.Contains(IdentityRoleIndexes.TenantIdNameUnique, StringComparison.Ordinal));
+        Assert.Contains(logger.Entries, e => e.Level == LogLevel.Information && e.Message.Contains("Dropped", StringComparison.Ordinal) && e.Message.Contains(IdentityRoleIndexes.LegacyNameUnique, StringComparison.Ordinal));
+        Assert.Contains(logger.Entries, e => e.Level == LogLevel.Debug && e.Message.Contains("Created", StringComparison.Ordinal) && e.Message.Contains(IdentityRoleIndexes.TenantIdNameUnique, StringComparison.Ordinal));
 
         await _roles.InsertOneAsync(Role("role-b-admin", "admin", "tenant-b", "perm-b"));
 
-        var tenantARoles = await _roles.Find(x => x.Name == "admin").ToListAsync();
-        Assert.Equal(2, tenantARoles.Count);
-        Assert.Equal(["tenant-a", "tenant-b"], tenantARoles.Select(x => x.TenantId).Order());
+        var rolesNamedAdmin = await _roles.Find(x => x.Name == "admin").ToListAsync();
+        Assert.Equal(2, rolesNamedAdmin.Count);
+        Assert.Equal(["tenant-a", "tenant-b"], rolesNamedAdmin.Select(x => x.TenantId).Order());
 
         var duplicate = await Record.ExceptionAsync(() =>
             _roles.InsertOneAsync(Role("role-a-dup", "admin", "tenant-a", "perm-dup")));
@@ -72,6 +72,42 @@ public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexM
         Assert.Contains("ClientId_1", await ListIndexNamesAsync(_applications));
         Assert.Contains(logger.Messages, m => m.Contains("was not found", StringComparison.Ordinal) && m.Contains(IdentityRoleIndexes.LegacyNameUnique, StringComparison.Ordinal));
         Assert.Contains(logger.Messages, m => m.Contains("already present", StringComparison.Ordinal) && m.Contains(IdentityRoleIndexes.TenantIdNameUnique, StringComparison.Ordinal));
+        Assert.Contains(logger.Entries, e => e.Level == LogLevel.Debug && e.Message.Contains("already present", StringComparison.Ordinal));
+        Assert.Contains(logger.Entries, e => e.Level == LogLevel.Debug && e.Message.Contains("was not found", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task AlreadyDroppedName1_SecondNodeStart_CreatesCompoundAndDoesNotThrow()
+    {
+        await SeedVersion390ShapeAsync();
+        await _roles.Indexes.DropOneAsync(IdentityRoleIndexes.LegacyNameUnique);
+
+        var logger = new CollectingLogger();
+        var exception = await Record.ExceptionAsync(() => RunCreateIndicesAsync(logger));
+
+        Assert.Null(exception);
+        Assert.True((await ListIndexNamesAsync(_roles)).SetEquals(["_id_", "TenantId_1", "TenantId_1_Name_1"]));
+        Assert.Contains(logger.Entries, e => e.Level == LogLevel.Debug && e.Message.Contains("Created", StringComparison.Ordinal) && e.Message.Contains(IdentityRoleIndexes.TenantIdNameUnique, StringComparison.Ordinal));
+        Assert.Contains(logger.Entries, e => e.Level == LogLevel.Debug && e.Message.Contains("was not found", StringComparison.Ordinal) && e.Message.Contains(IdentityRoleIndexes.LegacyNameUnique, StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, e => e.Level == LogLevel.Information && e.Message.Contains("Dropped", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task CompoundAlreadyCreated_ThenDropName1_DoesNotThrow()
+    {
+        await SeedVersion390ShapeAsync();
+        await _roles.Indexes.CreateOneAsync(new CreateIndexModel<Role>(
+            Builders<Role>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.Name),
+            new CreateIndexOptions { Unique = true, Name = IdentityRoleIndexes.TenantIdNameUnique }));
+
+        var logger = new CollectingLogger();
+        var exception = await Record.ExceptionAsync(() => RunCreateIndicesAsync(logger));
+
+        Assert.Null(exception);
+        Assert.True((await ListIndexNamesAsync(_roles)).SetEquals(["_id_", "TenantId_1", "TenantId_1_Name_1"]));
+        Assert.DoesNotContain(IdentityRoleIndexes.LegacyNameUnique, await ListIndexNamesAsync(_roles));
+        Assert.Contains(logger.Entries, e => e.Level == LogLevel.Debug && e.Message.Contains("already present", StringComparison.Ordinal));
+        Assert.Contains(logger.Entries, e => e.Level == LogLevel.Information && e.Message.Contains("Dropped", StringComparison.Ordinal));
     }
 
     private async Task SeedVersion390ShapeAsync()
@@ -157,6 +193,7 @@ public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexM
     private sealed class CollectingLogger : ILogger<CreateIndices>
     {
         public List<string> Messages { get; } = [];
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
 
         public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
 
@@ -164,7 +201,9 @@ public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexM
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            Messages.Add(formatter(state, exception));
+            var message = formatter(state, exception);
+            Messages.Add(message);
+            Entries.Add((logLevel, message));
         }
 
         private sealed class NullScope : IDisposable
