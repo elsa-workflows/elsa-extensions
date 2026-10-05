@@ -16,8 +16,11 @@ namespace Elsa.Persistence.Dapper.Migrations.Identity;
 /// as the same role) fail the migration with the colliding ids. The operator must resolve
 /// those rows and re-run. <c>NULL</c> and <c>''</c> tenant ids are treated as the default
 /// tenant for that check, matching Dapper's read filter. The index itself is on the stored
-/// columns; most providers treat NULLs as distinct, so a later <c>NULL</c>/<c>''</c> pair
-/// is not rejected by the index (elsa-extensions#245 / #242 normalisation).
+/// columns. SQL Server treats NULLs as equal in a unique index (one <c>(NULL, Name)</c>
+/// per name). SQLite, PostgreSQL, MySQL and Oracle treat NULLs as distinct, so a later
+/// <c>NULL</c>/<c>''</c> pair is not rejected by the index (elsa-extensions#245 / #242
+/// normalisation). The index follows the database collation: typically case-insensitive
+/// on SQL Server, case-sensitive on SQLite / PostgreSQL / MySQL / Oracle.
 /// </remarks>
 [Migration(30005, "Elsa:Identity:V3.10")]
 [PublicAPI]

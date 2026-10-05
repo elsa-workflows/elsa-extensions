@@ -98,18 +98,6 @@ internal class CreateIndices(IServiceProvider serviceProvider) : IHostedService
             async (collection, indexBuilder) =>
             {
                 var existingNames = await ListIndexNamesAsync(collection, cancellationToken);
-
-                if (existingNames.Contains(IdentityRoleIndexes.LegacyNameUnique))
-                {
-                    await collection.Indexes.DropOneAsync(IdentityRoleIndexes.LegacyNameUnique, cancellationToken);
-                    logger.LogInformation("Dropped Role unique index '{IndexName}'.", IdentityRoleIndexes.LegacyNameUnique);
-                }
-                else
-                {
-                    logger.LogInformation("Role unique index '{IndexName}' was not found.", IdentityRoleIndexes.LegacyNameUnique);
-                }
-
-                existingNames = await ListIndexNamesAsync(collection, cancellationToken);
                 if (existingNames.Contains(IdentityRoleIndexes.TenantIdNameUnique))
                 {
                     logger.LogInformation("Role unique index '{IndexName}' is already present.", IdentityRoleIndexes.TenantIdNameUnique);
@@ -126,6 +114,19 @@ internal class CreateIndices(IServiceProvider serviceProvider) : IHostedService
                             }),
                         cancellationToken: cancellationToken);
                     logger.LogInformation("Created Role unique index '{IndexName}' on (TenantId, Name).", IdentityRoleIndexes.TenantIdNameUnique);
+                }
+
+                // Create the compound unique index before dropping Name_1 so two nodes
+                // starting together never leave the collection without name uniqueness,
+                // and a second DropOne of Name_1 is IndexNotFound (code 27), not startup failure.
+                try
+                {
+                    await collection.Indexes.DropOneAsync(IdentityRoleIndexes.LegacyNameUnique, cancellationToken);
+                    logger.LogInformation("Dropped Role unique index '{IndexName}'.", IdentityRoleIndexes.LegacyNameUnique);
+                }
+                catch (MongoCommandException exception) when (exception.Code == 27 || exception.InnerException is MongoCommandException { Code: 27 })
+                {
+                    logger.LogInformation("Role unique index '{IndexName}' was not found.", IdentityRoleIndexes.LegacyNameUnique);
                 }
 
                 await collection.Indexes.CreateManyAsync(

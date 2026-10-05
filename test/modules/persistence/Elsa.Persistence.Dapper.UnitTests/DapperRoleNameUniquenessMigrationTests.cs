@@ -18,11 +18,13 @@ namespace Elsa.Persistence.Dapper.UnitTests;
 public sealed class DapperRoleNameUniquenessMigrationTests : IDisposable
 {
     private const long IdentityV33 = 30004;
-    private readonly string _databasePath = Path.Combine(Path.GetTempPath(), Path.GetFileName($"elsa-dapper-role-ux-{Guid.NewGuid():N}.db"));
+    private readonly string _databaseFileName = $"elsa-dapper-role-ux-{Guid.NewGuid():N}.db";
+    private readonly string _databasePath;
     private readonly string _connectionString;
 
     public DapperRoleNameUniquenessMigrationTests()
     {
+        _databasePath = Path.Join(Path.GetTempPath(), _databaseFileName);
         _connectionString = new SqliteConnectionStringBuilder { DataSource = _databasePath, Pooling = false }.ToString();
     }
 

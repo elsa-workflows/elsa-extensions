@@ -16,12 +16,14 @@ namespace Elsa.Persistence.Dapper.UnitTests;
 /// </summary>
 public sealed class DapperRoleStoreTests : IDisposable
 {
-    private readonly string _databasePath = Path.Combine(Path.GetTempPath(), Path.GetFileName($"elsa-dapper-roles-{Guid.NewGuid():N}.db"));
+    private readonly string _databaseFileName = $"elsa-dapper-roles-{Guid.NewGuid():N}.db";
+    private readonly string _databasePath;
     private readonly DapperRoleStore _store;
     private readonly TestTenantAccessor _tenantAccessor = new();
 
     public DapperRoleStoreTests()
     {
+        _databasePath = Path.Join(Path.GetTempPath(), _databaseFileName);
         var connectionString = new SqliteConnectionStringBuilder { DataSource = _databasePath, Pooling = false }.ToString();
         var connectionProvider = new SqliteDbConnectionProvider(connectionString);
 
