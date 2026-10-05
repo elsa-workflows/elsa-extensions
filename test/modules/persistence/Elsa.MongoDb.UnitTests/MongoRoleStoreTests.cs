@@ -13,17 +13,20 @@ namespace Elsa.MongoDb.UnitTests;
 /// <see cref="MongoRoleStore"/> filters through <see cref="RoleFilter.Apply"/> and
 /// upserts through <see cref="MongoDbStore{TDocument}"/>'s tenant-owned filter.
 /// </summary>
-public sealed class MongoRoleStoreTests : IClassFixture<MongoRoleStoreTests.MongoFixture>
+public sealed class MongoRoleStoreTests : IClassFixture<MongoRoleStoreTests.MongoFixture>, IDisposable
 {
+    private readonly MongoClient _client;
     private readonly MongoRoleStore _store;
     private readonly TestTenantAccessor _tenantAccessor = new();
 
     public MongoRoleStoreTests(MongoFixture fixture)
     {
-        var client = new MongoClient(fixture.Container.GetConnectionString());
-        var database = client.GetDatabase($"elsa-role-store-{Guid.NewGuid():N}");
+        _client = new MongoClient(fixture.Container.GetConnectionString());
+        var database = _client.GetDatabase($"elsa-role-store-{Guid.NewGuid():N}");
         _store = new MongoRoleStore(new MongoDbStore<Role>(database.GetCollection<Role>("roles"), _tenantAccessor));
     }
+
+    public void Dispose() => _client.Dispose();
 
     [Fact]
     public async Task LegacyNameDerivedId_StillResolvesByIdAndIds()

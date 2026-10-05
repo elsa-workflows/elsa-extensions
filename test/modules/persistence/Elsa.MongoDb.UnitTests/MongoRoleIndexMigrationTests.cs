@@ -13,8 +13,9 @@ namespace Elsa.MongoDb.UnitTests;
 /// The old store-wide unique index is <c>Name_1</c>; the replacement is the compound unique
 /// <c>TenantId_1_Name_1</c>. User.Name and Application.Name/ClientId indexes are left alone.
 /// </summary>
-public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexMigrationTests.MongoFixture>
+public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexMigrationTests.MongoFixture>, IDisposable
 {
+    private readonly MongoClient _client;
     private readonly IMongoDatabase _database;
     private readonly IMongoCollection<Role> _roles;
     private readonly IMongoCollection<User> _users;
@@ -22,12 +23,14 @@ public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexM
 
     public MongoRoleIndexMigrationTests(MongoFixture fixture)
     {
-        var client = new MongoClient(fixture.Container.GetConnectionString());
-        _database = client.GetDatabase($"elsa-role-indexes-{Guid.NewGuid():N}");
+        _client = new MongoClient(fixture.Container.GetConnectionString());
+        _database = _client.GetDatabase($"elsa-role-indexes-{Guid.NewGuid():N}");
         _roles = _database.GetCollection<Role>("roles");
         _users = _database.GetCollection<User>("users");
         _applications = _database.GetCollection<Application>("applications");
     }
+
+    public void Dispose() => _client.Dispose();
 
     [Fact]
     public async Task ExistingData_DropAndCreate_IsIdempotent_AndAllowsSameNameAcrossTenants()
@@ -118,11 +121,9 @@ public sealed class MongoRoleIndexMigrationTests : IClassFixture<MongoRoleIndexM
     {
         var names = new HashSet<string>(StringComparer.Ordinal);
         using var cursor = await collection.Indexes.ListAsync();
-        foreach (var index in await cursor.ToListAsync())
-        {
-            if (index.TryGetValue("name", out var name) && name.BsonType == BsonType.String)
-                names.Add(name.AsString);
-        }
+        foreach (var index in (await cursor.ToListAsync())
+                 .Where(index => index.TryGetValue("name", out var name) && name.BsonType == BsonType.String))
+            names.Add(index["name"].AsString);
 
         return names;
     }

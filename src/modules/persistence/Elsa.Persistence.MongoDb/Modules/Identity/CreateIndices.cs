@@ -1,3 +1,4 @@
+using System.Linq;
 using Elsa.Identity.Entities;
 using Elsa.Persistence.MongoDb.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -140,11 +141,9 @@ internal class CreateIndices(IServiceProvider serviceProvider) : IHostedService
     {
         var names = new HashSet<string>(StringComparer.Ordinal);
         using var cursor = await collection.Indexes.ListAsync(cancellationToken);
-        foreach (var index in await cursor.ToListAsync(cancellationToken))
-        {
-            if (index.TryGetValue("name", out var name) && name.BsonType == BsonType.String)
-                names.Add(name.AsString);
-        }
+        foreach (var index in (await cursor.ToListAsync(cancellationToken))
+                 .Where(index => index.TryGetValue("name", out var name) && name.BsonType == BsonType.String))
+            names.Add(index["name"].AsString);
 
         return names;
     }
