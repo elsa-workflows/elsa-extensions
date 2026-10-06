@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\modules\devops\Elsa.DevOps.AzureDevOps\Elsa.DevOps.AzureDevOps.csproj" />
+    </ItemGroup>
+
+</Project>

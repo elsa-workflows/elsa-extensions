@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+	    <Description>
+		    Provides integration with Azure DevOps.
+	    </Description>
+	    <PackageTags>elsa extension module azure devops</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Elsa.DevOps.AzureDevOps.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.TeamFoundationServer.Client" />
+        <PackageReference Include="Microsoft.VisualStudio.Services.Client" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' != 'true'">
+        <PackageReference Include="Elsa" />
+        <PackageReference Include="Elsa.Workflows.Core" />
+        <PackageReference Include="Elsa.Workflows.Management" />
+        <PackageReference Include="Elsa.Workflows.Runtime" />
+        <PackageReference Include="Elsa.Scheduling" />
+        <PackageReference Include="Elsa.Secrets" />
+    </ItemGroup>
+
+    <ItemGroup Label="Elsa" Condition="'$(UseProjectReferences)' == 'true'">
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa\Elsa.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Core\Elsa.Workflows.Core.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Management\Elsa.Workflows.Management.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Workflows.Runtime\Elsa.Workflows.Runtime.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Scheduling\Elsa.Scheduling.csproj" />
+        <ProjectReference Include="..\..\..\..\..\elsa-core\src\modules\Elsa.Secrets\Elsa.Secrets.csproj" />
+    </ItemGroup>
+
+</Project>
