@@ -1,3 +1,4 @@
+using Azure.Messaging.ServiceBus;
 using Elsa.ServiceBus.AzureServiceBus.Models;
 
 namespace Elsa.ServiceBus.AzureServiceBus.Options;
