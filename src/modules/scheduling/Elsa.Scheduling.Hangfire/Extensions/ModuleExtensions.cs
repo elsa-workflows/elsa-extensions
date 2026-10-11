@@ -1,7 +1,8 @@
 using Elsa.Features.Services;
-using Elsa.Scheduling.Hangfire.Features;
 using Elsa.Scheduling;
 using Elsa.Scheduling.Features;
+using Elsa.Scheduling.Hangfire.Features;
+using Elsa.Workflows.Runtime;
 using Elsa.Workflows.Runtime.Features;
 using JetBrains.Annotations;
 
@@ -23,26 +24,6 @@ public static class ModuleExtensions
     }
 
     /// <summary>
-    /// Configures Hangfire to use SQL Server storage. Only use this feature if you are not configuring Hangfire yourself.
-    /// </summary>
-    [Obsolete("Configure storage directly on the HangfireFeature.")]
-    public static HangfireFeature UseSqlServerStorage(this HangfireFeature feature, Action<HangfireSqlServerStorageFeature> configure)
-    {
-        feature.Module.Use(configure);
-        return feature;
-    }
-
-    /// <summary>
-    /// Configures Hangfire to use SQLite storage. Only use this feature if you are not configuring Hangfire yourself.
-    /// </summary>
-    [Obsolete("Configure storage directly on the HangfireFeature.")]
-    public static HangfireFeature UseSqliteStorage(this HangfireFeature feature, Action<HangfireSqliteStorageFeature> configure)
-    {
-        feature.Module.Use(configure);
-        return feature;
-    }
-
-    /// <summary>
     /// Installs a Hangfire implementation for <see cref="IWorkflowScheduler"/>.
     /// </summary>
     public static SchedulingFeature UseHangfireScheduler(this SchedulingFeature feature, Action<HangfireSchedulerFeature>? configure = null)
@@ -52,7 +33,7 @@ public static class ModuleExtensions
     }
 
     /// <summary>
-    /// Installs a Hangfire implementation for <see cref="IWorkflowScheduler"/>.
+    /// Installs a Hangfire implementation for <see cref="IBackgroundActivityScheduler"/>.
     /// </summary>
     public static WorkflowRuntimeFeature UseHangfireBackgroundActivityScheduler(this WorkflowRuntimeFeature feature, Action<HangfireBackgroundActivitySchedulerFeature>? configure = null)
     {
