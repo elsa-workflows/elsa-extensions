@@ -20,15 +20,14 @@ public class Worker : IAsyncDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="Worker"/> class.
     /// </summary>
-    public Worker(string queueOrTopic, string? subscription, ServiceBusClient client, IServiceScopeFactory serviceScopeFactory, ILogger<Worker> logger)
+    public Worker(string queueOrTopic, string? subscription, ServiceBusClient client, ServiceBusProcessorOptions processorOptions, IServiceScopeFactory serviceScopeFactory, ILogger<Worker> logger)
     {
         QueueOrTopic = queueOrTopic;
         Subscription = subscription == "" ? null : subscription;
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
 
-        var options = new ServiceBusProcessorOptions();
-        var processor = string.IsNullOrEmpty(subscription) ? client.CreateProcessor(queueOrTopic, options) : client.CreateProcessor(queueOrTopic, subscription, options);
+        var processor = string.IsNullOrEmpty(subscription) ? client.CreateProcessor(queueOrTopic, processorOptions) : client.CreateProcessor(queueOrTopic, subscription, processorOptions);
 
         processor.ProcessMessageAsync += OnMessageReceivedAsync;
         processor.ProcessErrorAsync += OnErrorAsync;
