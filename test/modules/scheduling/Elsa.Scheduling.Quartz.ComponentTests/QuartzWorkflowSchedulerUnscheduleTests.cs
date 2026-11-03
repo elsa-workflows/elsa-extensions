@@ -15,6 +15,9 @@ namespace Elsa.Scheduling.Quartz.ComponentTests;
 /// </summary>
 public class QuartzWorkflowSchedulerUnscheduleTests
 {
+    /// <summary>
+    /// Real Quartz cleanup removes one-shot, recurring and cron triggers without affecting matching names in other groups.
+    /// </summary>
     [Theory]
     [InlineData("one-shot")]
     [InlineData("recurring")]
@@ -52,6 +55,9 @@ public class QuartzWorkflowSchedulerUnscheduleTests
         }
     }
 
+    /// <summary>
+    /// Creates an adapter for one tenant while sharing the same real Quartz scheduler across groups.
+    /// </summary>
     private static QuartzWorkflowScheduler CreateScheduler(ISchedulerFactory factory, string? tenantId)
     {
         var tenantAccessor = new Mock<ITenantAccessor>();
@@ -61,6 +67,9 @@ public class QuartzWorkflowSchedulerUnscheduleTests
             new JobKeyProvider(tenantAccessor.Object), NullLogger<QuartzWorkflowScheduler>.Instance);
     }
 
+    /// <summary>
+    /// Creates a live trigger through the adapter using the requested schedule type without starting job execution.
+    /// </summary>
     private static async Task ScheduleAsync(QuartzWorkflowScheduler scheduler, string taskName, string scheduleType)
     {
         var request = new global::Elsa.Scheduling.ScheduleNewWorkflowInstanceRequest

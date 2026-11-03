@@ -12,6 +12,9 @@ namespace Elsa.Scheduling.Quartz.UnitTests.Services;
 /// </summary>
 public class QuartzWorkflowSchedulerUnscheduleTests
 {
+    /// <summary>
+    /// Missing triggers must not cause a removal attempt in the default or a tenant-specific group.
+    /// </summary>
     [Theory]
     [InlineData(null, "Default")]
     [InlineData("tenant-a", "tenant-a")]
@@ -28,6 +31,9 @@ public class QuartzWorkflowSchedulerUnscheduleTests
         scheduler.Verify(s => s.UnscheduleJob(It.IsAny<TriggerKey>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    /// <summary>
+    /// Existing triggers are checked and removed with the same tenant key and caller cancellation token.
+    /// </summary>
     [Theory]
     [InlineData(null, "Default")]
     [InlineData("tenant-a", "tenant-a")]
@@ -50,6 +56,9 @@ public class QuartzWorkflowSchedulerUnscheduleTests
         scheduler.Verify(s => s.UnscheduleJob(It.IsAny<TriggerKey>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// A trigger removed between the existence check and removal completes cleanup without another removal attempt.
+    /// </summary>
     [Fact]
     public async Task UnscheduleAsync_WhenTriggerDisappearsAfterCheck_CompletesWithoutRetryingRemoval()
     {
@@ -64,6 +73,9 @@ public class QuartzWorkflowSchedulerUnscheduleTests
         scheduler.Verify(s => s.UnscheduleJob(new TriggerKey("task-1", "Default"), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Repeated bookmark cleanup removes a live trigger once and skips the subsequent missing trigger.
+    /// </summary>
     [Fact]
     public async Task UnscheduleAsync_WhenCleanupIsRepeated_RemovesTriggerOnlyOnce()
     {
@@ -80,6 +92,9 @@ public class QuartzWorkflowSchedulerUnscheduleTests
         scheduler.Verify(s => s.UnscheduleJob(It.IsAny<TriggerKey>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Cancellation from scheduler acquisition, existence checks or removal remains observable to the caller.
+    /// </summary>
     [Theory]
     [InlineData("factory")]
     [InlineData("check")]
@@ -108,6 +123,9 @@ public class QuartzWorkflowSchedulerUnscheduleTests
             scheduler.Verify(s => s.UnscheduleJob(It.IsAny<TriggerKey>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    /// <summary>
+    /// Persistence failures propagate, and a failed existence check prevents a removal attempt.
+    /// </summary>
     [Theory]
     [InlineData("check")]
     [InlineData("remove")]
@@ -130,6 +148,9 @@ public class QuartzWorkflowSchedulerUnscheduleTests
             scheduler.Verify(s => s.UnscheduleJob(It.IsAny<TriggerKey>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    /// <summary>
+    /// Creates the adapter with a controlled Quartz scheduler and the real tenant-aware key provider.
+    /// </summary>
     private static QuartzWorkflowScheduler CreateScheduler(Mock<global::Quartz.IScheduler> scheduler,
         out Mock<global::Quartz.ISchedulerFactory> factory, string? tenantId = null)
     {
