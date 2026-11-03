@@ -105,6 +105,11 @@ public class QuartzWorkflowScheduler(ISchedulerFactory schedulerFactoryFactory, 
     {
         var scheduler = await schedulerFactoryFactory.GetScheduler(cancellationToken);
         var triggerKey = GetTriggerKey(taskName);
+
+        // Quartz acquires TRIGGER_ACCESS even when the trigger has already been removed.
+        if (!await scheduler.CheckExists(triggerKey, cancellationToken))
+            return;
+
         await scheduler.UnscheduleJob(triggerKey, cancellationToken);
     }
     
